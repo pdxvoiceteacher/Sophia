@@ -1,4 +1,6 @@
-﻿# Coherence Lattice (Lean 4 + mathlib)
+﻿[![CI](https://github.com/pdxvoiceteacher/CoherenceLattice/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pdxvoiceteacher/CoherenceLattice/actions/workflows/ci.yml?query=branch%3Amaster)
+
+# Coherence Lattice (Lean 4 + mathlib)
 
 This repository contains a Lean 4 formalization of a “coherence lattice” model:
 - A coherence **state** is (E, T) ∈ [0,1]×[0,1]
