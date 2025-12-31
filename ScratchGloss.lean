@@ -1,6 +1,0 @@
-import CoherenceLattice
-#check Coherence.PaperGloss.Lemma_DrivePositive
-#check Coherence.PaperGloss.Lemma_BoundedDrift_stepET
-#check Coherence.PaperGloss.Lemma_PsiNondecreasing_stepET
-#check Coherence.PaperGloss.Theorem_NoTeleport
-#check Coherence.PaperGloss.Corollary_TrajectoryET_ValidPath
