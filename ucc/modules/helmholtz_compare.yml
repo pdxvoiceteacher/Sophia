@@ -1,0 +1,23 @@
+ucc_version: "0.1"
+module:
+  id: "helmholtz.compare_runs"
+  version: "0.1.0"
+  title: "Helmholtz Guided vs Unguided ΔΨ Audit"
+  intent: "Audit ΔΨ curve from Helmholtz summary-by-step CSV (guided vs unguided) and emit an auditable comparison."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  thresholds:
+    deltaPsi_start_min: 0.10
+    deltaPsi_peak_min: 0.15
+    deltaPsi_end_abs_max: 0.02
+    auc_min: 0.30
+steps:
+  - type: ingest_json
+    id: cfg
+  - type: compare_helmholtz_runs
+    id: compare
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"

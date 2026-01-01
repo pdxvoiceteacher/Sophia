@@ -1,0 +1,11 @@
+scenario,t,Psi_mean
+guided,5,0.2861
+unguided,5,0.1313
+guided,4,0.3318
+unguided,4,0.1428
+guided,3,0.3492
+unguided,3,0.1547
+guided,2,0.3779
+unguided,2,0.3667
+guided,1,0.3722
+unguided,1,0.3678

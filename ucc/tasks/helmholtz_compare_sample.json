@@ -1,0 +1,8 @@
+{
+  "summary_csv": "helmholtz_summary_sample.csv",
+  "scenario_col": "scenario",
+  "t_col": "t",
+  "psi_mean_col": "Psi_mean",
+  "guided_label": "guided",
+  "unguided_label": "unguided"
+}

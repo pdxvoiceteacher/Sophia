@@ -22,6 +22,7 @@ BUILTIN_STEP_TYPES = {
     "compare_tches_runs",
     "check_required_sections",
     "emit_checklist",
+    "compare_helmholtz_runs",
 }
 
 
@@ -54,7 +55,6 @@ def validate_module(module_doc: Dict[str, Any], schema_doc: Dict[str, Any]) -> N
         msg = "\n".join([f"- {list(e.path)}: {e.message}" for e in errors])
         raise ValueError("UCC module schema validation failed:\n" + msg)
 
-    # safety: allow only known step types unless code is extended intentionally
     for step in module_doc.get("steps", []):
         st = step.get("type", "")
         if st not in BUILTIN_STEP_TYPES:
@@ -364,6 +364,154 @@ def compare_tches_runs(task_dir: Path, cfg: Dict[str, Any], outdir: Path, thresh
     return metrics, flags, [p_md, p_js]
 
 
+# ---------- Helmholtz comparison helpers ----------
+
+def compare_helmholtz_runs(task_dir: Path, cfg: Dict[str, Any], outdir: Path, thresholds: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+    """
+    Compare guided vs unguided coherence from a summary-by-step CSV.
+
+    Expected columns (defaults):
+      scenario, t, Psi_mean
+
+    Produces:
+      delta_curve.csv, delta_curve.md, comparison.md, comparison.json
+    """
+    summary_path = Path(cfg["summary_csv"])
+    if not summary_path.is_absolute():
+        summary_path = (task_dir / summary_path).resolve()
+
+    scenario_col = str(cfg.get("scenario_col", "scenario"))
+    t_col = str(cfg.get("t_col", "t"))
+    psi_col = str(cfg.get("psi_mean_col", "Psi_mean"))
+    guided_label = str(cfg.get("guided_label", "guided"))
+    unguided_label = str(cfg.get("unguided_label", "unguided"))
+
+    rows = load_csv_table(summary_path)
+
+    guided: Dict[int, float] = {}
+    unguided: Dict[int, float] = {}
+
+    for r in rows:
+        if scenario_col not in r or t_col not in r or psi_col not in r:
+            continue
+        scen = r[scenario_col].strip()
+        t = int(float(r[t_col]))
+        psi = float(r[psi_col])
+        if scen == guided_label:
+            guided[t] = psi
+        elif scen == unguided_label:
+            unguided[t] = psi
+
+    if not guided or not unguided:
+        raise ValueError("Summary CSV did not contain both guided and unguided rows.")
+
+    ts = sorted(set(guided.keys()) & set(unguided.keys()), reverse=True)
+    if not ts:
+        raise ValueError("No overlapping t values between guided and unguided.")
+
+    curve = []
+    for t in ts:
+        g = guided[t]
+        u = unguided[t]
+        d = g - u
+        curve.append((t, g, u, d))
+
+    delta_start = curve[0][3]
+    t_end = curve[-1][0]
+    delta_end = curve[-1][3]
+    t_peak, psi_g_peak, psi_u_peak, delta_peak = max(curve, key=lambda x: x[3])
+    auc = sum(d for (_, _, _, d) in curve)  # dt=1 per step
+
+    # thresholds (optional)
+    start_min = thresholds.get("deltaPsi_start_min", None)
+    peak_min = thresholds.get("deltaPsi_peak_min", None)
+    end_abs_max = thresholds.get("deltaPsi_end_abs_max", None)
+    auc_min = thresholds.get("auc_min", None)
+
+    def pass_if_set(cond: bool, key: str) -> bool:
+        return cond if key in thresholds else True
+
+    pass_start = pass_if_set(delta_start >= float(start_min), "deltaPsi_start_min")
+    pass_peak = pass_if_set(delta_peak >= float(peak_min), "deltaPsi_peak_min")
+    pass_end = pass_if_set(abs(delta_end) <= float(end_abs_max), "deltaPsi_end_abs_max")
+    pass_auc = pass_if_set(auc >= float(auc_min), "auc_min")
+    overall_pass = pass_start and pass_peak and pass_end and pass_auc
+
+    metrics: Dict[str, Any] = {
+        "summary_path": str(summary_path),
+        "summary_sha256": sha256_file(summary_path),
+        "steps_count": len(ts),
+        "t_start": ts[0],
+        "t_end": t_end,
+        "deltaPsi_start": delta_start,
+        "deltaPsi_peak": delta_peak,
+        "t_peak": t_peak,
+        "deltaPsi_end": delta_end,
+        "auc_deltaPsi": auc,
+    }
+
+    flags: Dict[str, Any] = {
+        "pass_start": pass_start,
+        "pass_peak": pass_peak,
+        "pass_end": pass_end,
+        "pass_auc": pass_auc,
+        "overall_pass": overall_pass,
+    }
+
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    # delta_curve.csv
+    p_curve = outdir / "delta_curve.csv"
+    with p_curve.open("w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["t", "psi_guided", "psi_unguided", "delta_psi"])
+        for t, g, u, d in curve:
+            w.writerow([t, g, u, d])
+
+    # delta_curve.md
+    p_curve_md = outdir / "delta_curve.md"
+    with p_curve_md.open("w", encoding="utf-8") as f:
+        f.write("# ΔΨ Curve (guided − unguided)\n\n")
+        f.write("| t | psi_guided | psi_unguided | delta_psi |\n")
+        f.write("|---:|---:|---:|---:|\n")
+        for t, g, u, d in curve:
+            f.write(f"| {t} | {g:.6g} | {u:.6g} | {d:.6g} |\n")
+
+    # comparison.md / json
+    p_md = outdir / "comparison.md"
+    p_js = outdir / "comparison.json"
+
+    p_js.write_text(json.dumps({"metrics": metrics, "flags": flags}, indent=2, sort_keys=True), encoding="utf-8")
+
+    p_md.write_text(
+        "\n".join([
+            "# Helmholtz Coherence Comparison (guided vs unguided)\n",
+            f"- summary_csv: `{summary_path}`",
+            "",
+            "## Headline metrics",
+            f"- ΔΨ_start (t={metrics['t_start']}): **{delta_start:.6g}**",
+            f"- ΔΨ_peak (t={t_peak}): **{delta_peak:.6g}**",
+            f"- ΔΨ_end (t={t_end}): **{delta_end:.6g}**",
+            f"- AUC(ΔΨ): **{auc:.6g}** (sum over steps)",
+            "",
+            "## Pass/Fail (module thresholds)",
+            f"- pass_start: {pass_start}",
+            f"- pass_peak: {pass_peak}",
+            f"- pass_end: {pass_end}",
+            f"- pass_auc: {pass_auc}",
+            f"- overall_pass: {overall_pass}",
+            "",
+            "## Integrity hashes",
+            f"- summary_sha256: `{metrics['summary_sha256']}`",
+            "",
+            "See: delta_curve.md / delta_curve.csv for per-step details.",
+        ]),
+        encoding="utf-8",
+    )
+
+    return metrics, flags, [p_curve, p_curve_md, p_md, p_js]
+
+
 # ---------- main runner ----------
 
 def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: Path) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -441,6 +589,15 @@ def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: P
                 raise ValueError("compare_tches_runs requires ingest_json of a config dict")
             task_dir = Path(input_path).parent
             m, fl, outs = compare_tches_runs(task_dir, context["input"], outdir, thresholds)
+            context["metrics"].update(m)
+            context["flags"].update(fl)
+            context["output_files"].extend(outs)
+
+        elif stype == "compare_helmholtz_runs":
+            if context["input"] is None or not isinstance(context["input"], dict):
+                raise ValueError("compare_helmholtz_runs requires ingest_json of a config dict")
+            task_dir = Path(input_path).parent
+            m, fl, outs = compare_helmholtz_runs(task_dir, context["input"], outdir, thresholds)
             context["metrics"].update(m)
             context["flags"].update(fl)
             context["output_files"].extend(outs)
