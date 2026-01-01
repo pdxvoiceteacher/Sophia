@@ -65,3 +65,8 @@ CoherenceLattice/Coherence/NarrativeGloss.lean — wrapper theorem names for cit
 
 Contributing / Issues
 PRs are welcome. Please keep lake build green.
+
+UCC quickstart:
+  python -m pip install -e ./ucc[dev]
+  ucc validate ucc/modules/tches_compare.yml
+  ucc run ucc/modules/tches_compare.yml --input ucc/tasks/tches_compare_sample.json --outdir ucc/out/demo

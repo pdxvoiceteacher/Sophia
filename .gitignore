@@ -27,7 +27,15 @@ python/*.pdf
 python/experiments/**/out/
 python/experiments/**/*.csv
 python/experiments/**/*.png
+python/experiments/**/*.summary.md
+python/experiments/tches_ode/out/sweep/
+python/experiments/tches_ode/out/sweep/figures/
 
 # Local figures (optional)
 Figures/
+
+# UCC outputs / env
+ucc/out/
+ucc/.venv/
+ucc/**/__pycache__/
 
