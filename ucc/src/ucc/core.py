@@ -61,7 +61,7 @@ def validate_module(module_doc: Dict[str, Any], schema_doc: Dict[str, Any]) -> N
             raise ValueError(f"Unknown/unsupported step type '{st}'. Allowed: {sorted(BUILTIN_STEP_TYPES)}")
 
 
-# ---------- ÃŽâ€ºT computations (shared) ----------
+# ---------- ÃƒÅ½Ã¢â‚¬ÂºT computations (shared) ----------
 
 def compute_lambdaT(series: list[float], dt_s: float, dT_design_C: float, tau_res_s: float) -> Dict[str, float]:
     if dt_s <= 0:
@@ -471,7 +471,7 @@ def compare_helmholtz_runs(task_dir: Path, cfg: Dict[str, Any], outdir: Path, th
     # delta_curve.md
     p_curve_md = outdir / "delta_curve.md"
     with p_curve_md.open("w", encoding="utf-8") as f:
-        f.write("# ÃŽâ€ÃŽÂ¨ Curve (guided Ã¢Ë†â€™ unguided)\n\n")
+        f.write("# ÃƒÅ½Ã¢â‚¬ÂÃƒÅ½Ã‚Â¨ Curve (guided ÃƒÂ¢Ã‹â€ Ã¢â‚¬â„¢ unguided)\n\n")
         f.write("| t | psi_guided | psi_unguided | delta_psi |\n")
         f.write("|---:|---:|---:|---:|\n")
         for t, g, u, d in curve:
@@ -489,10 +489,10 @@ def compare_helmholtz_runs(task_dir: Path, cfg: Dict[str, Any], outdir: Path, th
             f"- summary_csv: `{summary_path}`",
             "",
             "## Headline metrics",
-            f"- ÃŽâ€ÃŽÂ¨_start (t={metrics['t_start']}): **{delta_start:.6g}**",
-            f"- ÃŽâ€ÃŽÂ¨_peak (t={t_peak}): **{delta_peak:.6g}**",
-            f"- ÃŽâ€ÃŽÂ¨_end (t={t_end}): **{delta_end:.6g}**",
-            f"- AUC(ÃŽâ€ÃŽÂ¨): **{auc:.6g}** (sum over steps)",
+            f"- ÃƒÅ½Ã¢â‚¬ÂÃƒÅ½Ã‚Â¨_start (t={metrics['t_start']}): **{delta_start:.6g}**",
+            f"- ÃƒÅ½Ã¢â‚¬ÂÃƒÅ½Ã‚Â¨_peak (t={t_peak}): **{delta_peak:.6g}**",
+            f"- ÃƒÅ½Ã¢â‚¬ÂÃƒÅ½Ã‚Â¨_end (t={t_end}): **{delta_end:.6g}**",
+            f"- AUC(ÃƒÅ½Ã¢â‚¬ÂÃƒÅ½Ã‚Â¨): **{auc:.6g}** (sum over steps)",
             "",
             "## Pass/Fail (module thresholds)",
             f"- pass_start: {pass_start}",
