@@ -1,0 +1,37 @@
+﻿ucc_version: "0.1"
+module:
+  id: "ai_gov.nist_ai_600_1.genai_profile"
+  version: "0.1.0"
+  title: "NIST AI 600-1 GenAI Profile Coverage Checklist (Pipeline)"
+  intent: "Check that a GenAI system dossier includes provenance, adaptation/fine-tuning, evaluation evidence, misuse monitoring, and disclosure. Emits checklist + audit bundle."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  license: "CC-BY-4.0"
+  safety:
+    scope: "research"
+    disclaimers:
+      - "Research scaffold only; not legal/compliance advice."
+      - "This checks presence of fields; it does not guarantee conformity to NIST guidance."
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: genai_profile
+    params:
+      sections_key: "genai_profile"
+      required_sections:
+        - "DATA_PROVENANCE_SUMMARY"
+        - "ADAPTATION_FINETUNING_NOTES"
+        - "EVALUATION_EVIDENCE"
+        - "MISUSE_MONITORING"
+        - "DISCLOSURE"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "genai_profile_checklist.md"
+      title: "NIST AI 600-1 GenAI Profile Coverage Checklist"

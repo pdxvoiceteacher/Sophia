@@ -61,7 +61,7 @@ def validate_module(module_doc: Dict[str, Any], schema_doc: Dict[str, Any]) -> N
             raise ValueError(f"Unknown/unsupported step type '{st}'. Allowed: {sorted(BUILTIN_STEP_TYPES)}")
 
 
-# ---------- ΛT computations (shared) ----------
+# ---------- ÃŽâ€ºT computations (shared) ----------
 
 def compute_lambdaT(series: list[float], dt_s: float, dT_design_C: float, tau_res_s: float) -> Dict[str, float]:
     if dt_s <= 0:
@@ -199,7 +199,7 @@ def check_required_sections(input_doc: Dict[str, Any], sections_key: str, requir
     return metrics, flags
 
 
-def emit_checklist(outdir: Path, metrics: Dict[str, Any], name_md: str = "checklist.md") -> Path:
+def emit_checklist(outdir: Path, metrics: Dict[str, Any], name_md: str = "checklist.md", title: str = "Checklist") -> Path:
     outdir.mkdir(parents=True, exist_ok=True)
     required = metrics.get("required_sections", [])
     present = set(metrics.get("present_sections", []))
@@ -208,7 +208,7 @@ def emit_checklist(outdir: Path, metrics: Dict[str, Any], name_md: str = "checkl
 
     p = outdir / name_md
     with p.open("w", encoding="utf-8") as f:
-        f.write("# PRISMA Checklist (Pipeline)\n\n")
+        f.write(f"# {title}\n\n")
         f.write(f"- section coverage: **{coverage:.3f}**\n")
         if missing:
             f.write(f"- missing sections: {', '.join(missing)}\n")
@@ -471,7 +471,7 @@ def compare_helmholtz_runs(task_dir: Path, cfg: Dict[str, Any], outdir: Path, th
     # delta_curve.md
     p_curve_md = outdir / "delta_curve.md"
     with p_curve_md.open("w", encoding="utf-8") as f:
-        f.write("# ΔΨ Curve (guided − unguided)\n\n")
+        f.write("# ÃŽâ€ÃŽÂ¨ Curve (guided Ã¢Ë†â€™ unguided)\n\n")
         f.write("| t | psi_guided | psi_unguided | delta_psi |\n")
         f.write("|---:|---:|---:|---:|\n")
         for t, g, u, d in curve:
@@ -489,10 +489,10 @@ def compare_helmholtz_runs(task_dir: Path, cfg: Dict[str, Any], outdir: Path, th
             f"- summary_csv: `{summary_path}`",
             "",
             "## Headline metrics",
-            f"- ΔΨ_start (t={metrics['t_start']}): **{delta_start:.6g}**",
-            f"- ΔΨ_peak (t={t_peak}): **{delta_peak:.6g}**",
-            f"- ΔΨ_end (t={t_end}): **{delta_end:.6g}**",
-            f"- AUC(ΔΨ): **{auc:.6g}** (sum over steps)",
+            f"- ÃŽâ€ÃŽÂ¨_start (t={metrics['t_start']}): **{delta_start:.6g}**",
+            f"- ÃŽâ€ÃŽÂ¨_peak (t={t_peak}): **{delta_peak:.6g}**",
+            f"- ÃŽâ€ÃŽÂ¨_end (t={t_end}): **{delta_end:.6g}**",
+            f"- AUC(ÃŽâ€ÃŽÂ¨): **{auc:.6g}** (sum over steps)",
             "",
             "## Pass/Fail (module thresholds)",
             f"- pass_start: {pass_start}",
@@ -581,7 +581,8 @@ def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: P
 
         elif stype == "emit_checklist":
             name_md = str(params.get("checklist_md", "checklist.md"))
-            p = emit_checklist(outdir, context["metrics"], name_md)
+            title = str(params.get("title", "Checklist"))
+            p = emit_checklist(outdir, context["metrics"], name_md, title=title)
             context["output_files"].append(p)
 
         elif stype == "compare_tches_runs":

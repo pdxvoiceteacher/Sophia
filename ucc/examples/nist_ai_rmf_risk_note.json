@@ -1,0 +1,40 @@
+﻿{
+  "meta": {
+    "module_id": "ucc.nist_ai_rmf.risk_note.v0",
+    "name": "NIST AI RMF Risk Note (Example Grammar)",
+    "version": "0.1.0",
+    "domain": ["ai_governance"],
+    "jurisdiction": ["US", "global"],
+    "description": "A typed UCC grammar module for an AI RMF-aligned risk note."
+  },
+  "authorities": [
+    {"type": "standard", "id": "NIST-AI-RMF-1.0", "name": "NIST AI RMF 1.0"},
+    {"type": "guideline", "id": "NIST-AI-600-1", "name": "NIST AI RMF Generative AI Profile"}
+  ],
+  "tasks": [
+    {"id": "ai_rmf_risk_note", "description": "Produce an AI RMF-aligned risk note with explicit Map/Measure/Manage outputs under Govern constraints."}
+  ],
+  "roles": ["drafter", "reviewer", "approver"],
+  "reasoning_steps": [
+    "GOVERN: state scope, decision rights, and escalation triggers.",
+    "MAP: identify stakeholders, context, and harm vectors (technical, safety, systemic, equity, regulatory).",
+    "MEASURE: describe evaluation evidence, including uncertainty and subgroup performance where feasible/ethical.",
+    "MANAGE: propose mitigations, monitoring, incident response, and rollback criteria."
+  ],
+  "evidence": {
+    "min_primary_sources": 2,
+    "recency_years": 5,
+    "require_trial_registry": false,
+    "hierarchy": ["official_docs", "peer_reviewed", "incident_reports"]
+  },
+  "validation_rules": [
+    {"id": "must_include_limitations", "description": "Must include limitations and uncertainty.", "expression": "Limitations != empty"}
+  ],
+  "reporting": {
+    "sections": ["Scope", "GOVERN", "MAP", "MEASURE", "MANAGE", "Limitations"],
+    "disclaimers": ["Research scaffold; not a legal compliance determination."]
+  },
+  "escalation_policy": [
+    {"condition": "catastrophic_risk OR high_likely_risk", "action": "flag_for_review"}
+  ]
+}

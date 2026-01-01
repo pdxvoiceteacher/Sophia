@@ -1,0 +1,15 @@
+﻿{
+  "system": {
+    "name": "Example AI Assistant",
+    "intended_use": "Drafting and summarization under explicit governance modules.",
+    "deployment_stage": "pilot",
+    "stakeholders": ["users", "clients", "affected communities", "regulators"],
+    "notes": "This is a sample dossier used to demonstrate NIST AI RMF coverage checking."
+  },
+  "rmf": {
+    "GOVERN": "Decision rights, Pause protocol, governance log, incident response ownership, and AI partnership traceability.",
+    "MAP": "Context + stakeholders + potential harms (technical, psychological, economic, systemic) with an equity lens.",
+    "MEASURE": "Evaluation plan: accuracy, robustness, red-team, disaggregated error rates where feasible/ethical.",
+    "MANAGE": "Mitigations + monitoring + change management + rollback criteria + communications plan."
+  }
+}

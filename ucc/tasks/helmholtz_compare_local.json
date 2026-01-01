@@ -1,0 +1,8 @@
+﻿{
+  "summary_csv": "..\\..\\python\\experiments\\helmholtz_toy\\out\\summary_by_step.csv",
+  "scenario_col": "scenario",
+  "t_col": "t",
+  "psi_mean_col": "Psi_mean",
+  "guided_label": "guided",
+  "unguided_label": "unguided"
+}

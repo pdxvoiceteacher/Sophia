@@ -1,0 +1,33 @@
+﻿ucc_version: "0.1"
+module:
+  id: "ai_gov.nist_ai_rmf.coverage"
+  version: "0.1.0"
+  title: "NIST AI RMF Coverage Checklist (Pipeline)"
+  intent: "Check that an AI system dossier addresses NIST AI RMF functions: Govern/Map/Measure/Manage; emit checklist + audit bundle."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  thresholds:
+    # optional: informational only; pass/fail is primarily sections_complete
+    min_section_coverage: 1.0
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: rmf_core
+    params:
+      sections_key: "rmf"
+      required_sections:
+        - "GOVERN"
+        - "MAP"
+        - "MEASURE"
+        - "MANAGE"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "rmf_checklist.md"
+      title: "NIST AI RMF Coverage Checklist"
