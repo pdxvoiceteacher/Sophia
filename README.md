@@ -70,3 +70,8 @@ UCC quickstart:
   python -m pip install -e ./ucc[dev]
   ucc validate ucc/modules/tches_compare.yml
   ucc run ucc/modules/tches_compare.yml --input ucc/tasks/tches_compare_sample.json --outdir ucc/out/demo
+## UCC Demo (fast path)
+
+Want to see UCC produce auditable governance artifacts (checklists, comparative audits, audit bundles with hashes) in minutes?
+
+- See: `ucc/DEMO.md`
