@@ -20,8 +20,12 @@ BUILTIN_STEP_TYPES = {
     "emit_report",
     "emit_threshold_table",
     "compare_tches_runs",
+    "check_required_sections",
+    "emit_checklist",
 }
 
+
+# ---------- loaders (BOM-tolerant for Windows tooling) ----------
 
 def load_yaml(path: Path) -> Dict[str, Any]:
     return yaml.safe_load(path.read_text(encoding="utf-8-sig"))
@@ -41,6 +45,8 @@ def load_csv_table(path: Path) -> List[Dict[str, str]]:
         return [dict(row) for row in r]
 
 
+# ---------- schema validation ----------
+
 def validate_module(module_doc: Dict[str, Any], schema_doc: Dict[str, Any]) -> None:
     v = Draft202012Validator(schema_doc)
     errors = sorted(v.iter_errors(module_doc), key=lambda e: e.path)
@@ -48,11 +54,14 @@ def validate_module(module_doc: Dict[str, Any], schema_doc: Dict[str, Any]) -> N
         msg = "\n".join([f"- {list(e.path)}: {e.message}" for e in errors])
         raise ValueError("UCC module schema validation failed:\n" + msg)
 
+    # safety: allow only known step types unless code is extended intentionally
     for step in module_doc.get("steps", []):
         st = step.get("type", "")
         if st not in BUILTIN_STEP_TYPES:
             raise ValueError(f"Unknown/unsupported step type '{st}'. Allowed: {sorted(BUILTIN_STEP_TYPES)}")
 
+
+# ---------- ΛT computations (shared) ----------
 
 def compute_lambdaT(series: list[float], dt_s: float, dT_design_C: float, tau_res_s: float) -> Dict[str, float]:
     if dt_s <= 0:
@@ -60,7 +69,7 @@ def compute_lambdaT(series: list[float], dt_s: float, dT_design_C: float, tau_re
     if len(series) < 2:
         raise ValueError("temperature series must have at least 2 samples")
 
-    dTdt = [(series[i] - series[i-1]) / dt_s for i in range(1, len(series))]
+    dTdt = [(series[i] - series[i - 1]) / dt_s for i in range(1, len(series))]
     max_abs = max(abs(x) for x in dTdt)
 
     denom = (dT_design_C / max(tau_res_s, 1e-9))
@@ -80,19 +89,20 @@ def threshold_flags(metrics: Dict[str, Any], thresholds: Dict[str, Any]) -> Dict
 
 
 def _infer_dt_from_tcol(rows: List[Dict[str, str]], t_col: str) -> float:
-    ts = []
+    ts: List[float] = []
     for row in rows:
-        if t_col not in row:
-            continue
-        ts.append(float(row[t_col]))
+        if t_col in row and row[t_col] != "":
+            ts.append(float(row[t_col]))
     if len(ts) < 2:
         raise ValueError("Cannot infer dt_s: need at least 2 time samples in CSV")
-    diffs = [ts[i] - ts[i-1] for i in range(1, len(ts))]
+    diffs = [ts[i] - ts[i - 1] for i in range(1, len(ts))]
     diffs = [d for d in diffs if d > 0]
     if not diffs:
         raise ValueError("Cannot infer dt_s: non-positive time diffs in CSV")
     return float(statistics.median(diffs))
 
+
+# ---------- emitters ----------
 
 def emit_threshold_table(
     outdir: Path,
@@ -135,7 +145,10 @@ def emit_threshold_table(
 
     p_csv = outdir / name_csv
     with p_csv.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["metric","value","warn_threshold","alarm_threshold","warn_flag","alarm_flag","status"])
+        w = csv.DictWriter(
+            f,
+            fieldnames=["metric", "value", "warn_threshold", "alarm_threshold", "warn_flag", "alarm_flag", "status"],
+        )
         w.writeheader()
         for r in rows:
             w.writerow(r)
@@ -146,13 +159,72 @@ def emit_threshold_table(
         f.write("| metric | value | warn | alarm | warn_flag | alarm_flag | status |\n")
         f.write("|---|---:|---:|---:|---:|---:|---|\n")
         for r in rows:
-            f.write(f"| {r['metric']} | {r['value']} | {r['warn_threshold']} | {r['alarm_threshold']} | {r['warn_flag']} | {r['alarm_flag']} | {r['status']} |\n")
+            f.write(
+                f"| {r['metric']} | {r['value']} | {r['warn_threshold']} | {r['alarm_threshold']} | "
+                f"{r['warn_flag']} | {r['alarm_flag']} | {r['status']} |\n"
+            )
 
     return [p_csv, p_md]
 
 
+# ---------- PRISMA pipeline helpers ----------
+
+def check_required_sections(input_doc: Dict[str, Any], sections_key: str, required: List[str]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    sec = input_doc.get(sections_key, {})
+    if not isinstance(sec, dict):
+        raise ValueError(f"Expected '{sections_key}' to be a JSON object mapping section->text")
+
+    present: Dict[str, bool] = {}
+    for s in required:
+        txt = sec.get(s, "")
+        present[s] = bool(str(txt).strip())
+
+    missing = [s for s, ok in present.items() if not ok]
+    present_count = sum(1 for ok in present.values() if ok)
+    required_count = len(required)
+    coverage = (present_count / required_count) if required_count else 0.0
+
+    metrics = {
+        "required_sections": required,
+        "present_sections": [s for s, ok in present.items() if ok],
+        "missing_sections": missing,
+        "section_coverage": coverage,
+        "present_count": present_count,
+        "required_count": required_count,
+    }
+    flags = {
+        "sections_complete": (len(missing) == 0),
+        "sections_missing": missing,
+    }
+    return metrics, flags
+
+
+def emit_checklist(outdir: Path, metrics: Dict[str, Any], name_md: str = "checklist.md") -> Path:
+    outdir.mkdir(parents=True, exist_ok=True)
+    required = metrics.get("required_sections", [])
+    present = set(metrics.get("present_sections", []))
+    missing = metrics.get("missing_sections", [])
+    coverage = float(metrics.get("section_coverage", 0.0))
+
+    p = outdir / name_md
+    with p.open("w", encoding="utf-8") as f:
+        f.write("# PRISMA Checklist (Pipeline)\n\n")
+        f.write(f"- section coverage: **{coverage:.3f}**\n")
+        if missing:
+            f.write(f"- missing sections: {', '.join(missing)}\n")
+        else:
+            f.write("- missing sections: (none)\n")
+        f.write("\n## Required sections\n\n")
+        for s in required:
+            mark = "x" if s in present else " "
+            f.write(f"- [{mark}] {s}\n")
+    return p
+
+
+# ---------- TCHES comparison helpers ----------
+
 def _col_floats(rows: List[Dict[str, str]], col: str) -> List[float]:
-    out = []
+    out: List[float] = []
     for r in rows:
         if col in r and r[col] != "":
             out.append(float(r[col]))
@@ -178,7 +250,7 @@ def summarize_tches_csv(rows: List[Dict[str, str]], thresholds: Dict[str, Any]) 
     Qch = _col_floats(rows, "Q_chiller_kW")
 
     def safe_min(xs): return min(xs) if xs else float("nan")
-    def safe_mean(xs): return (sum(xs)/len(xs)) if xs else float("nan")
+    def safe_mean(xs): return (sum(xs) / len(xs)) if xs else float("nan")
     def safe_max(xs): return max(xs) if xs else float("nan")
 
     warn_L_steps = sum(1 for x in lam if x > warnL)
@@ -228,7 +300,6 @@ def compare_tches_runs(task_dir: Path, cfg: Dict[str, Any], outdir: Path, thresh
     base = summarize_tches_csv(base_rows, thresholds)
     lam = summarize_tches_csv(lam_rows, thresholds)
 
-    # deltas (baseline - lambda) for “improvement” when positive
     delta_warn = base["warn_LambdaT_steps"] - lam["warn_LambdaT_steps"]
     delta_alarm = base["alarm_LambdaT_steps"] - lam["alarm_LambdaT_steps"]
 
@@ -253,7 +324,6 @@ def compare_tches_runs(task_dir: Path, cfg: Dict[str, Any], outdir: Path, thresh
         "lambda_alarm": (lam["alarm_LambdaT_steps"] > 0),
     }
 
-    # Emit comparison markdown + json
     outdir.mkdir(parents=True, exist_ok=True)
     p_md = outdir / "comparison.md"
     p_js = outdir / "comparison.json"
@@ -293,6 +363,8 @@ def compare_tches_runs(task_dir: Path, cfg: Dict[str, Any], outdir: Path, thresh
 
     return metrics, flags, [p_md, p_js]
 
+
+# ---------- main runner ----------
 
 def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: Path) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     module_doc = load_yaml(module_path)
@@ -349,6 +421,20 @@ def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: P
 
         elif stype == "threshold_flags":
             context["flags"].update(threshold_flags(context["metrics"], thresholds))
+
+        elif stype == "check_required_sections":
+            if context["input"] is None or not isinstance(context["input"], dict):
+                raise ValueError("check_required_sections requires ingest_json of a structured document dict")
+            sections_key = str(params.get("sections_key", "sections"))
+            required = list(params.get("required_sections", []))
+            m, fl = check_required_sections(context["input"], sections_key, required)
+            context["metrics"].update(m)
+            context["flags"].update(fl)
+
+        elif stype == "emit_checklist":
+            name_md = str(params.get("checklist_md", "checklist.md"))
+            p = emit_checklist(outdir, context["metrics"], name_md)
+            context["output_files"].append(p)
 
         elif stype == "compare_tches_runs":
             if context["input"] is None or not isinstance(context["input"], dict):

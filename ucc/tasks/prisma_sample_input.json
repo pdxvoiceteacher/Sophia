@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "title": "Example systematic review on X",
+    "note": "This is a sample structured abstract payload for UCC PRISMA pipeline."
+  },
+  "sections": {
+    "Background": "We investigated X to understand Y.",
+    "Methods": "We searched A/B/C databases, screened N records, and synthesized K studies.",
+    "Results": "The pooled findings suggest Z with heterogeneity across contexts.",
+    "Conclusions": "X may improve Y under constraints; further research is required.",
+    "Limitations": ""
+  },
+  "disclosures": {
+    "funding": "Not specified",
+    "conflicts": "None declared"
+  }
+}

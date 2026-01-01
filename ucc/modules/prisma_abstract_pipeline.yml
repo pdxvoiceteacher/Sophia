@@ -1,0 +1,38 @@
+ucc_version: "0.1"
+module:
+  id: "prisma.abstract.pipeline"
+  version: "0.1.0"
+  title: "PRISMA Abstract Checklist (Pipeline)"
+  intent: "Validate presence of required PRISMA-style abstract sections and emit a checklist + audit bundle."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  license: "CC-BY-4.0"
+  safety:
+    scope: "research"
+    disclaimers:
+      - "Research scaffold only; not clinical, legal, or compliance advice."
+      - "This checks structured section presence; it does not guarantee PRISMA compliance."
+  thresholds:
+    min_section_coverage: 1.0
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "sections"
+      required_sections:
+        - "Background"
+        - "Methods"
+        - "Results"
+        - "Conclusions"
+        - "Limitations"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "checklist.md"
