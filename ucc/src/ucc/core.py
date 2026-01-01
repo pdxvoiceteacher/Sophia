@@ -26,6 +26,7 @@ BUILTIN_STEP_TYPES = {
     "compare_helmholtz_runs",
     "require_evidence_links",
     "misuse_taxonomy_check",
+    "disclosure_channel_check",
 }
 
 
@@ -74,19 +75,17 @@ def _get_text_field(input_doc: Dict[str, Any], sections_key: str, field_key: str
 
 
 def _extract_urls_and_dois(text: str) -> List[str]:
-    # URLs
     urls = re.findall(r"https?://[^\s\)\]\}>\"']+", text, flags=re.IGNORECASE)
-    # DOIs (common pattern)
     dois = re.findall(r"\b10\.\d{4,9}/[^\s\)\]\}>\"']+\b", text, flags=re.IGNORECASE)
-    # normalize
-    out = []
+
+    out: List[str] = []
     for u in urls:
         out.append(u.strip().rstrip(".,;"))
     for d in dois:
         out.append("doi:" + d.strip().rstrip(".,;"))
-    # de-dup preserving order
+
     seen = set()
-    uniq = []
+    uniq: List[str] = []
     for x in out:
         if x not in seen:
             seen.add(x)
@@ -254,7 +253,7 @@ def emit_checklist(outdir: Path, metrics: Dict[str, Any], name_md: str = "checkl
     return p
 
 
-# ---------- New: require_evidence_links ----------
+# ---------- GenAI checks ----------
 
 def require_evidence_links(input_doc: Dict[str, Any], sections_key: str, field_key: str, min_links: int, allow_explanation: bool) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     text = _get_text_field(input_doc, sections_key, field_key)
@@ -264,7 +263,6 @@ def require_evidence_links(input_doc: Dict[str, Any], sections_key: str, field_k
     explained = False
     if allow_explanation and n < min_links:
         low = text.lower()
-        # "none + why" heuristic: presence of an explanation marker + some substance
         markers = ["none", "no link", "no links", "no url", "not available", "n/a", "cannot", "unable", "restricted"]
         explained = any(m in low for m in markers) and len(low.strip()) >= 30
 
@@ -286,8 +284,6 @@ def require_evidence_links(input_doc: Dict[str, Any], sections_key: str, field_k
     return metrics, flags
 
 
-# ---------- New: misuse_taxonomy_check ----------
-
 DEFAULT_MISUSE_TAXONOMY = {
     "prompt_injection": ["prompt injection", "jailbreak", "instruction override", "prompt attack"],
     "data_exfiltration": ["data exfiltration", "exfiltrate", "secret leakage", "data leakage", "leak secrets"],
@@ -299,11 +295,10 @@ DEFAULT_MISUSE_TAXONOMY = {
 
 def misuse_taxonomy_check(input_doc: Dict[str, Any], sections_key: str, field_key: str, required_categories: List[str] | None) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     text = _get_text_field(input_doc, sections_key, field_key).lower()
-
     required_categories = required_categories or list(DEFAULT_MISUSE_TAXONOMY.keys())
 
-    present = []
-    missing = []
+    present: List[str] = []
+    missing: List[str] = []
 
     for cat in required_categories:
         syns = DEFAULT_MISUSE_TAXONOMY.get(cat, [cat.replace("_", " ")])
@@ -322,6 +317,39 @@ def misuse_taxonomy_check(input_doc: Dict[str, Any], sections_key: str, field_ke
     flags = {
         "misuse_taxonomy_complete": complete,
         "misuse_missing_categories": missing,
+    }
+    return metrics, flags
+
+
+def disclosure_channel_check(input_doc: Dict[str, Any], sections_key: str, field_key: str, require_escalation: bool = True) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    text = _get_text_field(input_doc, sections_key, field_key)
+    low = text.lower()
+
+    channel_markers = [
+        "report", "reporting", "contact", "email", "mailto:", "hotline", "ticket", "issue tracker",
+        "support", "feedback", "helpdesk", "abuse", "harm", "safety@", "security@"
+    ]
+    escalation_markers = [
+        "escalat", "triage", "incident", "on-call", "review", "human review", "flag for review",
+        "investigate", "contain", "remediate", "rollback", "response plan"
+    ]
+
+    has_channel = any(m in low for m in channel_markers)
+    has_escalation = any(m in low for m in escalation_markers)
+
+    ok = has_channel and (has_escalation if require_escalation else True)
+
+    metrics = {
+        "disclosure_field": f"{sections_key}.{field_key}",
+        "disclosure_has_reporting_channel": has_channel,
+        "disclosure_has_escalation": has_escalation,
+        "disclosure_require_escalation": require_escalation,
+        "disclosure_ok": ok,
+    }
+    flags = {
+        "disclosure_channel_ok": ok,
+        "disclosure_missing_channel": (not has_channel),
+        "disclosure_missing_escalation": (require_escalation and (not has_escalation)),
     }
     return metrics, flags
 
@@ -676,6 +704,16 @@ def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: P
             if required_categories is not None:
                 required_categories = list(required_categories)
             m, fl = misuse_taxonomy_check(context["input"], sections_key, field_key, required_categories)
+            context["metrics"].update(m)
+            context["flags"].update(fl)
+
+        elif stype == "disclosure_channel_check":
+            if context["input"] is None or not isinstance(context["input"], dict):
+                raise ValueError("disclosure_channel_check requires ingest_json of a structured document dict")
+            sections_key = str(params.get("sections_key", "genai_profile"))
+            field_key = str(params.get("field_key", "DISCLOSURE"))
+            require_escalation = bool(params.get("require_escalation", True))
+            m, fl = disclosure_channel_check(context["input"], sections_key, field_key, require_escalation)
             context["metrics"].update(m)
             context["flags"].update(fl)
 
