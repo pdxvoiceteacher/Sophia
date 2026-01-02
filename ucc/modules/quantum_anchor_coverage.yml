@@ -1,0 +1,38 @@
+ucc_version: "0.1"
+module:
+  id: "quantum.qm_anchor.coverage"
+  version: "0.2.0"
+  title: "Quantum Anchor Pack Coverage (Pipeline)"
+  intent: "Checklist that the QM anchor pack includes Pauli commutators, σx eigenstates, coherence proxy, and two-level thermodynamics anchors."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  safety:
+    scope: "research"
+    disclaimers:
+      - "Coverage audit only; does not validate physics beyond the formal statements in the repo."
+      - "No new physics claims; this is an orthodox finite-dimensional anchor slice."
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "quantum_anchor"
+      required_sections:
+        - "PAULI_COMMUTATORS"
+        - "SIGMAZ_EIGENSTATES"
+        - "SIGMAX_EIGENSTATES"
+        - "COHERENCE_PROXY_OFFDIAG"
+        - "TWO_LEVEL_PARTITION_FUNCTION"
+        - "GIBBS_TRACE_ONE"
+        - "THERMO_EXPECTED_ENERGY"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "quantum_anchor_checklist.md"
+      title: "Quantum Anchor Pack Coverage Checklist"

@@ -10,3 +10,5 @@ import CoherenceLattice.Coherence.Trajectory
 import CoherenceLattice.Coherence.DynamicsET
 import CoherenceLattice.Coherence.Interpretation
 import CoherenceLattice.Coherence.NarrativeGloss
+import CoherenceLattice.Quantum.Density
+import CoherenceLattice.Quantum.ThermoExtras

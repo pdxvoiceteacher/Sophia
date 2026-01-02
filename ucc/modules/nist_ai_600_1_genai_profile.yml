@@ -1,9 +1,9 @@
 ﻿ucc_version: "0.1"
 module:
   id: "ai_gov.nist_ai_600_1.genai_profile"
-  version: "0.2.0"
+  version: "0.3.0"
   title: "NIST AI 600-1 GenAI Profile Coverage Checklist (Pipeline)"
-  intent: "Check GenAI dossier coverage + evidence links + misuse taxonomy; emit checklist + audit bundle."
+  intent: "Check GenAI dossier coverage + evidence links + misuse taxonomy + disclosure channel; emit checklist + audit bundle."
   authors:
     - name: "Thomas Prislac"
     - name: "Envoy Echo"
@@ -15,6 +15,7 @@ module:
 steps:
   - type: ingest_json
     id: ingest
+
   - type: check_required_sections
     id: genai_profile
     params:
@@ -45,6 +46,13 @@ steps:
         - "policy_evasion"
         - "harassment"
         - "model_inversion"
+
+  - type: disclosure_channel_check
+    id: disclosure
+    params:
+      sections_key: "genai_profile"
+      field_key: "DISCLOSURE"
+      require_escalation: true
 
   - type: emit_report
     id: report
