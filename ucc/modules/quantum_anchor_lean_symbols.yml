@@ -1,0 +1,20 @@
+﻿ucc_version: "0.1"
+module:
+  id: "quantum.qm_anchor.lean_symbols"
+  version: "0.1.0"
+  title: "Quantum Anchor Lean Symbol Verification"
+  intent: "Run lake env lean on a generated scratch file containing #check lines for the quantum anchor pack."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  thresholds:
+    require_success: false   # set true later if you want strict gating
+steps:
+  - type: ingest_json
+    id: cfg
+  - type: check_lean_symbols
+    id: leancheck
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"

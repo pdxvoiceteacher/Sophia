@@ -12,3 +12,4 @@ import CoherenceLattice.Coherence.Interpretation
 import CoherenceLattice.Coherence.NarrativeGloss
 import CoherenceLattice.Quantum.Density
 import CoherenceLattice.Quantum.ThermoExtras
+import CoherenceLattice.Coherence.ParityLayer

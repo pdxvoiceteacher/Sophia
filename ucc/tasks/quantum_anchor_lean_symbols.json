@@ -1,0 +1,33 @@
+﻿{
+  "import_module": "CoherenceLattice",
+  "symbols": [
+    "Coherence.Quantum.comm_sigmaX_sigmaY",
+    "Coherence.Quantum.comm_sigmaY_sigmaZ",
+    "Coherence.Quantum.comm_sigmaZ_sigmaX",
+
+    "Coherence.Quantum.σz_mul_ket0",
+    "Coherence.Quantum.σz_mul_ket1",
+    "Coherence.Quantum.norm_ket0",
+    "Coherence.Quantum.norm_ket1",
+    "Coherence.Quantum.orth_ket0_ket1",
+
+    "Coherence.Quantum.σx_mul_ketPlus",
+    "Coherence.Quantum.σx_mul_ketMinus",
+    "Coherence.Quantum.norm_ketPlus",
+    "Coherence.Quantum.norm_ketMinus",
+    "Coherence.Quantum.orth_ketPlus_ketMinus",
+
+    "Coherence.Quantum.Z_closed",
+    "Coherence.Quantum.trace_rho",
+
+    "Coherence.Quantum.cohOffDiagSq",
+    "Coherence.Quantum.cohOffDiagSq_nonneg",
+    "Coherence.Quantum.cohOffDiagSq_of_diag",
+
+    "Coherence.Quantum.E_from_probs_eq_E_expected"
+  ],
+  "timeout_s": 20,
+  "strict": false,
+  "scratch_name": "ScratchLeanSymbols.lean",
+  "log_name": "lean_check.log"
+}
