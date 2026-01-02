@@ -1,0 +1,34 @@
+﻿ucc_version: "0.1"
+module:
+  id: "kontainer.deployment.coverage"
+  version: "0.1.0"
+  title: "Kontainer Deployment Checklist Coverage"
+  intent: "Checklist that deployment hygiene items are documented (secrets, limits, observability, rollback)."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "deployment"
+      required_sections:
+        - "secrets"
+        - "access_controls"
+        - "observability"
+        - "rate_limit"
+        - "resource_limits"
+        - "rollback"
+        - "image_pinning"
+        - "disclaimer"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "deployment_checklist.md"
+      title: "Kontainer Deployment Coverage Checklist"

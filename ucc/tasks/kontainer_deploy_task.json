@@ -1,0 +1,12 @@
+﻿{
+  "deployment": {
+    "secrets": "KONOMI_API_KEY stored as secret (env file locally; K8s Secret in kontainer/k8s/secret.example.yaml).",
+    "access_controls": "REST gated via X-API-Key; WS gated via api_key query param (demo). Production should use stronger auth + gateway.",
+    "observability": "Health endpoint available; recommend request-id structured logs and external monitoring.",
+    "rate_limit": "In-memory token bucket is enabled for demo; production should use gateway/redis.",
+    "resource_limits": "K8s deployment.yaml includes CPU/memory requests+limits; docker uses host limits.",
+    "rollback": "Document rollback: revert to prior image tag + git commit; keep audit bundles for runs.",
+    "image_pinning": "Recommend pin by tag+digest in production; demo uses local image tag.",
+    "disclaimer": "Research scaffold only; do not expose publicly without security review."
+  }
+}
