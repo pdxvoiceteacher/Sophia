@@ -1,0 +1,9 @@
+services:
+  konomi_api:
+    build:
+      context: .
+      dockerfile: docker/konomi_api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - KONOMI_API_KEY=devkey

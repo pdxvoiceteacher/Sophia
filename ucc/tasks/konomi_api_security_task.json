@@ -1,0 +1,10 @@
+﻿{
+  "api_security": {
+    "auth": "Header-based API key auth (X-API-Key) for REST; query param api_key for WS demo. Production should use stronger auth.",
+    "schema_validation": "Pydantic request models enforce schema and types for REST endpoints.",
+    "rate_limit": "In-memory token bucket per client id; production should use redis/gateway.",
+    "logging": "Recommend request-id + timestamp logs; add structured audit logs before production use.",
+    "websocket_auth": "WS uses api_key query param for demo; production should use session/bearer-based auth.",
+    "disclaimer": "Research scaffold only; not production hardened; do not expose without proper security review."
+  }
+}

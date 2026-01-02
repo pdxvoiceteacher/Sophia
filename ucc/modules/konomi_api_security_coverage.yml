@@ -1,0 +1,32 @@
+﻿ucc_version: "0.1"
+module:
+  id: "konomi.api.security_coverage"
+  version: "0.1.0"
+  title: "KONOMI API Security Coverage (Checklist)"
+  intent: "Checklist for API key auth, schema validation, rate limiting, and logging expectations."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "api_security"
+      required_sections:
+        - "auth"
+        - "schema_validation"
+        - "rate_limit"
+        - "logging"
+        - "websocket_auth"
+        - "disclaimer"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "api_security_checklist.md"
+      title: "KONOMI API Security Coverage Checklist"
