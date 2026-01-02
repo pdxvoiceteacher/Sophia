@@ -43,3 +43,11 @@ ucc/**/__pycache__/
 # UCC backups
 **/core.py.bak_*
 
+# Python caches
+__pycache__/
+*.pyc
+.pytest_cache/
+python/.venv/
+
+# Hypothesis (property-test cache)
+python/.hypothesis/

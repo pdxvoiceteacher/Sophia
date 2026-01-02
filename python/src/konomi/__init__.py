@@ -1,1 +1,1 @@
-﻿__all__ = ["evgpu"]
+__all__ = ["evgpu","femto","blockarray"]
