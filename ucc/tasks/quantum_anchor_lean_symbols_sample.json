@@ -1,0 +1,10 @@
+﻿{
+  "import_module": "CoherenceLattice",
+  "symbols": [
+    "Coherence.Quantum.comm_sigmaX_sigmaY",
+    "Coherence.Quantum.Z_closed",
+    "Coherence.Quantum.trace_rho"
+  ],
+  "timeout_s": 10,
+  "strict": false
+}
