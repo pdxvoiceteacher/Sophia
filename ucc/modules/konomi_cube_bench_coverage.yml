@@ -1,0 +1,32 @@
+﻿ucc_version: "0.1"
+module:
+  id: "konomi.cube.bench_coverage"
+  version: "0.1.0"
+  title: "KONOMI Cube Benchmark Coverage (JSON)"
+  intent: "Verify Cube benchmark summary records commit, machine profile, workload definition, results, and output paths."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "cube_bench"
+      required_sections:
+        - "git_commit"
+        - "machine_profile"
+        - "workload_definition"
+        - "results_csv"
+        - "results"
+        - "notes"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "cube_bench_checklist.md"
+      title: "KONOMI Cube Benchmark Coverage Checklist"
