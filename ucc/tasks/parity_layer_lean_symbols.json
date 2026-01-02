@@ -1,0 +1,13 @@
+﻿{
+  "import_module": "CoherenceLattice.Coherence.ParityLayer",
+  "symbols": [
+    "Coherence.Parity.forward",
+    "Coherence.Parity.reverse",
+    "Coherence.Parity.parity_inverse",
+    "Coherence.Parity.drift_zero"
+  ],
+  "timeout_s": 15,
+  "strict": false,
+  "scratch_name": "ScratchLeanSymbols.lean",
+  "log_name": "lean_check.log"
+}
