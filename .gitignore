@@ -39,3 +39,7 @@ ucc/out/
 ucc/.venv/
 ucc/**/__pycache__/
 
+
+# UCC backups
+**/core.py.bak_*
+
