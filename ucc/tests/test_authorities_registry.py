@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from pathlib import Path
@@ -18,3 +18,22 @@ def test_authorities_registry_coverage(tmp_path: Path):
     assert (outdir / "authorities_registry_checklist.md").exists()
     assert (outdir / "report.json").exists()
     assert (outdir / "audit_bundle.json").exists()
+
+
+def test_authorities_registry_paths_exist():
+    repo_root = Path(__file__).resolve().parents[2]
+    idx_path = repo_root / "ucc" / "authorities" / "index.json"
+    data = json.loads(idx_path.read_text(encoding="utf-8-sig"))
+
+    assert "authorities" in data and isinstance(data["authorities"], list) and len(data["authorities"]) > 0
+
+    for a in data["authorities"]:
+        for key in ["id", "name", "version", "module", "sample_task"]:
+            assert key in a, f"Missing key {key} in authority entry: {a}"
+
+        # Paths are stored like "ucc/modules/..." — make them repo-root relative
+        mod_path = repo_root / Path(a["module"])
+        task_path = repo_root / Path(a["sample_task"])
+
+        assert mod_path.exists(), f"Missing module file: {mod_path}"
+        assert task_path.exists(), f"Missing sample task file: {task_path}"

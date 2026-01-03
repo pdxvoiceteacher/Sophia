@@ -1,9 +1,9 @@
-﻿ucc_version: "0.1"
+ucc_version: "0.1"
 module:
   id: "authority.registry.coverage"
   version: "0.1.0"
   title: "UCC Authorities Registry Coverage"
-  intent: "Verify authority registry index structure exists and is complete for CI."
+  intent: "Verify authority registry index structure exists and is complete (CI-safe)."
   authors:
     - name: "Thomas Prislac"
     - name: "Envoy Echo"
