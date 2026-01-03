@@ -1,0 +1,35 @@
+﻿ucc_version: "0.1"
+module:
+  id: "konomi.smoke.coverage"
+  version: "0.1.0"
+  title: "KONOMI Smoke Summary Coverage"
+  intent: "Verify smoke summary contains commit/timestamp and per-component summary references."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "konomi_smoke"
+      required_sections:
+        - "git_commit"
+        - "timestamp_utc"
+        - "python"
+        - "platform"
+        - "evgpu"
+        - "femto"
+        - "blockarray"
+        - "cube"
+        - "notes"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "konomi_smoke_checklist.md"
+      title: "KONOMI Smoke Coverage Checklist"

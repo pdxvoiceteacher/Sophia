@@ -8,13 +8,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  lean-build:
+  lean:
     name: Lean build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Lean build (with mathlib cache)
+      - name: Lean build (mathlib cache)
         uses: leanprover/lean-action@v1
         with:
           build: true
@@ -22,8 +22,8 @@ jobs:
           lint: false
           use-mathlib-cache: true
 
-  python-tests:
-    name: Python tests (pytest + UCC)
+  python-ucc:
+    name: Python + UCC + KONOMI smoke
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,19 +37,41 @@ jobs:
             python/pyproject.toml
             ucc/pyproject.toml
 
-      - name: Install python package + dev deps
+      - name: Install Python package (dev)
         working-directory: python
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
+          # Safety: ensure API test deps exist
+          python -m pip install fastapi uvicorn httpx
 
-      - name: Run pytest (python/)
+      - name: Run python tests
         working-directory: python
         run: |
           python -m pytest -q
 
-      - name: Install UCC + run UCC tests
+      - name: Install UCC (dev)
         run: |
           python -m pip install -e "./ucc[dev]"
-          cd ucc
+
+      - name: Run UCC tests
+        working-directory: ucc
+        run: |
           python -m pytest -q
+
+      - name: KONOMI smoke run (quick)
+        run: |
+          python python/experiments/konomi_smoke/run_smoke.py --quick --outdir python/experiments/konomi_smoke/out
+
+      - name: UCC coverage for KONOMI smoke summary
+        run: |
+          python -m ucc.cli run ucc/modules/konomi_smoke_coverage.yml \
+            --input python/experiments/konomi_smoke/out/konomi_smoke_summary.json \
+            --outdir ucc/out/ci_konomi_smoke
+
+      - name: UCC coverage fixtures (fast, deterministic)
+        run: |
+          python -m ucc.cli run ucc/modules/quantum_anchor_coverage.yml --input ucc/tasks/quantum_anchor_task.json --outdir ucc/out/ci_quantum_anchor
+          python -m ucc.cli run ucc/modules/mc_ai_salvage_coverage.yml --input ucc/tasks/mc_ai_salvage_task.json --outdir ucc/out/ci_mc_ai_salvage
+          python -m ucc.cli run ucc/modules/kontainer_deploy_coverage.yml --input ucc/tasks/kontainer_deploy_task.json --outdir ucc/out/ci_kontainer
+          python -m ucc.cli run ucc/modules/konomi_api_security_coverage.yml --input ucc/tasks/konomi_api_security_task.json --outdir ucc/out/ci_api_security
