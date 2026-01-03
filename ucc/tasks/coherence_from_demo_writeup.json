@@ -1,0 +1,52 @@
+{
+  "coherence_artifact": {
+    "answer": "\ufeff# Summary\n\nThis note demonstrates the UCC coherence_audit pipeline on a small artifact.\n\n# Assumptions\n\nToy audit: metrics are proxies; not a truth guarantee.\n\n# Limitations\n\nThis example uses a minimal claim list and local artifacts. It is not a peer-reviewed conclusion.\n\n# Uncertainty\n\nResults depend on the exact artifacts referenced and any perturbation variants provided.\n\n# Disclosure\n\nResearch scaffold only. Report issues via GitHub.\n\n# Result\n\nGuided vs unguided comparisons can be represented as claim-to-source mappings and audited for traceability and drift.",
+    "claims": [
+      {
+        "citations": [],
+        "id": "c1",
+        "text": "See answer body (scaffold claim; replace with precise claims)."
+      }
+    ],
+    "domain": "research",
+    "evidence": {
+      "artifacts": [],
+      "links": [
+        "https://github.com/pdxvoiceteacher/CoherenceLattice"
+      ]
+    },
+    "exceptions": {
+      "items": [
+        {
+          "description": "Coherence metrics are proxies; not a truth guarantee.",
+          "expires_utc": "2027-01-03T22:28:40Z",
+          "id": "EX-1",
+          "issued_utc": "2026-01-03T22:28:40Z",
+          "risk_acceptor": "maintainers"
+        }
+      ],
+      "process": "Document exception, assign acceptor, set expiry, review on cadence."
+    },
+    "id": "demo-writeup-001",
+    "question": "Demonstrate coherence_audit on a small writeup.",
+    "reporting_channel": {
+      "escalation": "maintainers",
+      "primary": "github issues"
+    },
+    "review_cycle": {
+      "cadence": "quarterly",
+      "last_review_utc": "2026-01-03T22:28:40Z",
+      "next_review_utc": "2026-04-03T22:28:40Z",
+      "owner": "maintainers"
+    },
+    "sections": {
+      "assumptions": "Toy audit: metrics are proxies; not a truth guarantee.",
+      "body": "\ufeff# Summary\n\nThis note demonstrates the UCC coherence_audit pipeline on a small artifact.",
+      "disclosure": "Research scaffold only. Report issues via GitHub.",
+      "limitations": "This example uses a minimal claim list and local artifacts. It is not a peer-reviewed conclusion.",
+      "result": "Guided vs unguided comparisons can be represented as claim-to-source mappings and audited for traceability and drift.",
+      "uncertainty": "Results depend on the exact artifacts referenced and any perturbation variants provided."
+    },
+    "sources": []
+  }
+}
