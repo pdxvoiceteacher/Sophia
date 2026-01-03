@@ -1,0 +1,29 @@
+﻿ucc_version: "0.1"
+module:
+  id: "authority.registry.coverage"
+  version: "0.1.0"
+  title: "UCC Authorities Registry Coverage"
+  intent: "Verify authority registry index structure exists and is complete for CI."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "registry"
+      required_sections:
+        - "schema_version"
+        - "authorities"
+        - "notes"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "authorities_registry_checklist.md"
+      title: "Authorities Registry Coverage Checklist"
