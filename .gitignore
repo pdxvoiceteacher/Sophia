@@ -61,3 +61,6 @@ python/experiments/**/out/
 
 # UCC run outputs
 ucc/out/
+# KONOMI runtime logs
+kontainer/logs/
+python/kontainer/logs/
