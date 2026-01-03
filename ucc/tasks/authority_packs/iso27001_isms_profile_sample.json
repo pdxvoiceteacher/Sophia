@@ -1,0 +1,37 @@
+{
+  "iso27001_isms": {
+    "authority": "ISO/IEC 27001 (ISMS) + ISO/IEC 27002 (controls)",
+    "version": "27001:2022 / 27002:2022",
+    "scope": {
+      "organization": "Example Org",
+      "system_boundary": "KONOMI demo API + UCC pipelines",
+      "statement": "This is a structural template (coverage), not the ISO standard text."
+    },
+    "context": { "interested_parties": ["users", "reviewers"], "boundaries": ["repo", "CI", "demo API"] },
+    "leadership": { "policy": "information security policy exists", "roles": ["ISMS owner", "auditor"] },
+    "planning": { "risk_method": "risk register + treatment plan", "objectives": ["reproducibility", "access control"] },
+    "support": { "resources": ["CI", "logging"], "competence": ["secure coding"], "documented_info": ["SoA"] },
+    "operation": { "change_control": "PR review + CI", "outsourcing": "n/a (demo)" },
+    "performance_evaluation": { "internal_audit": "quarterly", "management_review": "quarterly" },
+    "improvement": { "nonconformity": "issue tracker", "corrective_action": "PR + audit bundle" },
+
+    "statement_of_applicability": {
+      "note": "List control IDs + applicability + evidence pointers. Do not paste ISO control text here.",
+      "controls_sample": [
+        { "id": "5.1", "applicable": true, "justification": "policy baseline", "evidence": ["policy.md"] },
+        { "id": "5.15", "applicable": true, "justification": "access control", "evidence": ["api/auth.md"] },
+        { "id": "8.16", "applicable": true, "justification": "monitoring/logging", "evidence": ["kontainer/logs design"] }
+      ]
+    },
+
+    "annex_a_controls_index": {
+      "source": "Use your licensed ISO/IEC 27002:2022 control list; store only IDs + local mappings here.",
+      "storage": "controls_index.json"
+    },
+
+    "evidence": { "artifacts": ["SoA.json", "risk_register.csv", "audit_reports/"], "links": [] },
+    "review_cycle": { "cadence": "quarterly", "owner": "ISMS owner" },
+    "exceptions": { "process": "risk acceptance + expiry + review", "registry": "exceptions.csv" },
+    "reporting_channel": { "primary": "isms@org.example", "escalation": "exec sponsor" }
+  }
+}

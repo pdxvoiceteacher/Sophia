@@ -1,0 +1,43 @@
+ucc_version: "0.1"
+module:
+  id: "authority.nist_csf.profile_coverage"
+  version: "0.1.0"
+  title: "NIST CSF Profile Coverage (Template)"
+  intent: "Coverage checklist for a NIST CSF profile artifact (functions, scope, evidence, review cycle)."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  safety:
+    scope: "governance"
+    disclaimers:
+      - "Checklist/coverage only; not a compliance determination."
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "nist_csf_profile"
+      required_sections:
+        - "authority"
+        - "version"
+        - "scope"
+        - "govern"
+        - "identify"
+        - "protect"
+        - "detect"
+        - "respond"
+        - "recover"
+        - "evidence"
+        - "review_cycle"
+        - "exceptions"
+        - "reporting_channel"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "nist_csf_profile_checklist.md"
+      title: "NIST CSF Profile Coverage Checklist"

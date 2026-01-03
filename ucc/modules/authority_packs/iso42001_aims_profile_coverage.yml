@@ -1,0 +1,53 @@
+ucc_version: "0.1"
+module:
+  id: "authority.iso42001.aims_profile_coverage"
+  version: "0.1.0"
+  title: "ISO/IEC 42001 AIMS Profile Coverage (Template)"
+  intent: "Coverage checklist for an ISO 42001 AI Management System (AIMS) profile artifact."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  safety:
+    scope: "governance"
+    disclaimers:
+      - "Checklist/coverage only; not a compliance determination."
+      - "Does not reproduce ISO text; fill clause/control statements using licensed materials."
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "iso42001_aims"
+      required_sections:
+        - "authority"
+        - "version"
+        - "scope"
+        - "context"
+        - "leadership"
+        - "planning"
+        - "support"
+        - "operation"
+        - "performance_evaluation"
+        - "improvement"
+        - "ai_system_inventory"
+        - "risk_management"
+        - "data_governance"
+        - "monitoring"
+        - "incident_response"
+        - "human_oversight"
+        - "transparency"
+        - "supplier_management"
+        - "evidence"
+        - "review_cycle"
+        - "exceptions"
+        - "reporting_channel"
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "iso42001_aims_profile_checklist.md"
+      title: "ISO/IEC 42001 AIMS Profile Coverage Checklist"

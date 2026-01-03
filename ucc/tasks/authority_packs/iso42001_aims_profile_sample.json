@@ -1,0 +1,32 @@
+{
+  "iso42001_aims": {
+    "authority": "ISO/IEC 42001 (AIMS)",
+    "version": "42001:2023",
+    "scope": {
+      "organization": "Example Org",
+      "ai_systems": ["KONOMI demo API", "UCC audit pipelines"],
+      "statement": "Structural template (coverage), not the ISO standard text."
+    },
+    "context": { "stakeholders": ["users", "reviewers"], "intended_use": "research + education" },
+    "leadership": { "policy": "AI governance policy exists", "roles": ["AIMS owner", "risk officer"] },
+    "planning": { "risk_method": "risk register + controls mapping", "objectives": ["safety", "transparency"] },
+    "support": { "resources": ["logging", "CI"], "competence": ["secure ML/AI ops"], "documentation": ["model cards"] },
+    "operation": { "change_control": "PRs + CI + audit bundles", "supplier_mgmt": "dependency pinning" },
+    "performance_evaluation": { "metrics": ["incident rate", "coverage"], "review": "quarterly" },
+    "improvement": { "corrective_action": "issue -> PR -> rerun audits" },
+
+    "ai_system_inventory": { "systems": ["KONOMI API", "UCC modules"], "owners": ["Eng", "GRC"] },
+    "risk_management": { "hazards": ["misuse", "data leakage"], "controls": ["auth", "rate limit", "audit logs"] },
+    "data_governance": { "provenance": "documented", "retention": "minimized", "access": "least privilege" },
+    "monitoring": { "misuse_monitoring": "taxonomy + alerts", "drift_monitoring": "n/a (stub)" },
+    "incident_response": { "playbooks": ["revoke keys", "rotate secrets"], "escalation": "security lead" },
+    "human_oversight": { "review_points": ["PR review", "release gates"], "override": "disable endpoints" },
+    "transparency": { "disclosure": ["request_id", "audit bundle hashes"], "user_notice": "research scaffold" },
+    "supplier_management": { "deps": ["pin versions"], "review": "quarterly" },
+
+    "evidence": { "artifacts": ["model registry", "audit summaries", "incident playbooks"], "links": [] },
+    "review_cycle": { "cadence": "quarterly", "owner": "AIMS owner" },
+    "exceptions": { "process": "risk acceptor sign-off", "registry": "exceptions.csv" },
+    "reporting_channel": { "primary": "ai-governance@org.example", "escalation": "exec sponsor" }
+  }
+}
