@@ -8,19 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  lean:
-    name: Lean build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Lean build (mathlib cache)
-        uses: leanprover/lean-action@v1
-        with:
-          build: true
-          test: false
-          lint: false
-          use-mathlib-cache: true
+  
 
   python-ucc:
     name: Python + UCC + KONOMI smoke

@@ -23,3 +23,7 @@ ucc/out/demo_run/audit_bundle.json
 Safety note
 
 Do not run untrusted modules. This runner intentionally supports a limited set of built-in step types.
+
+Notes (important for ISO)
+
+We do not paste ISO standard text (copyright). The pack requires IDs + your SoA mapping + evidence pointers, which is both useful and safe.

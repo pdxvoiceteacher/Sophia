@@ -14,10 +14,10 @@ This repository is a reproducible research + governance scaffold that combines:
 
 <!-- Replace <OWNER>/<REPO> and workflow filenames if needed -->
 **Lean proofs:**  
-![Lean CI](https://github.com/<OWNER>/<REPO>/actions/workflows/lean_proofs_ci.yml/badge.svg)
+[![Lean proofs](https://github.com/pdxvoiceteacher/CoherenceLattice/actions/workflows/lean_action_ci.yml/badge.svg?branch=master)](https://github.com/pdxvoiceteacher/CoherenceLattice/actions/workflows/lean_action_ci.yml?query=branch%3Amaster)
 
 **Python + UCC + KONOMI:**  
-![Python/UCC CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg)
+[![Python + UCC + KONOMI](https://github.com/pdxvoiceteacher/CoherenceLattice/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pdxvoiceteacher/CoherenceLattice/actions/workflows/ci.yml?query=branch%3Amaster)
 
 ## What’s implemented (high-level)
 
