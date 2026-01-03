@@ -46,15 +46,14 @@ jobs:
           python -m pip install "numpy>=1.24"
           python -c "import sys, numpy; print('PY', sys.executable); print('numpy', numpy.__version__)"
 
-
       - name: Run python tests
         working-directory: python
         run: python -m pytest -q
 
       - name: Install UCC (dev)
-        run: python -m pip install -e "./ucc[dev]"
+        run: |
+          python -m pip install -e "./ucc[dev]"
           python -c "import ucc; import konomi; print('ucc+konomi import ok')"
-
 
       - name: Run UCC tests
         working-directory: ucc
