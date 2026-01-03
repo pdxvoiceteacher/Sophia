@@ -11,12 +11,17 @@ from typing import Any, Awaitable, Callable, Dict, Optional
 
 from fastapi import Request, Response
 
+AUDIT_SCHEMA_VERSION = "0.2"
+
 
 def _hash_api_key(api_key: str) -> str:
     if not api_key:
         return ""
-    h = hashlib.blake2b(api_key.encode("utf-8"), digest_size=8).hexdigest()
-    return h
+    return hashlib.blake2b(api_key.encode("utf-8"), digest_size=8).hexdigest()
+
+
+def get_app_version() -> str:
+    return os.getenv("KONOMI_VERSION", "0.1.0-dev")
 
 
 @dataclass
@@ -25,14 +30,13 @@ class AuditLogger:
     Simple JSONL audit logger (demo-quality).
     - Writes one JSON object per line
     - Avoids storing API key plaintext (stores api_key_hash)
-    - Path can be overridden by env var KONOMI_AUDIT_LOG at write time
+    - Path can be overridden by env var KONOMI_AUDIT_LOG
     """
     default_path: str = "kontainer/logs/konomi_audit.jsonl"
     rotate_mb: int = 5
 
     def _path(self) -> Path:
-        p = os.getenv("KONOMI_AUDIT_LOG", self.default_path)
-        return Path(p)
+        return Path(os.getenv("KONOMI_AUDIT_LOG", self.default_path))
 
     def _rotate_if_needed(self, path: Path) -> None:
         try:
@@ -44,7 +48,6 @@ class AuditLogger:
             rotated = path.with_suffix(path.suffix + f".{ts}.bak")
             path.rename(rotated)
         except Exception:
-            # Never break request flow for logging
             return
 
     def write(self, event: Dict[str, Any]) -> None:
@@ -58,8 +61,9 @@ class AuditLogger:
 def make_audit_middleware(logger: AuditLogger) -> Callable[[Request, Callable[[Request], Awaitable[Response]]], Awaitable[Response]]:
     async def middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         req_id = str(uuid.uuid4())
-        t0 = time.perf_counter_ns()
+        request.state.request_id = req_id  # <— endpoints can echo this
 
+        t0 = time.perf_counter_ns()
         api_key = request.headers.get("X-API-Key", "")
         api_key_hash = _hash_api_key(api_key)
         client = request.client.host if request.client else ""
@@ -78,7 +82,10 @@ def make_audit_middleware(logger: AuditLogger) -> Callable[[Request, Callable[[R
         finally:
             t1 = time.perf_counter_ns()
             dur_ms = (t1 - t0) / 1e6
+
             event = {
+                "schema_version": AUDIT_SCHEMA_VERSION,
+                "app_version": get_app_version(),
                 "ts_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 "request_id": req_id,
                 "method": request.method,
@@ -90,6 +97,8 @@ def make_audit_middleware(logger: AuditLogger) -> Callable[[Request, Callable[[R
                 "error_type": err_type,
             }
             logger.write(event)
+
+            # Always surface request id in responses that exist
             if resp is not None:
                 resp.headers["X-Request-ID"] = req_id
 
