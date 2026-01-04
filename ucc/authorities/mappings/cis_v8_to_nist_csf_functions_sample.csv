@@ -1,0 +1,4 @@
+source_authority,source_id,target_authority,target_id,rationale,evidence_link
+cis.controls.v8,CIS-1,nist.csf,ID,"Asset inventory aligns to Identify (placeholder)",local:NA
+cis.controls.v8,CIS-4,nist.csf,PR,"Secure configuration aligns to Protect (placeholder)",local:NA
+cis.controls.v8,CIS-8,nist.csf,DE,"Audit log management aligns to Detect (placeholder)",local:NA

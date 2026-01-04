@@ -34,6 +34,50 @@
                             "url":  "https://www.iso.org",
                             "module":  "ucc/modules/authority_iso42001_profile_coverage.yml",
                             "sample_task":  "ucc/tasks/authority_packs/iso42001_profile_task.json"
+                        },
+                        {
+                            "url":  "https://www.isaca.org/resources/cobit",
+                            "id":  "cobit.2019",
+                            "license_note":  "IDs + structure only; no COBIT text",
+                            "version":  "2019",
+                            "sample_task":  "ucc/tasks/authority_packs/cobit2019_profile_task.json",
+                            "name":  "COBIT 2019",
+                            "module":  "ucc/modules/authority_cobit2019_profile_coverage.yml",
+                            "publisher":  "ISACA",
+                            "path":  "ucc/authorities/cobit2019/pack.json"
+                        },
+                        {
+                            "url":  "https://www.cisecurity.org/controls",
+                            "id":  "cis.controls.v8",
+                            "license_note":  "IDs + structure only; no CIS text",
+                            "version":  "8",
+                            "sample_task":  "ucc/tasks/authority_packs/cis_controls_v8_profile_task.json",
+                            "name":  "CIS Controls v8",
+                            "module":  "ucc/modules/authority_cis_controls_v8_profile_coverage.yml",
+                            "publisher":  "CIS",
+                            "path":  "ucc/authorities/cis_controls_v8/pack.json"
+                        },
+                        {
+                            "url":  "https://owasp.org/www-project-application-security-verification-standard/",
+                            "id":  "owasp.asvs.4",
+                            "license_note":  "IDs + structure only; avoid long text",
+                            "version":  "4.x",
+                            "sample_task":  "ucc/tasks/authority_packs/owasp_asvs_profile_task.json",
+                            "name":  "OWASP ASVS v4",
+                            "module":  "ucc/modules/authority_owasp_asvs_profile_coverage.yml",
+                            "publisher":  "OWASP",
+                            "path":  "ucc/authorities/owasp_asvs/pack.json"
+                        },
+                        {
+                            "url":  "https://www.aicpa.org",
+                            "id":  "aicpa.soc2.tsc",
+                            "license_note":  "IDs + structure only; no AICPA text",
+                            "version":  "unspecified",
+                            "sample_task":  "ucc/tasks/authority_packs/soc2_tsc_profile_task.json",
+                            "name":  "SOC 2 Trust Services Criteria",
+                            "module":  "ucc/modules/authority_soc2_tsc_profile_coverage.yml",
+                            "publisher":  "AICPA",
+                            "path":  "ucc/authorities/soc2_tsc/pack.json"
                         }
                     ],
     "packs":  [
@@ -69,6 +113,50 @@
                       "url":  "https://www.iso.org",
                       "module":  "ucc/modules/authority_iso42001_profile_coverage.yml",
                       "sample_task":  "ucc/tasks/authority_packs/iso42001_profile_task.json"
+                  },
+                  {
+                      "url":  "https://www.isaca.org/resources/cobit",
+                      "id":  "cobit.2019",
+                      "license_note":  "IDs + structure only; no COBIT text",
+                      "version":  "2019",
+                      "sample_task":  "ucc/tasks/authority_packs/cobit2019_profile_task.json",
+                      "name":  "COBIT 2019",
+                      "module":  "ucc/modules/authority_cobit2019_profile_coverage.yml",
+                      "publisher":  "ISACA",
+                      "path":  "ucc/authorities/cobit2019/pack.json"
+                  },
+                  {
+                      "url":  "https://www.cisecurity.org/controls",
+                      "id":  "cis.controls.v8",
+                      "license_note":  "IDs + structure only; no CIS text",
+                      "version":  "8",
+                      "sample_task":  "ucc/tasks/authority_packs/cis_controls_v8_profile_task.json",
+                      "name":  "CIS Controls v8",
+                      "module":  "ucc/modules/authority_cis_controls_v8_profile_coverage.yml",
+                      "publisher":  "CIS",
+                      "path":  "ucc/authorities/cis_controls_v8/pack.json"
+                  },
+                  {
+                      "url":  "https://owasp.org/www-project-application-security-verification-standard/",
+                      "id":  "owasp.asvs.4",
+                      "license_note":  "IDs + structure only; avoid long text",
+                      "version":  "4.x",
+                      "sample_task":  "ucc/tasks/authority_packs/owasp_asvs_profile_task.json",
+                      "name":  "OWASP ASVS v4",
+                      "module":  "ucc/modules/authority_owasp_asvs_profile_coverage.yml",
+                      "publisher":  "OWASP",
+                      "path":  "ucc/authorities/owasp_asvs/pack.json"
+                  },
+                  {
+                      "url":  "https://www.aicpa.org",
+                      "id":  "aicpa.soc2.tsc",
+                      "license_note":  "IDs + structure only; no AICPA text",
+                      "version":  "unspecified",
+                      "sample_task":  "ucc/tasks/authority_packs/soc2_tsc_profile_task.json",
+                      "name":  "SOC 2 Trust Services Criteria",
+                      "module":  "ucc/modules/authority_soc2_tsc_profile_coverage.yml",
+                      "publisher":  "AICPA",
+                      "path":  "ucc/authorities/soc2_tsc/pack.json"
                   }
               ]
 }

@@ -1,0 +1,3 @@
+source_authority,source_id,target_authority,target_id,rationale,evidence_link
+cobit.2019,EDM01,iso.31000,5,"Risk governance crosswalk placeholder",local:NA
+cobit.2019,MEA01,iso.31000,6,"Monitoring/review crosswalk placeholder",local:NA

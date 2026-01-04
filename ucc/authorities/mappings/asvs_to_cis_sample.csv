@@ -1,0 +1,3 @@
+source_authority,source_id,target_authority,target_id,rationale,evidence_link
+owasp.asvs.4,V2,cis.controls.v8,CIS-16,"App security requirements crosswalk placeholder",local:NA
+owasp.asvs.4,V5,cis.controls.v8,CIS-3,"Data protection crosswalk placeholder",local:NA

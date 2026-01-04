@@ -1,0 +1,20 @@
+{
+  "pack_id": "cobit.2019",
+  "authority": {
+    "id": "cobit.2019",
+    "name": "COBIT 2019",
+    "publisher": "ISACA",
+    "version": "2019",
+    "url": "https://www.isaca.org/resources/cobit"
+  },
+  "control_namespace": {
+    "kind": "objective_ids_only",
+    "ids": ["EDM01", "APO01", "BAI01", "DSS01", "MEA01"],
+    "note": "Objective IDs only; no copyrighted COBIT text redistributed."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}
