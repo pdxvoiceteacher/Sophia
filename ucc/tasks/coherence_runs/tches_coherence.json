@@ -1,28 +1,44 @@
 {
   "coherence_artifact": {
-    "answer": "# Summary\nThis coherence run audits the repo artifacts for the TCHES baseline-vs-lambda comparison produced by UCC.\n\n# Assumptions\nToy ODE system; proxy audit only; not operational advice.\n\n# Limitations\nChecks traceability and evidence structure, not real-world validity.\n\n# Uncertainty\nOutputs depend on referenced CSV inputs and thresholds.\n\n# Disclosure\nResearch scaffold only. Report issues via GitHub.\n\n# Results\nCompare module emits comparison.md and audit_bundle.json with hashes.",
+    "answer": "\ufeff# Summary\nThis coherence run audits the TCHES baseline-vs-lambda comparator artifacts produced by UCC:\ncomparison.json/.md and audit_bundle.json.\n\n# Assumptions\n- Toy ODE model; proxy audit only; not operational advice.\n- Audit improves traceability and reviewability; it is not a truth guarantee.\n\n# Limitations\n- Comparator metrics depend on the referenced baseline/lambda run CSVs.\n- \u0394S/\u039b are proxy stability checks on paraphrases (not semantic validity).\n\n# Uncertainty\n- If comparator outputs change, rerun this audit.\n\n# Disclosure\nResearch scaffold only. Report issues via GitHub.\n\n# Results\ncomparison.json records baseline_* and lambda_* metrics and deltas (e.g., delta_warn_LambdaT_steps, delta_mean_Ppump, delta_mean_Qch) and flags such as improved_warn_time.",
     "claims": [
       {
         "citations": [
+          "t_cmp_json"
+        ],
+        "id": "c1",
+        "text": "comparison.json records baseline_* and lambda_* metrics and the deltas delta_warn_LambdaT_steps, delta_mean_Ppump, and delta_mean_Qch."
+      },
+      {
+        "citations": [
           "t_cmp_md",
-          "t_audit"
+          "t_cmp_json"
         ],
-        "id": "t1",
-        "text": "TCHES compare run emits a comparison report and audit bundle."
+        "id": "c2",
+        "text": "improved_warn_time flag is derived from delta_warn_LambdaT_steps (positive means lambda reduced warn-time)."
       },
       {
         "citations": [
           "t_audit"
         ],
-        "id": "t2",
-        "text": "Audit bundle includes input SHA256 hashes for baseline and lambda runs."
+        "id": "c3",
+        "text": "audit_bundle.json binds the comparison to git_commit and includes sha256 hashes for module, task input, and emitted outputs."
       },
       {
         "citations": [
-          "t_cmp_md"
+          "t_mod",
+          "t_task"
         ],
-        "id": "t3",
-        "text": "Comparison reports key deltas (warn-time and mean power proxies)."
+        "id": "c4",
+        "text": "The comparator module YAML and its sample task define the comparison configuration and are part of the reproducibility chain."
+      },
+      {
+        "citations": [
+          "t_cmp_md",
+          "t_cmp_json"
+        ],
+        "id": "c5",
+        "text": "comparison.md provides a human-readable summary table (warn/alarm steps, max/mean \u039bT, pump/chiller proxies) consistent with comparison.json."
       }
     ],
     "domain": "research",
@@ -36,9 +52,9 @@
       "items": [
         {
           "description": "Coherence metrics are proxies; not a truth guarantee.",
-          "expires_utc": "2027-01-04T03:43:13Z",
+          "expires_utc": "2027-01-04T04:14:57Z",
           "id": "EX-1",
-          "issued_utc": "2026-01-04T03:43:13Z",
+          "issued_utc": "2026-01-04T04:14:57Z",
           "risk_acceptor": "maintainers"
         }
       ],
@@ -52,39 +68,18 @@
     },
     "review_cycle": {
       "cadence": "quarterly",
-      "last_review_utc": "2026-01-04T03:43:13Z",
-      "next_review_utc": "2026-04-04T03:43:13Z",
+      "last_review_utc": "2026-01-04T04:14:57Z",
+      "next_review_utc": "2026-04-04T04:14:57Z",
       "owner": "maintainers"
     },
     "sections": {
-      "assumptions": "Toy ODE system; proxy audit only; not operational advice.",
+      "assumptions": "- Toy ODE model; proxy audit only; not operational advice.\n- Audit improves traceability and reviewability; it is not a truth guarantee.",
+      "body": "\ufeff# Summary\nThis coherence run audits the TCHES baseline-vs-lambda comparator artifacts produced by UCC:\ncomparison.json/.md and audit_bundle.json.",
       "disclosure": "Research scaffold only. Report issues via GitHub.",
-      "limitations": "Checks traceability and evidence structure, not real-world validity.",
-      "results": "Compare module emits comparison.md and audit_bundle.json with hashes.",
-      "summary": "This coherence run audits the repo artifacts for the TCHES baseline-vs-lambda comparison produced by UCC.",
-      "uncertainty": "Outputs depend on referenced CSV inputs and thresholds."
+      "limitations": "- Comparator metrics depend on the referenced baseline/lambda run CSVs.\n- \u0394S/\u039b are proxy stability checks on paraphrases (not semantic validity).",
+      "results": "comparison.json records baseline_* and lambda_* metrics and deltas (e.g., delta_warn_LambdaT_steps, delta_mean_Ppump, delta_mean_Qch) and flags such as improved_warn_time.",
+      "uncertainty": "- If comparator outputs change, rerun this audit."
     },
-    "sources": [
-      {
-        "id": "t_mod",
-        "retrieved_utc": "2026-01-03T00:00:00Z",
-        "title": "tches_compare.yml"
-      },
-      {
-        "id": "t_task",
-        "retrieved_utc": "2026-01-03T00:00:00Z",
-        "title": "tches_compare_sample.json"
-      },
-      {
-        "id": "t_cmp_md",
-        "retrieved_utc": "2026-01-03T00:00:00Z",
-        "title": "comparison.md"
-      },
-      {
-        "id": "t_audit",
-        "retrieved_utc": "2026-01-03T00:00:00Z",
-        "title": "audit_bundle.json"
-      }
-    ]
+    "sources": []
   }
 }

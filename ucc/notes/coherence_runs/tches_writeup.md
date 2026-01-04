@@ -1,17 +1,20 @@
-# Summary
-This coherence run audits the repo artifacts for the TCHES baseline-vs-lambda comparison produced by UCC.
+﻿# Summary
+This coherence run audits the TCHES baseline-vs-lambda comparator artifacts produced by UCC:
+comparison.json/.md and audit_bundle.json.
 
 # Assumptions
-Toy ODE system; proxy audit only; not operational advice.
+- Toy ODE model; proxy audit only; not operational advice.
+- Audit improves traceability and reviewability; it is not a truth guarantee.
 
 # Limitations
-Checks traceability and evidence structure, not real-world validity.
+- Comparator metrics depend on the referenced baseline/lambda run CSVs.
+- ΔS/Λ are proxy stability checks on paraphrases (not semantic validity).
 
 # Uncertainty
-Outputs depend on referenced CSV inputs and thresholds.
+- If comparator outputs change, rerun this audit.
 
 # Disclosure
 Research scaffold only. Report issues via GitHub.
 
 # Results
-Compare module emits comparison.md and audit_bundle.json with hashes.
+comparison.json records baseline_* and lambda_* metrics and deltas (e.g., delta_warn_LambdaT_steps, delta_mean_Ppump, delta_mean_Qch) and flags such as improved_warn_time.
