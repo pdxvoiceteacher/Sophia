@@ -4,3 +4,4 @@ h2,"overall_pass is true only when pass_start, pass_peak, pass_end, and pass_auc
 h3,"delta_curve.csv contains the per-step ΔΨ(guided − unguided) sequence that the report summarizes.",h_delta_csv;h_cmp_md
 h4,"audit_bundle.json binds the run to a git_commit and includes sha256 hashes for module + inputs/outputs (provenance).",h_audit
 h5,"The module YAML and sample task define the comparator configuration and are part of the reproducibility chain.",h_mod;h_task
+h6,"From comparison.json: auc_deltaPsi > 0; deltaPsi_peak > 0; deltaPsi_start > 0.",h_cmp_json

@@ -39,6 +39,13 @@
         ],
         "id": "c5",
         "text": "The module YAML and sample task define the comparator configuration and are part of the reproducibility chain."
+      },
+      {
+        "citations": [
+          "h_cmp_json"
+        ],
+        "id": "c6",
+        "text": "From comparison.json: auc_deltaPsi > 0; deltaPsi_peak > 0; deltaPsi_start > 0."
       }
     ],
     "domain": "research",
@@ -52,9 +59,9 @@
       "items": [
         {
           "description": "Coherence metrics are proxies; not a truth guarantee.",
-          "expires_utc": "2027-01-04T05:09:54Z",
+          "expires_utc": "2027-01-04T05:31:25Z",
           "id": "EX-1",
-          "issued_utc": "2026-01-04T05:09:54Z",
+          "issued_utc": "2026-01-04T05:31:25Z",
           "risk_acceptor": "maintainers"
         }
       ],
@@ -68,8 +75,8 @@
     },
     "review_cycle": {
       "cadence": "quarterly",
-      "last_review_utc": "2026-01-04T05:09:54Z",
-      "next_review_utc": "2026-04-04T05:09:54Z",
+      "last_review_utc": "2026-01-04T05:31:25Z",
+      "next_review_utc": "2026-04-04T05:31:25Z",
       "owner": "maintainers"
     },
     "sections": {
