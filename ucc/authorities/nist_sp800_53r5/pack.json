@@ -1,0 +1,20 @@
+{
+  "pack_id": "nist.sp800_53r5",
+  "authority": {
+    "id": "nist.sp800_53r5",
+    "name": "NIST SP 800-53 Rev. 5",
+    "publisher": "NIST",
+    "version": "Rev. 5",
+    "url": "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final"
+  },
+  "control_namespace": {
+    "kind": "family_ids_only",
+    "ids": ["AC","AT","AU","CA","CM","CP","IA","IR","MA","MP","PE","PL","PM","PS","PT","RA","SA","SC","SI","SR"],
+    "note": "Family IDs only; no control text embedded."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}

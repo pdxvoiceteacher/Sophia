@@ -1,0 +1,4 @@
+source_authority,source_id,target_authority,target_id,rationale,evidence_link
+nist.sp800_53r5,AC,cis.controls.v8,CIS-6,"Access control family maps to access management control (placeholder)",local:NA
+nist.sp800_53r5,CM,cis.controls.v8,CIS-4,"Configuration management family maps to secure configuration (placeholder)",local:NA
+nist.sp800_53r5,RA,cis.controls.v8,CIS-18,"Risk assessment family maps to penetration testing / assessments (placeholder)",local:NA

@@ -10,7 +10,18 @@
   "control_namespace": {
     "kind": "business_function_ids_only",
     "ids": ["GOV","DES","IMP","VER","OPS"],
-    "note": "Business-function IDs only; no long text embedded."
+    "note": "Business-function IDs only."
+  },
+  "practice_namespace": {
+    "kind": "practice_ids_only",
+    "ids": [
+      "GOV-SM","GOV-PC","GOV-EG",
+      "DES-TA","DES-SR","DES-SA",
+      "IMP-SB","IMP-SD","IMP-DM",
+      "VER-AA","VER-RDT","VER-ST",
+      "OPS-IM","OPS-EM","OPS-OM"
+    ],
+    "note": "Practice IDs only; no long text embedded."
   },
   "governance_defaults": {
     "min_evidence_links": 1,

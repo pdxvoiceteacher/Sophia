@@ -1,21 +1,21 @@
 {
   "authority_profile": {
     "authority": {
-      "id": "cis.benchmarks",
-      "name": "CIS Benchmarks (Configuration Guides)",
-      "publisher": "CIS",
-      "version": "unspecified",
-      "url": "https://www.cisecurity.org/cis-benchmarks"
+      "id": "nist.sp800_53r5",
+      "name": "NIST SP 800-53 Rev. 5",
+      "publisher": "NIST",
+      "version": "Rev. 5",
+      "url": "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final"
     },
     "profile": {
       "org": "UVLM",
       "system": "CoherenceLattice",
-      "scope": "Baseline hardening templates (expanded OS IDs)",
+      "scope": "Security + governance family coverage template",
       "jurisdiction": "global"
     },
     "controls": {
-      "selected_ids": ["WIN11","WIN2022","UBU22","RHEL9","K8S","AWS","AZURE"],
-      "notes": "Benchmark IDs only; expand via PR."
+      "selected_ids": ["AC","AU","CM","IA","IR","RA","SC","SI"],
+      "notes": "Families only. Expand later via PR."
     },
     "evidence": {
       "links": ["https://github.com/pdxvoiceteacher/CoherenceLattice"],
@@ -30,8 +30,8 @@
       "process": "Issues + PR review.",
       "items": [
         {
-          "id": "EX-CISBM-001",
-          "description": "IDs only; benchmark text not redistributed.",
+          "id": "EX-80053-001",
+          "description": "IDs only; no control text embedded.",
           "risk_acceptor": "maintainers",
           "issued_utc": "2026-01-01T00:00:00Z",
           "expires_utc": "2026-12-31T00:00:00Z"

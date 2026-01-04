@@ -104,13 +104,24 @@
                         {
                             "url":  "https://owasp.org/www-project-samm/",
                             "id":  "owasp.samm.2",
-                            "license_note":  "IDs + structure only; no long text",
+                            "license_note":  "IDs + structure only; practices IDs included",
                             "version":  "2",
                             "sample_task":  "ucc/tasks/authority_packs/owasp_samm_profile_task.json",
                             "name":  "OWASP SAMM v2",
                             "module":  "ucc/modules/authority_owasp_samm_profile_coverage.yml",
                             "publisher":  "OWASP",
                             "path":  "ucc/authorities/owasp_samm/pack.json"
+                        },
+                        {
+                            "url":  "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final",
+                            "id":  "nist.sp800_53r5",
+                            "license_note":  "Families only; no control text embedded",
+                            "version":  "Rev. 5",
+                            "sample_task":  "ucc/tasks/authority_packs/nist_sp800_53r5_profile_task.json",
+                            "name":  "NIST SP 800-53 Rev. 5",
+                            "module":  "ucc/modules/authority_nist_sp800_53r5_profile_coverage.yml",
+                            "publisher":  "NIST",
+                            "path":  "ucc/authorities/nist_sp800_53r5/pack.json"
                         }
                     ],
     "packs":  [
@@ -216,13 +227,24 @@
                   {
                       "url":  "https://owasp.org/www-project-samm/",
                       "id":  "owasp.samm.2",
-                      "license_note":  "IDs + structure only; no long text",
+                      "license_note":  "IDs + structure only; practices IDs included",
                       "version":  "2",
                       "sample_task":  "ucc/tasks/authority_packs/owasp_samm_profile_task.json",
                       "name":  "OWASP SAMM v2",
                       "module":  "ucc/modules/authority_owasp_samm_profile_coverage.yml",
                       "publisher":  "OWASP",
                       "path":  "ucc/authorities/owasp_samm/pack.json"
+                  },
+                  {
+                      "url":  "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final",
+                      "id":  "nist.sp800_53r5",
+                      "license_note":  "Families only; no control text embedded",
+                      "version":  "Rev. 5",
+                      "sample_task":  "ucc/tasks/authority_packs/nist_sp800_53r5_profile_task.json",
+                      "name":  "NIST SP 800-53 Rev. 5",
+                      "module":  "ucc/modules/authority_nist_sp800_53r5_profile_coverage.yml",
+                      "publisher":  "NIST",
+                      "path":  "ucc/authorities/nist_sp800_53r5/pack.json"
                   }
               ]
 }

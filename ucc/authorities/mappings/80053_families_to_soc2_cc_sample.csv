@@ -1,0 +1,4 @@
+source_authority,source_id,target_authority,target_id,rationale,evidence_link
+nist.sp800_53r5,AC,aicpa.soc2.tsc,CC6,"Access control family aligns to logical access criteria (placeholder)",local:NA
+nist.sp800_53r5,AU,aicpa.soc2.tsc,CC7,"Audit/logging family aligns to monitoring criteria (placeholder)",local:NA
+nist.sp800_53r5,IR,aicpa.soc2.tsc,CC7,"Incident response family aligns to response criteria (placeholder)",local:NA

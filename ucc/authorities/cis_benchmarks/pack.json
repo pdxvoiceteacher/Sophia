@@ -9,7 +9,7 @@
   },
   "control_namespace": {
     "kind": "benchmark_ids_only",
-    "ids": ["WIN11", "WIN2022", "UBU22", "RHEL9", "K8S", "AWS"],
+    "ids": ["WIN10","WIN11","WIN2022","UBU20","UBU22","DEBIAN12","RHEL8","RHEL9","AMZN2","MACOS14","K8S","DOCKER","AWS","AZURE","GCP"],
     "note": "Benchmark IDs only (illustrative). No benchmark text redistributed."
   },
   "governance_defaults": {

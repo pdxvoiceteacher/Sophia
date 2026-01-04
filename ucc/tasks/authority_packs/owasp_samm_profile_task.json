@@ -10,12 +10,13 @@
     "profile": {
       "org": "UVLM",
       "system": "CoherenceLattice",
-      "scope": "Security maturity template",
+      "scope": "Security maturity template (practice IDs)",
       "jurisdiction": "global"
     },
     "controls": {
       "selected_ids": ["GOV","DES","IMP","VER","OPS"],
-      "notes": "Business function IDs only."
+      "practice_selected_ids": ["GOV-SM","GOV-PC","DES-TA","IMP-SB","VER-ST","OPS-IM"],
+      "notes": "IDs only."
     },
     "evidence": {
       "links": ["https://github.com/pdxvoiceteacher/CoherenceLattice"]
