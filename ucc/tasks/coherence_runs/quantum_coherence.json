@@ -44,9 +44,9 @@
       "items": [
         {
           "description": "Coherence metrics are proxies; not a truth guarantee.",
-          "expires_utc": "2027-01-04T06:47:33Z",
+          "expires_utc": "2027-01-04T07:05:39Z",
           "id": "EX-1",
-          "issued_utc": "2026-01-04T06:47:33Z",
+          "issued_utc": "2026-01-04T07:05:39Z",
           "risk_acceptor": "maintainers"
         }
       ],
@@ -60,8 +60,8 @@
     },
     "review_cycle": {
       "cadence": "quarterly",
-      "last_review_utc": "2026-01-04T06:47:33Z",
-      "next_review_utc": "2026-04-04T06:47:33Z",
+      "last_review_utc": "2026-01-04T07:05:39Z",
+      "next_review_utc": "2026-04-04T07:05:39Z",
       "owner": "maintainers"
     },
     "sections": {

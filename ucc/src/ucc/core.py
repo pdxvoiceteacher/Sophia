@@ -15,6 +15,7 @@ from .lean_symbols import check_lean_symbols_task
 from .authority_validators import validate_authority_profile
 from .coherence_audit import coherence_audit_task
 from .json_patterns import verify_json_patterns_task
+from .json_patterns import verify_json_patterns_task
 from .json_assertions import verify_json_assertions_task
 
 

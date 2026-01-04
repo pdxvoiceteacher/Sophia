@@ -10,7 +10,6 @@ def test_verify_json_patterns_pipeline(tmp_path: Path):
     repo = Path(__file__).resolve().parents[1]
     schema_path = repo / "schema" / "ucc_module.schema.json"
 
-    # Local JSON with nested provenance-like fields
     src_json = tmp_path / "audit_bundle.json"
     src_json.write_text(
         json.dumps(
