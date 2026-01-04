@@ -1,0 +1,20 @@
+{
+  "pack_id": "nist.ai_rmf",
+  "authority": {
+    "id": "nist.ai_rmf",
+    "name": "NIST AI Risk Management Framework (AI RMF)",
+    "publisher": "NIST",
+    "version": "1.0",
+    "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+  },
+  "control_namespace": {
+    "kind": "function_ids_only",
+    "ids": ["GOV", "MAP", "MEASURE", "MANAGE"],
+    "note": "Function-level IDs only (no long text). Subcategories can be added via PR."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}
