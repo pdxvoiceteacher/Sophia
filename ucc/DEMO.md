@@ -23,3 +23,14 @@ cd C:\Users\pdxvo\Documents\Lean\CoherenceLattice
 # Install UCC (editable) into your existing python venv
 .\python\.venv\Scripts\python.exe -m pip install -U pip
 .\python\.venv\Scripts\python.exe -m pip install -e .\ucc[dev]
+
+## Coherence Runs (Helmholtz / TCHES / Quantum)
+
+This repo includes reproducible “coherence audits” that bind claims → sources and emit an auditable bundle (metrics + flags + hashes).
+
+### Run all three coherence audits (Windows PowerShell)
+
+From repo root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File ucc\notes\coherence_runs\MakeCoherenceRuns.ps1

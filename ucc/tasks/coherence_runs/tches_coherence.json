@@ -36,24 +36,24 @@
       "items": [
         {
           "description": "Coherence metrics are proxies; not a truth guarantee.",
-          "expires_utc": "2027-01-04T01:11:41Z",
+          "expires_utc": "2027-01-04T02:22:27Z",
           "id": "EX-1",
-          "issued_utc": "2026-01-04T01:11:41Z",
+          "issued_utc": "2026-01-04T02:22:27Z",
           "risk_acceptor": "maintainers"
         }
       ],
       "process": "Document exception, assign acceptor, set expiry, review on cadence."
     },
     "id": "tches-001",
-    "question": "Audit TCHES baseline vs lambda artifacts for coherence and traceability.",
+    "question": "Audit TCHES artifacts",
     "reporting_channel": {
       "escalation": "maintainers",
       "primary": "github issues"
     },
     "review_cycle": {
       "cadence": "quarterly",
-      "last_review_utc": "2026-01-04T01:11:41Z",
-      "next_review_utc": "2026-04-04T01:11:41Z",
+      "last_review_utc": "2026-01-04T02:22:27Z",
+      "next_review_utc": "2026-04-04T02:22:27Z",
       "owner": "maintainers"
     },
     "sections": {
