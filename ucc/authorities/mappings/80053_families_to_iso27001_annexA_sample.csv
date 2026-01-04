@@ -1,0 +1,4 @@
+source_authority,source_id,target_authority,target_id,rationale,evidence_link
+nist.sp800_53r5,AC,iso.27001_27002,A.5,"Access control family crosswalk placeholder",local:NA
+nist.sp800_53r5,CM,iso.27001_27002,A.8,"Configuration/change management crosswalk placeholder",local:NA
+nist.sp800_53r5,IR,iso.27001_27002,A.5,"Incident response crosswalk placeholder",local:NA

@@ -3,14 +3,14 @@ module:
   id: "authority.nist_sp800_53r5.profile_coverage"
   version: "0.1.0"
   title: "NIST SP 800-53 Rev 5 Profile Coverage (Families Only)"
-  intent: "Validate a NIST SP 800-53 Rev 5 profile artifact for governance fields, evidence links, review cycle, and exception expiries (families only)."
+  intent: "Validate a NIST SP 800-53r5 profile artifact for governance fields, evidence links, review cycle, and exception expiries (families only)."
   authors:
     - name: "Thomas Prislac"
     - name: "Envoy Echo"
   safety:
     scope: "governance"
     disclaimers:
-      - "IDs-only validation; not compliance advice."
+      - "IDs-only validation; not legal/compliance advice."
 steps:
   - type: ingest_json
     id: ingest
@@ -23,7 +23,8 @@ steps:
       require_exception_items: true
   - type: emit_report
     id: report
-    params: { report_name: "report.json" }
+    params:
+      report_name: "report.json"
   - type: emit_checklist
     id: checklist
     params:

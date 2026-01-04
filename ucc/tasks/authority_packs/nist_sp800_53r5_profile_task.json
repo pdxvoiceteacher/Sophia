@@ -15,7 +15,7 @@
     },
     "controls": {
       "selected_ids": ["AC","AU","CM","IA","IR","RA","SC","SI"],
-      "notes": "Families only. Expand later via PR."
+      "notes": "Families only; expand later to control IDs via PR."
     },
     "evidence": {
       "links": ["https://github.com/pdxvoiceteacher/CoherenceLattice"],
@@ -31,7 +31,7 @@
       "items": [
         {
           "id": "EX-80053-001",
-          "description": "IDs only; no control text embedded.",
+          "description": "Families-only pack; no control text embedded.",
           "risk_acceptor": "maintainers",
           "issued_utc": "2026-01-01T00:00:00Z",
           "expires_utc": "2026-12-31T00:00:00Z"
