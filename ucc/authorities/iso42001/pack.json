@@ -1,0 +1,20 @@
+{
+  "pack_id": "iso.42001",
+  "authority": {
+    "id": "iso.42001",
+    "name": "ISO/IEC 42001 (AI Management System)",
+    "publisher": "ISO/IEC",
+    "version": "unspecified",
+    "url": "https://www.iso.org"
+  },
+  "control_namespace": {
+    "kind": "clause_ids_only",
+    "ids": ["4", "5", "6", "7", "8", "9", "10"],
+    "note": "Clause IDs only. Full ISO text is not redistributed."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}

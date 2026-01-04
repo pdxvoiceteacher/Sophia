@@ -1,0 +1,47 @@
+{
+  "authority_profile": {
+    "authority": {
+      "id": "nist.csf",
+      "name": "NIST Cybersecurity Framework",
+      "publisher": "NIST",
+      "version": "unspecified",
+      "url": "https://www.nist.gov/cyberframework"
+    },
+    "profile": {
+      "org": "UVLM",
+      "system": "CoherenceLattice",
+      "scope": "Repo governance + CI checks",
+      "jurisdiction": "global"
+    },
+    "controls": {
+      "selected_ids": ["GV", "ID", "PR", "DE", "RS", "RC"],
+      "notes": "Function-level IDs only. Categories/subcategories via PR."
+    },
+    "evidence": {
+      "links": ["https://github.com/pdxvoiceteacher/CoherenceLattice"],
+      "artifacts": [{"kind": "ci", "path": ".github/workflows/ci.yml"}]
+    },
+    "review_cycle": {
+      "owner": "maintainers",
+      "last_review_utc": "2026-01-01T00:00:00Z",
+      "next_review_utc": "2026-04-01T00:00:00Z"
+    },
+    "exceptions": {
+      "process": "Issues + PR review.",
+      "items": [
+        {
+          "id": "EX-001",
+          "description": "Template pack stores IDs only; no full standard text.",
+          "risk_acceptor": "maintainers",
+          "issued_utc": "2026-01-01T00:00:00Z",
+          "expires_utc": "2026-12-31T00:00:00Z"
+        }
+      ]
+    },
+    "reporting_channel": {
+      "primary": "github issues",
+      "escalation": "maintainers"
+    },
+    "notes": "IDs + structure only."
+  }
+}

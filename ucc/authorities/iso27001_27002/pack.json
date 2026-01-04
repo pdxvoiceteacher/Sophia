@@ -1,0 +1,20 @@
+{
+  "pack_id": "iso.27001_27002",
+  "authority": {
+    "id": "iso.27001_27002",
+    "name": "ISO/IEC 27001 & 27002",
+    "publisher": "ISO/IEC",
+    "version": "unspecified",
+    "url": "https://www.iso.org"
+  },
+  "control_namespace": {
+    "kind": "annex_a_ids_only",
+    "ids": ["A.5", "A.6", "A.7", "A.8", "A.5.1", "A.8.12"],
+    "note": "IDs only. Full ISO control text is not redistributed."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}

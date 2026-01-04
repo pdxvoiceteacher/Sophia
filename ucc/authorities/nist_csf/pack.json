@@ -1,0 +1,20 @@
+{
+  "pack_id": "nist.csf",
+  "authority": {
+    "id": "nist.csf",
+    "name": "NIST Cybersecurity Framework",
+    "publisher": "NIST",
+    "version": "unspecified",
+    "url": "https://www.nist.gov/cyberframework"
+  },
+  "control_namespace": {
+    "kind": "function_ids_only",
+    "ids": ["GV", "ID", "PR", "DE", "RS", "RC"],
+    "note": "Function-level IDs only (no copyrighted text). Categories/subcategories can be added via PR."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}
