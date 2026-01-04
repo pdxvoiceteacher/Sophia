@@ -1,0 +1,31 @@
+ucc_version: "0.1"
+module:
+  id: "authority.cis_benchmarks.profile_coverage"
+  version: "0.1.0"
+  title: "CIS Benchmarks Profile Coverage (Template)"
+  intent: "Validate a CIS Benchmarks profile artifact for governance fields, evidence links, review cycle, and exception expiries."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  safety:
+    scope: "governance"
+    disclaimers:
+      - "Template validation only; benchmark text not redistributed."
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: validate_authority_profile
+    id: validate
+    params:
+      sections_key: "authority_profile"
+      min_links: 1
+      require_review_dates: true
+      require_exception_items: true
+  - type: emit_report
+    id: report
+    params: { report_name: "report.json" }
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "authority_profile_checklist.md"
+      title: "CIS Benchmarks Profile Coverage Checklist"

@@ -1,0 +1,20 @@
+{
+  "pack_id": "cis.benchmarks",
+  "authority": {
+    "id": "cis.benchmarks",
+    "name": "CIS Benchmarks (Configuration Guides)",
+    "publisher": "CIS",
+    "version": "unspecified",
+    "url": "https://www.cisecurity.org/cis-benchmarks"
+  },
+  "control_namespace": {
+    "kind": "benchmark_ids_only",
+    "ids": ["WIN11", "WIN2022", "UBU22", "RHEL9", "K8S", "AWS"],
+    "note": "Benchmark IDs only (illustrative). No benchmark text redistributed."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}

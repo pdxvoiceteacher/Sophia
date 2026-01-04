@@ -1,0 +1,20 @@
+{
+  "pack_id": "owasp.samm.2",
+  "authority": {
+    "id": "owasp.samm.2",
+    "name": "OWASP SAMM (Software Assurance Maturity Model) v2",
+    "publisher": "OWASP",
+    "version": "2",
+    "url": "https://owasp.org/www-project-samm/"
+  },
+  "control_namespace": {
+    "kind": "business_function_ids_only",
+    "ids": ["GOV","DES","IMP","VER","OPS"],
+    "note": "Business-function IDs only; no long text embedded."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}

@@ -78,6 +78,39 @@
                             "module":  "ucc/modules/authority_soc2_tsc_profile_coverage.yml",
                             "publisher":  "AICPA",
                             "path":  "ucc/authorities/soc2_tsc/pack.json"
+                        },
+                        {
+                            "url":  "https://www.cisecurity.org/cis-benchmarks",
+                            "id":  "cis.benchmarks",
+                            "license_note":  "IDs + structure only; no benchmark text",
+                            "version":  "unspecified",
+                            "sample_task":  "ucc/tasks/authority_packs/cis_benchmarks_profile_task.json",
+                            "name":  "CIS Benchmarks (Configuration Guides)",
+                            "module":  "ucc/modules/authority_cis_benchmarks_profile_coverage.yml",
+                            "publisher":  "CIS",
+                            "path":  "ucc/authorities/cis_benchmarks/pack.json"
+                        },
+                        {
+                            "url":  "https://owasp.org/www-project-top-ten/",
+                            "id":  "owasp.top10.2021",
+                            "license_note":  "IDs + structure only; no long text",
+                            "version":  "2021",
+                            "sample_task":  "ucc/tasks/authority_packs/owasp_top10_profile_task.json",
+                            "name":  "OWASP Top 10 (2021)",
+                            "module":  "ucc/modules/authority_owasp_top10_profile_coverage.yml",
+                            "publisher":  "OWASP",
+                            "path":  "ucc/authorities/owasp_top10/pack.json"
+                        },
+                        {
+                            "url":  "https://owasp.org/www-project-samm/",
+                            "id":  "owasp.samm.2",
+                            "license_note":  "IDs + structure only; no long text",
+                            "version":  "2",
+                            "sample_task":  "ucc/tasks/authority_packs/owasp_samm_profile_task.json",
+                            "name":  "OWASP SAMM v2",
+                            "module":  "ucc/modules/authority_owasp_samm_profile_coverage.yml",
+                            "publisher":  "OWASP",
+                            "path":  "ucc/authorities/owasp_samm/pack.json"
                         }
                     ],
     "packs":  [
@@ -157,6 +190,39 @@
                       "module":  "ucc/modules/authority_soc2_tsc_profile_coverage.yml",
                       "publisher":  "AICPA",
                       "path":  "ucc/authorities/soc2_tsc/pack.json"
+                  },
+                  {
+                      "url":  "https://www.cisecurity.org/cis-benchmarks",
+                      "id":  "cis.benchmarks",
+                      "license_note":  "IDs + structure only; no benchmark text",
+                      "version":  "unspecified",
+                      "sample_task":  "ucc/tasks/authority_packs/cis_benchmarks_profile_task.json",
+                      "name":  "CIS Benchmarks (Configuration Guides)",
+                      "module":  "ucc/modules/authority_cis_benchmarks_profile_coverage.yml",
+                      "publisher":  "CIS",
+                      "path":  "ucc/authorities/cis_benchmarks/pack.json"
+                  },
+                  {
+                      "url":  "https://owasp.org/www-project-top-ten/",
+                      "id":  "owasp.top10.2021",
+                      "license_note":  "IDs + structure only; no long text",
+                      "version":  "2021",
+                      "sample_task":  "ucc/tasks/authority_packs/owasp_top10_profile_task.json",
+                      "name":  "OWASP Top 10 (2021)",
+                      "module":  "ucc/modules/authority_owasp_top10_profile_coverage.yml",
+                      "publisher":  "OWASP",
+                      "path":  "ucc/authorities/owasp_top10/pack.json"
+                  },
+                  {
+                      "url":  "https://owasp.org/www-project-samm/",
+                      "id":  "owasp.samm.2",
+                      "license_note":  "IDs + structure only; no long text",
+                      "version":  "2",
+                      "sample_task":  "ucc/tasks/authority_packs/owasp_samm_profile_task.json",
+                      "name":  "OWASP SAMM v2",
+                      "module":  "ucc/modules/authority_owasp_samm_profile_coverage.yml",
+                      "publisher":  "OWASP",
+                      "path":  "ucc/authorities/owasp_samm/pack.json"
                   }
               ]
 }

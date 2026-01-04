@@ -1,0 +1,3 @@
+source_authority,source_id,target_authority,target_id,rationale,evidence_link
+owasp.samm.2,GOV,owasp.asvs.4,V1,"Governance maturity relates to requirements/governance placeholder",local:NA
+owasp.samm.2,VER,owasp.asvs.4,V14,"Verification maturity relates to testing/verification placeholder",local:NA

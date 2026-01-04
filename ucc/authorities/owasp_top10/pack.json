@@ -1,0 +1,20 @@
+{
+  "pack_id": "owasp.top10.2021",
+  "authority": {
+    "id": "owasp.top10.2021",
+    "name": "OWASP Top 10 (2021)",
+    "publisher": "OWASP",
+    "version": "2021",
+    "url": "https://owasp.org/www-project-top-ten/"
+  },
+  "control_namespace": {
+    "kind": "risk_ids_only",
+    "ids": ["A01:2021","A02:2021","A03:2021","A04:2021","A05:2021","A06:2021","A07:2021","A08:2021","A09:2021","A10:2021"],
+    "note": "Risk IDs only; no long text embedded."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}

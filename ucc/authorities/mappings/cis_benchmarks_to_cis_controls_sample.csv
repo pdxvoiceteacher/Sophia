@@ -1,0 +1,4 @@
+source_authority,source_id,target_authority,target_id,rationale,evidence_link
+cis.benchmarks,WIN11,cis.controls.v8,CIS-4,"Secure configuration baseline placeholder",local:NA
+cis.benchmarks,UBU22,cis.controls.v8,CIS-4,"Secure configuration baseline placeholder",local:NA
+cis.benchmarks,K8S,cis.controls.v8,CIS-12,"Network infrastructure management placeholder",local:NA

@@ -1,0 +1,4 @@
+source_authority,source_id,target_authority,target_id,rationale,evidence_link
+owasp.top10.2021,A01:2021,owasp.asvs.4,V1,"Design requirements & governance placeholder",local:NA
+owasp.top10.2021,A02:2021,owasp.asvs.4,V2,"Auth/session placeholder",local:NA
+owasp.top10.2021,A03:2021,owasp.asvs.4,V5,"Data protection placeholder",local:NA

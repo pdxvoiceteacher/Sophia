@@ -1,0 +1,45 @@
+{
+  "authority_profile": {
+    "authority": {
+      "id": "owasp.samm.2",
+      "name": "OWASP SAMM v2",
+      "publisher": "OWASP",
+      "version": "2",
+      "url": "https://owasp.org/www-project-samm/"
+    },
+    "profile": {
+      "org": "UVLM",
+      "system": "CoherenceLattice",
+      "scope": "Security maturity template",
+      "jurisdiction": "global"
+    },
+    "controls": {
+      "selected_ids": ["GOV","DES","IMP","VER","OPS"],
+      "notes": "Business function IDs only."
+    },
+    "evidence": {
+      "links": ["https://github.com/pdxvoiceteacher/CoherenceLattice"]
+    },
+    "review_cycle": {
+      "owner": "maintainers",
+      "last_review_utc": "2026-01-01T00:00:00Z",
+      "next_review_utc": "2026-04-01T00:00:00Z"
+    },
+    "exceptions": {
+      "process": "Issues + PR review.",
+      "items": [
+        {
+          "id": "EX-SAMM-001",
+          "description": "IDs only; no long text embedded.",
+          "risk_acceptor": "maintainers",
+          "issued_utc": "2026-01-01T00:00:00Z",
+          "expires_utc": "2026-12-31T00:00:00Z"
+        }
+      ]
+    },
+    "reporting_channel": {
+      "primary": "github issues",
+      "escalation": "maintainers"
+    }
+  }
+}
