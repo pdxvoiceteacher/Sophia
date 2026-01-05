@@ -1,0 +1,33 @@
+ucc_version: "0.1"
+module:
+  id: "coherence_music.audit_coverage"
+  version: "0.1.0"
+  title: "Coherence Music Audit Coverage"
+  intent: "Ensure coherence_music audit artifact contains required fields and is auditable."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: check_required_sections
+    id: check
+    params:
+      sections_key: "coherence_music_audit"
+      required_sections:
+        - git_commit
+        - run_id
+        - bpm
+        - trace_json
+        - trace_csv
+        - audit_json
+        - audit_md
+        - midi_path
+        - evidence_links
+        - notes
+  - type: emit_report
+    id: report
+    params: { report_name: "report.json" }
+  - type: emit_checklist
+    id: checklist
+    params: { checklist_md: "coherence_music_checklist.md", title: "Coherence Music Audit Coverage Checklist" }

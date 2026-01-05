@@ -1,0 +1,14 @@
+{
+  "coherence_music_audit": {
+    "git_commit": "UNKNOWN",
+    "run_id": "sample",
+    "bpm": 92,
+    "trace_json": "python/experiments/coherence_music/out/sample_trace.json",
+    "trace_csv": "python/experiments/coherence_music/out/sample_trace.csv",
+    "audit_json": "python/experiments/coherence_music/out/sample_audit_summary.json",
+    "audit_md": "python/experiments/coherence_music/out/sample_audit_summary.md",
+    "midi_path": "python/experiments/coherence_music/out/sample.mid",
+    "evidence_links": ["https://github.com/pdxvoiceteacher/CoherenceLattice"],
+    "notes": "Sample fixture (paths may not exist in CI; this checks schema presence only)."
+  }
+}
