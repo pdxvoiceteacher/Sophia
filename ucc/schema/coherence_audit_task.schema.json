@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Coherence Audit Task (UCC)",
+  "type": "object",
+  "required": ["coherence_artifact"],
+  "properties": {
+    "coherence_artifact": {
+      "type": "object",
+      "required": ["question", "answer", "claims", "sources", "evidence", "review_cycle", "exceptions", "reporting_channel"],
+      "properties": {
+        "id": { "type": "string" },
+        "domain": { "type": "string", "description": "e.g., science/governance/medical/finance" },
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+
+        "sections": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Optional sectioned answer representation."
+        },
+
+        "claims": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "text", "citations"],
+            "properties": {
+              "id": { "type": "string" },
+              "text": { "type": "string" },
+              "citations": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of source ids referenced by this claim."
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "url": { "type": "string" },
+              "sha256": { "type": "string" },
+              "retrieved_utc": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+
+        "evidence": {
+          "type": "object",
+          "required": ["links"],
+          "properties": {
+            "links": { "type": "array", "items": { "type": "string" } },
+            "artifacts": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": true
+        },
+
+        "review_cycle": {
+          "type": "object",
+          "required": ["cadence", "owner", "last_review_utc", "next_review_utc"],
+          "properties": {
+            "cadence": { "type": "string" },
+            "owner": { "type": "string" },
+            "last_review_utc": { "type": "string" },
+            "next_review_utc": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+
+        "exceptions": {
+          "type": "object",
+          "required": ["process", "items"],
+          "properties": {
+            "process": { "type": "string" },
+            "items": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["id", "description", "risk_acceptor", "issued_utc", "expires_utc"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "description": { "type": "string" },
+                  "risk_acceptor": { "type": "string" },
+                  "issued_utc": { "type": "string" },
+                  "expires_utc": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            }
+          },
+          "additionalProperties": true
+        },
+
+        "reporting_channel": {
+          "type": "object",
+          "required": ["primary", "escalation"],
+          "properties": {
+            "primary": { "type": "string" },
+            "escalation": { "type": "string" },
+            "incident_hotline": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+
+        "perturbations": {
+          "type": "array",
+          "description": "Optional: multiple variant answers for ΔS/Λ",
+          "items": {
+            "type": "object",
+            "required": ["variant_id", "answer"],
+            "properties": {
+              "variant_id": { "type": "string" },
+              "prompt_variant": { "type": "string" },
+              "answer": { "type": "string" },
+              "decision_label": {
+                "type": "string",
+                "description": "Optional label like accept/reject/uncertain for Λ flip-rate."
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

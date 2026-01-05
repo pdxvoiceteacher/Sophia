@@ -1,4 +1,6 @@
-﻿/-!
+﻿import Mathlib.Data.Real.Basic
+
+/-!
 # TotalActionFunctional
 
 This module introduces the *total action functional*, which encapsulates the aggregate action or "abundance" measure in the Coherence Lattice representation of GUFT (Grand Unified Field Theory). The total action functional integrates key factors such as clarity (ΔI), energy throughput (Φ), coherence (C), and time (τ) into a single quantity, analogous to an action integral in physics. By formally defining this functional, the module provides a way to derive and verify relationships or extremal principles within the GUFT framework.
@@ -8,7 +10,7 @@ This module introduces the *total action functional*, which encapsulates the agg
 
 This module introduces the *total action functional*, which encapsulates the aggregate action or "abundance" measure in the Coherence Lattice representation of GUFT (Grand Unified Field Theory). The total action functional integrates key factors such as clarity (ΔI), energy throughput (Φ), coherence (C), and time (τ) into a single quantity, analogous to an action integral in physics. By formally defining this functional, the module provides a way to derive and verify relationships or extremal principles within the GUFT framework.
 -/
-import Mathlib.Data.Real.Basic
+
 
 /-- We assume abstract types for microstates (F), emergent states (X), and agentic configurations (A). -/
 constant F : Type
@@ -29,5 +31,3 @@ constant S_coh   : (X × A) ? R
 -/
 def S_total (f : F) (x : X) (a : A) : R :=
   S_theta f + S_info (f, x) + S_coh (x, a)
-
-

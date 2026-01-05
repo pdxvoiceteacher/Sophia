@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UCC Step Params: coherence_audit",
+  "type": "object",
+  "required": ["sections_key"],
+  "properties": {
+    "sections_key": { "type": "string", "description": "Top-level key in task JSON. e.g. coherence_artifact" },
+
+    "claims_key": { "type": "string", "default": "claims" },
+    "sources_key": { "type": "string", "default": "sources" },
+    "evidence_key": { "type": "string", "default": "evidence" },
+    "perturbations_key": { "type": "string", "default": "perturbations" },
+    "decision_key": { "type": "string", "default": "decision_label" },
+
+    "required_sections": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["assumptions", "limitations", "uncertainty", "disclosure"],
+      "description": "Interpreted as keys inside artifact.sections OR top-level fields."
+    },
+
+    "min_citations_per_claim": { "type": "integer", "minimum": 0, "default": 1 },
+    "min_evidence_links": { "type": "integer", "minimum": 0, "default": 1 },
+
+    "compute_drift": { "type": "boolean", "default": true },
+    "compute_lambda": { "type": "boolean", "default": true },
+
+    "drift_method": {
+      "type": "string",
+      "enum": ["token_jaccard"],
+      "default": "token_jaccard"
+    },
+
+    "write_audit_json": { "type": "boolean", "default": true },
+    "write_audit_md": { "type": "boolean", "default": true },
+    "write_claims_csv": { "type": "boolean", "default": true },
+
+    "name_audit_json": { "type": "string", "default": "coherence_audit.json" },
+    "name_audit_md": { "type": "string", "default": "coherence_audit.md" },
+    "name_claims_csv": { "type": "string", "default": "coherence_claims.csv" }
+  },
+  "additionalProperties": false
+}

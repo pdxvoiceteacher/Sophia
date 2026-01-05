@@ -1,0 +1,15 @@
+{
+  "metrics": {
+    "delta_warn_LambdaT_steps": 10,
+    "delta_mean_Ppump": 0.0196397
+  },
+  "flags": {
+    "overall_pass": true
+  },
+  "nested": {
+    "arr": [
+      {"x": 1},
+      {"x": 2.5}
+    ]
+  }
+}

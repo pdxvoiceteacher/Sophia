@@ -1,0 +1,14 @@
+[
+  {
+    "variant_id": "q_p1",
+    "prompt_variant": "paraphrase-1",
+    "answer": "This audit checks quantum anchor coverage outputs and ensures traceable links from claims to the UCC report and audit bundle.",
+    "decision_label": "accept"
+  },
+  {
+    "variant_id": "q_p2",
+    "prompt_variant": "paraphrase-2",
+    "answer": "We verify quantum anchor traceability by mapping claims to the coverage report plus provenance bundle, with Lean files as cited sources.",
+    "decision_label": "accept"
+  }
+]

@@ -1,9 +1,4 @@
-﻿/-!
-# CoherenceInvariants
-
-This module formalizes *coherence invariants* in the context of the Coherence Lattice framework of GUFT (Grand Unified Field Theory). It defines fundamental properties or quantities (such as constants or measures like the speed of light `c`) that remain invariant under transformations within the coherence lattice. By proving these invariants, the module helps demonstrate consistency and conservation laws inherent in the GUFT theoretical model.
--/
-import Mathlib.Data.Real.Basic
+﻿import Mathlib.Data.Real.Basic
 
 /-!
 # CoherenceInvariants
@@ -33,5 +28,3 @@ def CoherenceInvariants.? (c : CoherenceInvariants) : R :=
 @[simp] theorem CoherenceInvariants.coherence_law (c : CoherenceInvariants) :
   c.? = c.E * c.T :=
 by simp [CoherenceInvariants.?]
-
-

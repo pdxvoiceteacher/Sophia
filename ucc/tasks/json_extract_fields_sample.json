@@ -1,0 +1,14 @@
+{
+  "json_extract": {
+    "source_json": "ucc/tasks/json_extract_source_sample.json",
+    "fields": [
+      {"id": "delta_warn_LambdaT_steps", "path": "metrics.delta_warn_LambdaT_steps", "type": "int", "required": true},
+      {"id": "delta_mean_Ppump", "path": "metrics.delta_mean_Ppump", "type": "number", "required": true},
+      {"id": "overall_pass", "path": "flags.overall_pass", "type": "bool", "required": true},
+      {"id": "second_x", "path": "nested.arr[1].x", "type": "number", "required": true}
+    ],
+    "out_json": "extracted_metrics.json",
+    "out_csv": "extracted_metrics.csv",
+    "out_md": "extracted_metrics.md"
+  }
+}

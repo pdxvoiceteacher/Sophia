@@ -1,0 +1,19 @@
+ucc_version: "0.1"
+module:
+  id: "json.extract_fields"
+  version: "0.1.0"
+  title: "JSON Extract Fields (Parser Step)"
+  intent: "Extract numeric/boolean fields from a JSON file and emit extracted_metrics.{json,csv,md}."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+steps:
+  - type: ingest_json
+    id: ingest
+  - type: extract_json_fields
+    id: extract
+    params:
+      config_key: "json_extract"
+  - type: emit_report
+    id: report
+    params: { report_name: "report.json" }

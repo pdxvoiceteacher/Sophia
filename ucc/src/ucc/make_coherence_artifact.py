@@ -63,6 +63,18 @@ def parse_markdown_sections(md_text: str) -> Dict[str, str]:
             out[k] = text
     return out
 
+def load_perturbations_json(path: Path) -> List[Dict[str, Any]]:
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
+    if isinstance(data, dict) and "perturbations" in data:
+        data = data["perturbations"]
+    if not isinstance(data, list):
+        return []
+    out: List[Dict[str, Any]] = []
+    for x in data:
+        if isinstance(x, dict):
+            out.append(x)
+    return out
+
 
 def load_claims_csv(path: Path) -> List[Dict[str, Any]]:
     """
@@ -127,6 +139,7 @@ def load_sources_csv(path: Path) -> List[Dict[str, Any]]:
 
 def build_artifact(
     *,
+    
     artifact_id: str,
     domain: str,
     question: str,
@@ -140,6 +153,11 @@ def build_artifact(
     reporting_primary: str,
     reporting_escalation: str,
     exception_acceptor: str,
+    perturbations=perturbations
+    perturbations: List[Dict[if perturbations:
+    artifact["perturbations"] = perturbations
+    
+]]
 ) -> Dict[str, Any]:
     now = _utc_now()
     # keep it simple: 90 days cadence, 1 year exception expiry
@@ -200,7 +218,14 @@ def main() -> int:
     ap.add_argument("--reporting_primary", default="github issues", help="Reporting channel (primary)")
     ap.add_argument("--reporting_escalation", default="maintainers", help="Escalation channel")
     ap.add_argument("--exception_acceptor", default="maintainers", help="Exception risk acceptor")
+    ap.add_argument("--perturbations_json", default="", help="Optional JSON file containing perturbations list.")
+
     args = ap.parse_args()
+
+    perturbations: List[Dict[str, Any]] = []
+if args.perturbations_json:
+    perturbations = load_perturbations_json(Path(args.perturbations_json))
+
 
     out_path = Path(args.out)
     ans_path = Path(args.answer_md)

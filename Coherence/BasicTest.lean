@@ -1,36 +1,53 @@
 import Coherence.Basic
-
-namespace Coherence
+import Coherence.Regime
+import Mathlib.Tactic.NormNum
 
 noncomputable section
+open Coherence
 
-/-- Examples to test coherence invariants (?) and ?Syn law. -/
+/-- Define a sample CoherenceInput with E=0.5, T=0.8 (within [0,1]). -/
+noncomputable def testCI : CoherenceInput := {
+  E   := 0.5,
+  T   := 0.8,
+  hE0 := by norm_num,  -- 0 = 0.5
+  hE1 := by norm_num,  -- 0.5 = 1
+  hT0 := by norm_num,  -- 0 = 0.8
+  hT1 := by norm_num   -- 0.8 = 1
+}
 
--- Example: Coherence at extreme values (E = 1, T = 1 yields ? = 1)
-example : psi { E := 1, T := 1, hE0 := by norm_num, hE1 := by norm_num, hT0 := by norm_num, hT1 := by norm_num } = 1 := by simp
+/-- Define a sample DeltaSynInput with positive ?, µ, gradH, Es. -/
+noncomputable def exDelta : DeltaSynInput := {
+  ?   := 2,
+  µ   := 1,
+  gradH := 3,
+  Es    := 4,
+  h?0 := by norm_num,   -- 0 = 2
+  hµ0 := by norm_num    -- 0 = 1
+}
 
--- Example: Coherence is zero if any component is zero (E = 0 or T = 0 yields ? = 0)
-example : psi { E := 0, T := 0.5, hE0 := by norm_num, hE1 := by norm_num, hT0 := by norm_num, hT1 := by norm_num } = 0 := by
-  simp [psi]
-  norm_num
+/-- Evaluate the adjacency list of the terminal regime state (s4). -/
+#eval adj Regime.s4
+-- Expected output: [s0, s4] (allowed transitions from s4)
 
--- Example: ? is monotonic in E (for fixed T, increasing E increases ?)
-example : psi { E := 0.4, T := 0.9, hE0 := by norm_num, hE1 := by norm_num, hT0 := by norm_num, hT1 := by norm_num } =
-          psi { E := 0.7, T := 0.9, hE0 := by norm_num, hE1 := by norm_num, hT0 := by norm_num, hT1 := by norm_num } :=
-  psi_mono_E 0.9 (by norm_num) 0.4 0.7 (by norm_num) (by norm_num) (by norm_num)
+-- Coherence ? for testCI should equal E*T = 0.4.
+example : psi testCI = 0.4 := by norm_num
 
-/-- Prepare an example ?Syn input with positive parameters. -/
-def exampleDelta : DeltaSynInput := { ? := 1, µ := 1, gradH := 2, Es := 3, h?0 := by norm_num, hµ0 := by norm_num }
+-- ? is always between 0 and 1 for valid inputs.
+theorem psi_range (x : CoherenceInput) : 0 = psi x ? psi x = 1 :=
+  ?psi_nonneg x, psi_le_one x?
 
-/-- ?S should compute to -5 for the above example (?=1, µ=1, ?H=2, E?=3). -/
-example : deltaS exampleDelta = -5 := by
-  simp [deltaS]
-  norm_num
+-- ?S is non-positive when gradH, Es = 0 (given ?, µ = 0).
+example : deltaS exDelta = 0 :=
+  deltaS_nonpos_of_nonneg exDelta (by norm_num) (by norm_num)
 
-/-- ?S is non-positive when ?H and E? are nonnegative (here strictly positive). -/
-example : deltaS exampleDelta = 0 := deltaS_nonpos_of_nonneg exampleDelta (by norm_num) (by norm_num)
+-- ?S is strictly negative when ?, µ, gradH, Es are all > 0.
+example : deltaS exDelta < 0 :=
+  deltaS_neg_of_pos exDelta (by norm_num) (by norm_num) (by norm_num) (by norm_num)
 
-/-- ?S is strictly negative when all parameters are positive. -/
-example : deltaS exampleDelta < 0 := deltaS_neg_of_pos exampleDelta (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+-- Adjacency function correctness: Regime.s0 transitions to [s0, s1].
+example : adj Regime.s0 = [Regime.s0, Regime.s1] := rfl
 
-end Coherence
+-- Example path validity: s0 ? s1 ? s2 is a valid transition path.
+example : validPath [Regime.s0, Regime.s1, Regime.s2] := by
+  simp [validPath, adj]
+end
