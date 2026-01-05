@@ -8,6 +8,12 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Tactic.NormNum
 
 /-!
+# BetaRefutation
+
+This module provides a formal refutation of the proposition **Beta** within the Coherence Lattice/GUFT theoretical framework. It assumes a hypothesis (denoted as "Beta") and uses logical derivations to show that this assumption leads to a contradiction under the axioms or definitions of the coherence lattice. By proving that Beta cannot hold (i.e. deriving `False` from `Beta`), the module reinforces the consistency of the remaining theory and eliminates an invalid scenario from the GUFT model.
+-/
+
+/-!
 ## Refutation of a Universal ß Exponent
 
 We formally demonstrate that no single fixed exponent ß can capture a mass–information power-law scaling across systems with different coherence ?.
@@ -47,3 +53,4 @@ begin
   norm_num at this,
   exact this,
 end
+

@@ -3,6 +3,11 @@
 
 This module incorporates concepts from *sacred geometry* into the Coherence Lattice framework of GUFT (Grand Unified Field Theory). It defines fundamental geometric constants and patterns (for example, the golden ratio `φ` and related structures) that are hypothesized to underlie the lattice's structure. By formalizing these relationships (e.g. demonstrating that φ satisfies φ² = φ + 1), the module bridges classical geometric principles with the formal coherence lattice theory.
 -/
+/-!
+# SacredGeometry
+
+This module incorporates concepts from *sacred geometry* into the Coherence Lattice framework of GUFT (Grand Unified Field Theory). It defines fundamental geometric constants and patterns (for example, the golden ratio `φ` and related structures) that are hypothesized to underlie the lattice's structure. By formalizing these relationships (e.g. demonstrating that φ satisfies φ² = φ + 1), the module bridges classical geometric principles with the formal coherence lattice theory.
+-/
 import Mathlib.Data.Real.Basic
 
 /-!
@@ -53,4 +58,5 @@ def PlatonicSolid.faces : PlatonicSolid ? N
   | Octahedron   => 8
   | Dodecahedron => 12
   | Icosahedron  => 20
+
 
