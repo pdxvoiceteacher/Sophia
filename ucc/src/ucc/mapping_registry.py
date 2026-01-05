@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 import json
 import re
-from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -33,9 +33,15 @@ def validate_mapping_index_task(
     registry_index_path: str = "ucc/authorities/index.json",
     enforced_key: str = "enforced",
 ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+    """
+    Validates every mapping listed in mappings/index.json.
+
+    Evidence strict mode:
+      - enforced item with mode == "strict" => disallow evidence_link starting with "local:"
+      - mode == "loose" => allow local:... and relax date requirements
+    """
     thresholds = thresholds or {}
     outdir.mkdir(parents=True, exist_ok=True)
-
     repo = _repo_root()
 
     enforced = index_doc.get(enforced_key, [])
@@ -50,17 +56,17 @@ def validate_mapping_index_task(
     for item in enforced:
         if not isinstance(item, dict):
             continue
+
         rel = str(item.get("path", "")).strip()
         mode = str(item.get("mode", "strict")).strip().lower()
         if not rel:
             continue
 
+        # Resolve CSV path
         csv_path = (repo / rel).resolve()
         if not csv_path.exists():
-            # allow paths starting with "ucc/"
             rel2 = rel.split("ucc/")[-1]
             csv_path = (repo / "ucc" / rel2).resolve()
-
         if not csv_path.exists():
             failed.append(rel)
             total += 1
@@ -70,16 +76,33 @@ def validate_mapping_index_task(
         sub = outdir / _safe_name(csv_path.stem)
         sub.mkdir(parents=True, exist_ok=True)
 
+        # Strict/loose policy
+        strict = (mode == "strict")
+        loose = (mode == "loose")
+
+        # For enforced strict mappings: NO local:NA
+        allow_local_na = not strict
+
+        # Date requirements: strict => require review+expiry and not expired
+        require_review = strict
+        require_expiry = strict
+        enforce_not_expired = strict
+
+        # Loose mode relaxes date requirements
+        if loose:
+            require_review = False
+            require_expiry = False
+            enforce_not_expired = False
+            allow_local_na = True
+
         params: Dict[str, Any] = {
             "registry_index_path": registry_index_path,
-            "require_review_utc": True,
-            "require_expires_utc": True,
-            "enforce_not_expired": True,
-            "allow_local_na": True,
+            "require_evidence_link": True,
+            "allow_local_na": allow_local_na,
+            "require_review_utc": require_review,
+            "require_expires_utc": require_expiry,
+            "enforce_not_expired": enforce_not_expired,
         }
-        if mode == "loose":
-            params["require_review_utc"] = False
-            params["require_expires_utc"] = False
 
         m, fl, outs = validate_mapping_table_task(rows, sub, thresholds, **params)
         out_files.extend(outs)
