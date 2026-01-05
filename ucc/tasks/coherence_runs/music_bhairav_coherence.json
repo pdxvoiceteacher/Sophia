@@ -1,0 +1,21 @@
+﻿{
+    "coherence_artifact":  {
+                               "id":  "music-bhairav-001",
+                               "domain":  "research",
+                               "question":  "Does the coherence_music engine produce auditable alignment between metric series and selected phrase categories?",
+                               "answer_md":  "ucc/notes/coherence_runs/music/writeup.md",
+                               "claims_csv":  "ucc/notes/coherence_runs/music/claims.csv",
+                               "sources_csv":  "ucc/notes/coherence_runs/music/sources.csv",
+                               "evidence_links":  [
+                                                      "https://github.com/pdxvoiceteacher/CoherenceLattice"
+                                                  ],
+                               "reporting_channel":  {
+                                                         "primary":  "github issues",
+                                                         "escalation":  "maintainers"
+                                                     },
+                               "notes":  "Strict run: requires http(s) evidence links. Outputs generated under python/experiments/coherence_music/out.",
+                               "perturbations_json":  "ucc/notes/coherence_runs/music/perturbations.json",
+                               "sections": { "summary": "..." }
+
+                           }
+}

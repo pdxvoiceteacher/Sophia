@@ -1,0 +1,16 @@
+﻿{
+  "perturbations": [
+    {
+      "id": "p1",
+      "sections": {
+        "summary": "This run generates a Bhairav phrase sequence via weighted category sampling driven by GUFT-like metrics. Outputs include trace and audit artifacts for review."
+      }
+    },
+    {
+      "id": "p2",
+      "sections": {
+        "summary": "This demonstration produces a Bhairav-based motif sequence where category selection is influenced by E/T/Ψ/ΔS/Eₛ/Λ. Trace+audit files support reproducibility."
+      }
+    }
+  ]
+}

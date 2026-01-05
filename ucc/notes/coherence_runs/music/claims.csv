@@ -1,0 +1,4 @@
+﻿claim_id,claim_text,source_id
+m1,"non_base_coverage > 0 (at least one non-BASE category appears).",m_audit_json
+m2,"audit_summary.json contains metric_lifts for categories, and at least one category has lift(E) > 1 or lift(T) > 1 or lift(DELTA_S) > 1.",m_audit_json
+m3,"UCC artifact contains evidence_links with http(s) URLs.",m_artifact_json

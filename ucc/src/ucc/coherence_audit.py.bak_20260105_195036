@@ -309,11 +309,7 @@ def coherence_audit_task(task_doc: Dict[str, Any],
     name_audit_json: str = "coherence_audit.json",
     name_audit_md: str = "coherence_audit.md",
     name_claims_csv: str = "coherence_claims.csv",
-    drift_base_path=None,
-    min_perturbations=0,
-    require_drift=False,
-    require_lambda=False,
-    **kwargs) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
     """
     UCC step entry point: returns metrics, flags, output_paths
     """
@@ -322,7 +318,7 @@ def coherence_audit_task(task_doc: Dict[str, Any],
     required_sections = required_sections or ["assumptions", "limitations", "uncertainty", "disclosure"]
 
     artifact = task_doc.get(sections_key)
-    if not isinstance(artifact, dict):
+    if not isinstance(artifact, dict, drift_base_path=None, min_perturbations=0, require_drift=False, require_lambda=False, **kwargs):
         raise ValueError(f"coherence_audit expects a dict at task_doc['{sections_key}'].")
 
     # Threshold defaults
