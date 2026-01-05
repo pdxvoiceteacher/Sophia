@@ -1,0 +1,20 @@
+{
+  "pack_id": "owasp.samm.2",
+  "authority": {
+    "id": "owasp.samm.2",
+    "name": "OWASP SAMM v2 (Domain IDs Only)",
+    "publisher": "OWASP",
+    "version": "2",
+    "url": "https://owasp.org/www-project-samm/"
+  },
+  "control_namespace": {
+    "kind": "domain_ids_only",
+    "ids": ["GOV","DES","IMP","VER","OPS"],
+    "note": "Domain IDs only; no SAMM text embedded."
+  },
+  "governance_defaults": {
+    "min_evidence_links": 1,
+    "require_review_cycle": true,
+    "require_exceptions": true
+  }
+}

@@ -1,9 +1,26 @@
 {
-  "schema_version": "0.1",
-  "updated_utc": "2026-01-03T00:00:00Z",
-  "enforced": [
-    { "path": "ucc/authorities/mappings/soc2_to_iso27001_sample.csv", "mode": "strict" },
-    { "path": "ucc/authorities/mappings/iso27001_to_soc2_sample.csv", "mode": "strict" },
-    { "path": "ucc/authorities/mappings/cobit_to_80053_families_sample.csv", "mode": "strict" }
-  ]
+    "schema_version":  "0.1",
+    "updated_utc":  "2026-01-03T00:00:00Z",
+    "enforced":  [
+                     {
+                         "path":  "ucc/authorities/mappings/soc2_to_iso27001_sample.csv",
+                         "mode":  "strict"
+                     },
+                     {
+                         "path":  "ucc/authorities/mappings/iso27001_to_soc2_sample.csv",
+                         "mode":  "strict"
+                     },
+                     {
+                         "path":  "ucc/authorities/mappings/cobit_to_80053_families_sample.csv",
+                         "mode":  "strict"
+                     },
+                     {
+                         "path":  "ucc/authorities/mappings/asvs_to_top10_2021_sample.csv",
+                         "mode":  "strict"
+                     },
+                     {
+                         "path":  "ucc/authorities/mappings/ssdf_to_samm_tight_sample.csv",
+                         "mode":  "strict"
+                     }
+                 ]
 }

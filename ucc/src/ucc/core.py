@@ -14,6 +14,7 @@ from .audit import AuditBundle, env_info, now_utc_iso, sha256_file, write_bundle
 from .lean_symbols import check_lean_symbols_task
 from .authority_validators import validate_authority_profile
 from .mapping_validators import validate_mapping_table_task
+from .mapping_registry import validate_mapping_index_task
 from .coherence_audit import coherence_audit_task
 from .json_patterns import verify_json_patterns_task
 from .json_patterns import verify_json_patterns_task
@@ -40,7 +41,8 @@ BUILTIN_STEP_TYPES = {
     "verify_json_assertions",
     "verify_json_patterns",
 
-    "validate_mapping_table",}
+    "validate_mapping_table",
+    "validate_mapping_index",}
 
 
 def load_yaml(path: Path) -> Dict[str, Any]:
@@ -590,6 +592,28 @@ def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: P
             context["flags"].update(fl)
 
             context["output_files"].extend(outs)
+
+
+        elif stype == "validate_mapping_index":
+
+
+            if context["input"] is None or not isinstance(context["input"], dict):
+
+
+                raise ValueError("validate_mapping_index requires ingest_json of an index dict")
+
+
+            m, fl, outs = validate_mapping_index_task(context["input"], outdir, thresholds, **params)
+
+
+            context["metrics"].update(m)
+
+
+            context["flags"].update(fl)
+
+
+            context["output_files"].extend(outs)
+
 
 
         elif stype == "emit_report":
