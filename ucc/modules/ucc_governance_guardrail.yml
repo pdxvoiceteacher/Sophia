@@ -1,0 +1,65 @@
+ucc_version: "0.1"
+module:
+  id: "ucc.governance.guardrail"
+  version: "0.1.0"
+  title: "UCC Governance Guardrail (CRTA + Consent + Auditability)"
+  intent: "Enforce the Collapse→Repair→Translation→Access chain and minimum consent/auditability requirements for public UCC work."
+  authors:
+    - name: "Thomas Prislac"
+    - name: "Envoy Echo"
+  safety:
+    scope: "governance"
+    disclaimers:
+      - "This guardrail validates structure and disclosures; it does not certify correctness."
+      - "High-stakes uses require qualified human review."
+steps:
+  - type: ingest_json
+    id: ingest
+
+  - type: check_required_sections
+    id: required_sections
+    params:
+      sections_key: "ucc_governance_profile"
+      required_sections:
+        - collapse
+        - repair
+        - translation
+        - access
+        - consent
+        - auditability
+        - limitations
+        - uncertainty
+        - DISCLOSURE
+        - authority
+        - profile
+        - controls
+        - evidence
+        - review_cycle
+        - exceptions
+        - reporting_channel
+
+  - type: disclosure_channel_check
+    id: disclosure_channel
+    params:
+      sections_key: "ucc_governance_profile"
+      field_key: "DISCLOSURE"
+      require_escalation: true
+
+  - type: validate_authority_profile
+    id: governance_auditability
+    params:
+      sections_key: "ucc_governance_profile"
+      min_links: 1
+      require_review_dates: true
+      require_exception_items: true
+
+  - type: emit_report
+    id: report
+    params:
+      report_name: "report.json"
+
+  - type: emit_checklist
+    id: checklist
+    params:
+      checklist_md: "ucc_governance_guardrail_checklist.md"
+      title: "UCC Governance Guardrail Checklist"

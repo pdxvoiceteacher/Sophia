@@ -1,0 +1,75 @@
+{
+  "ucc_governance_profile": {
+    "authority": {
+      "id": "ucc.constitution",
+      "name": "UCC Constitution Guardrail",
+      "publisher": "UVLM/UCC",
+      "version": "0.1",
+      "url": "https://github.com/pdxvoiceteacher/CoherenceLattice"
+    },
+    "profile": {
+      "org": "UVLM",
+      "system": "UCC",
+      "scope": "Repo governance + CI guardrails",
+      "jurisdiction": "global"
+    },
+
+    "collapse": "Define how drift/uncertainty/missing evidence is detected and named.",
+    "repair": "Define non-punitive repair steps (request more info, revise, flag for review).",
+    "translation": "Define how outputs are translated into accessible language for reviewers/users.",
+    "access": "Define gating rules that respect consent and escalate when necessary.",
+
+    "consent": {
+      "principle": "Consent-first; ongoing and revocable.",
+      "refusal_ok": true,
+      "no_dehumanization": true
+    },
+
+    "auditability": {
+      "provenance_links": ["https://github.com/pdxvoiceteacher/CoherenceLattice"],
+      "artifacts": [
+        { "kind": "doc", "path": "ucc/UCC_CONSTITUTION.md" },
+        { "kind": "ci", "path": ".github/workflows/ci.yml" }
+      ],
+      "exception_policy": "Exceptions must be explicit and time-bounded."
+    },
+
+    "controls": {
+      "selected_ids": ["CHAIN", "CONSENT", "AUDITABILITY", "NO-DEHUMANIZE"],
+      "notes": "These are invariants, not a compliance standard."
+    },
+
+    "evidence": {
+      "links": ["https://github.com/pdxvoiceteacher/CoherenceLattice"]
+    },
+
+    "review_cycle": {
+      "owner": "maintainers",
+      "last_review_utc": "2026-01-01T00:00:00Z",
+      "next_review_utc": "2026-04-01T00:00:00Z"
+    },
+
+    "exceptions": {
+      "process": "GitHub issues + PR review + time-bounded exceptions.",
+      "items": [
+        {
+          "id": "EX-UCC-001",
+          "description": "Standards packs store IDs only; no copyrighted text redistributed.",
+          "risk_acceptor": "maintainers",
+          "issued_utc": "2026-01-01T00:00:00Z",
+          "expires_utc": "2026-12-31T00:00:00Z"
+        }
+      ]
+    },
+
+    "reporting_channel": {
+      "primary": "github issues",
+      "escalation": "maintainers"
+    },
+
+    "DISCLOSURE": "This repository enforces consent-first governance. Reporting channel: github issues. Escalation: maintainers.",
+
+    "limitations": "Guardrails validate structure/disclosure/auditability, not truth.",
+    "uncertainty": "All audits are proxy scores; high-stakes decisions require human review."
+  }
+}
