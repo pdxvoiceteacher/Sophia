@@ -1,0 +1,133 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+def _strip_local_prefix(p: str) -> str:
+    s = str(p).strip()
+    if s.lower().startswith("local:"):
+        return s[6:]
+    return s
+
+def _load_json_any(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+def _resolve_path(s: str) -> Path:
+    s = _strip_local_prefix(s)
+    p = Path(s)
+    if p.is_absolute():
+        return p
+    return _repo_root() / p
+
+def _get_path(obj: Any, path: str) -> Any:
+    """
+    Dotted path resolver with optional single [index] segments.
+    Examples:
+      metrics.delta_warn_LambdaT_steps
+      items[0].value
+    """
+    cur = obj
+    if not path:
+        return cur
+
+    parts: List[str] = path.split(".")
+    for part in parts:
+        if "[" in part and part.endswith("]"):
+            key, idxs = part.split("[", 1)
+            idx = int(idxs[:-1])
+            if key:
+                if not isinstance(cur, dict):
+                    raise KeyError(key)
+                cur = cur[key]
+            if not isinstance(cur, list):
+                raise TypeError("index access on non-list")
+            cur = cur[idx]
+        else:
+            if not isinstance(cur, dict):
+                raise KeyError(part)
+            cur = cur[part]
+    return cur
+
+def extract_json_fields_task(
+    task_doc: Dict[str, Any],
+    outdir: Path,
+    thresholds: Dict[str, Any],
+    *,
+    source_path: str = "",
+    source_key: str = "",
+    fields: Optional[List[Dict[str, Any]]] = None,
+    require_all_required: bool = True,
+    name_json: str = "json_extract.json",
+    name_md: str = "json_extract.md",
+    **kwargs: Any,
+) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    src: Any = task_doc
+    if source_path:
+        p = _resolve_path(source_path)
+        src = _load_json_any(p)
+    elif source_key:
+        v = task_doc.get(source_key, "")
+        if isinstance(v, str) and v.strip():
+            p = _resolve_path(v)
+            src = _load_json_any(p)
+
+    fields = fields or task_doc.get("fields") or []
+    extracted: Dict[str, Any] = {}
+    missing: List[str] = []
+
+    for f in fields:
+        if not isinstance(f, dict):
+            continue
+        name = str(f.get("name") or f.get("id") or "").strip()
+        jpath = str(f.get("path") or f.get("json_path") or "").strip()
+        required = bool(f.get("required", True))
+        cast = str(f.get("type") or "").strip().lower()
+
+        if not name or not jpath:
+            continue
+
+        try:
+            v = _get_path(src, jpath)
+        except Exception:
+            if required:
+                missing.append(name)
+            continue
+
+        try:
+            if cast == "int":
+                v = int(v)
+            elif cast == "float":
+                v = float(v)
+            elif cast == "str":
+                v = str(v)
+            elif cast == "bool":
+                v = bool(v)
+        except Exception:
+            pass
+
+        extracted[name] = v
+
+    ok = (len(missing) == 0)
+    flags = {"json_extract_ok": ok, "json_extract_missing": missing}
+    metrics: Dict[str, Any] = dict(extracted)
+    metrics["json_extract_count"] = len(extracted)
+    metrics["json_extract_missing_count"] = len(missing)
+
+    p_json = outdir / name_json
+    p_md = outdir / name_md
+    p_json.write_text(json.dumps({"metrics": metrics, "flags": flags}, indent=2, sort_keys=True), encoding="utf-8")
+
+    md = ["# JSON Extract", "", f"- ok: **{ok}**", f"- extracted: **{len(extracted)}**"]
+    if missing:
+        md.append(f"- missing_required: **{len(missing)}**")
+        for m in missing:
+            md.append(f"  - {m}")
+    p_md.write_text("\n".join(md) + "\n", encoding="utf-8")
+
+    return metrics, flags, [p_json, p_md]

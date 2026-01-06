@@ -19,6 +19,7 @@ def _read_authorities_index() -> Dict[str, Any]:
     if not idx.exists():
         return {"authorities": []}
     d = _load_json_path(idx)
+    # tolerate legacy key name
     if "authorities" not in d and "packs" in d:
         d["authorities"] = d["packs"]
     if "authorities" not in d:
@@ -33,8 +34,8 @@ def _authority_by_id() -> Dict[str, Dict[str, Any]]:
             out[str(a["id"])] = a
     return out
 
-def _truthy(x: Any) -> bool:
-    return str(x).strip().lower() in {"1","true","yes","y","on"}
+def _truthy(s: Any) -> bool:
+    return str(s).strip().lower() in {"1","true","yes","y","on"}
 
 def _split_links(val: Any) -> List[str]:
     if val is None:
@@ -45,31 +46,33 @@ def _split_links(val: Any) -> List[str]:
     parts = re.split(r"[;,]\s*", s)
     return [p.strip() for p in parts if p.strip()]
 
-def _row_lc(row: Dict[str, Any]) -> Dict[str, Any]:
-    return {str(k).strip().lower(): v for k, v in row.items()}
-
 def _pick(row: Dict[str, Any], keys: List[str]) -> str:
-    r = _row_lc(row)
     for k in keys:
-        kk = k.lower()
-        if kk in r and str(r[kk]).strip():
-            return str(r[kk]).strip()
+        if k in row and str(row[k]).strip():
+            return str(row[k]).strip()
     return ""
 
 def _resolve_pack_path(authority_entry: Dict[str, Any]) -> Optional[Path]:
     p = authority_entry.get("path") or authority_entry.get("pack_path") or authority_entry.get("pack")
     if not p:
         return None
-    pp = Path(str(p))
+    p = str(p)
+    root = _repo_root()
+    pp = Path(p)
     if pp.is_absolute():
         return pp
-    return _repo_root() / pp
+    return root / pp
 
 def _collect_ids_from_pack(pack_doc: Any) -> set[str]:
+    """
+    Prefer structured ids: controls[].id, families[], practices[], selected_ids[]
+    Falls back to scanning strings under known keys.
+    """
     ids: set[str] = set()
 
     if isinstance(pack_doc, dict):
-        for key in ["selected_ids", "families", "practices", "controls", "requirements", "criteria"]:
+        # common arrays
+        for key in ["selected_ids", "families", "practices", "controls", "criteria", "requirements"]:
             v = pack_doc.get(key)
             if isinstance(v, list):
                 for item in v:
@@ -80,6 +83,7 @@ def _collect_ids_from_pack(pack_doc: Any) -> set[str]:
                             if k2 in item and isinstance(item[k2], str):
                                 ids.add(item[k2].strip())
 
+        # nested: sections / categories / subcategories
         def rec(x: Any):
             if isinstance(x, dict):
                 for k, v in x.items():
@@ -91,6 +95,7 @@ def _collect_ids_from_pack(pack_doc: Any) -> set[str]:
                     rec(v)
         rec(pack_doc)
 
+    # keep only ID-like tokens
     out: set[str] = set()
     for s in ids:
         t = s.strip()
@@ -99,12 +104,11 @@ def _collect_ids_from_pack(pack_doc: Any) -> set[str]:
     return out
 
 def _row_evidence_links(row: Dict[str, Any], evidence_col: str) -> List[str]:
-    # prefer configured col, but accept common alternates
-    candidates = [evidence_col, "evidence", "evidence_links", "links", "urls", "url", "evidence_url"]
+    candidates = [evidence_col, "evidence", "evidence_links", "evidence_link", "evidence_url", "url", "urls"]
     for c in candidates:
-        v = _pick(row, [c])
-        if v:
-            return _split_links(v)
+        if c in row and str(row[c]).strip():
+            links = _split_links(row[c])
+            return links
     return []
 
 def validate_mapping_table_task(
@@ -115,6 +119,7 @@ def validate_mapping_table_task(
     strict: bool = False,
     default_enforced: bool = False,
     evidence_col: str = "evidence",
+    # if True: require IDs even for drafts. default False keeps drafts permissive.
     enforce_id_existence: bool = False,
     name_json: str = "mapping_table_validate.json",
     name_md: str = "mapping_table_validate.md",
@@ -124,21 +129,13 @@ def validate_mapping_table_task(
 
     auth = _authority_by_id()
 
-    FROM_PACK = [
-        "from_pack","source_pack","src_pack","pack_from","from_authority","source_authority","from_framework","source_framework","from"
-    ]
-    TO_PACK = [
-        "to_pack","target_pack","dst_pack","dest_pack","pack_to","to_authority","target_authority","to_framework","target_framework","to"
-    ]
-    FROM_ID = [
-        "from_id","source_id","src_id","from_control","from_control_id","from_requirement","from_req","from_practice","from_practice_id"
-    ]
-    TO_ID = [
-        "to_id","target_id","dst_id","to_control","to_control_id","to_requirement","to_req","to_practice","to_practice_id"
-    ]
-    ENF = ["enforced","enforced_mapping","strict","is_enforced"]
-    REVIEW = ["review_utc","last_review_utc","review_date","reviewed_utc","last_review"]
-    EXP = ["expires_utc","expiry_utc","expires","expiry_date","expires_at","expiry"]
+    FROM_PACK_KEYS = ["from_pack","from_authority","from_standard","from_framework"]
+    TO_PACK_KEYS   = ["to_pack","to_authority","to_standard","to_framework"]
+    FROM_ID_KEYS   = ["from_id","from_control","from_control_id","from_req","from_requirement"]
+    TO_ID_KEYS     = ["to_id","to_control","to_control_id","to_req","to_requirement"]
+    ENF_KEYS       = ["enforced","strict","enforced_mapping"]
+    REVIEW_KEYS    = ["review_utc","last_review_utc","review_date","reviewed_utc","last_review"]
+    EXP_KEYS       = ["expires_utc","expiry_utc","expires","expiry_date","expires_at"]
 
     missing_packs = 0
     missing_ids = 0
@@ -156,28 +153,28 @@ def validate_mapping_table_task(
         p = _resolve_pack_path(entry) if entry else None
         ids: set[str] = set()
         if p and p.exists():
-            ids = _collect_ids_from_pack(_load_json_path(p))
+            doc = _load_json_path(p)
+            ids = _collect_ids_from_pack(doc)
         pack_ids_cache[pack_id] = ids
         return ids
 
     for r in rows:
         if not isinstance(r, dict):
             continue
-        # skip fully blank rows
-        if not any(str(v).strip() for v in r.values()):
-            continue
-
         checked += 1
 
-        fp = _pick(r, FROM_PACK)
-        tp = _pick(r, TO_PACK)
-        fid = _pick(r, FROM_ID)
-        tid = _pick(r, TO_ID)
+        fp = _pick(r, FROM_PACK_KEYS)
+        tp = _pick(r, TO_PACK_KEYS)
+        fid = _pick(r, FROM_ID_KEYS)
+        tid = _pick(r, TO_ID_KEYS)
 
         if fp not in auth or tp not in auth:
             missing_packs += 1
 
-        enforced = default_enforced or _truthy(_pick(r, ENF))
+        enf_raw = _pick(r, ENF_KEYS)
+        enforced = default_enforced or (enf_raw and _truthy(enf_raw))
+
+        # enforce ids if enforced/strict or if explicitly requested
         enforce_ids_now = enforce_id_existence or enforced or strict
 
         if enforce_ids_now:
@@ -190,14 +187,16 @@ def validate_mapping_table_task(
                 if ids and tid not in ids:
                     missing_ids += 1
 
-        # review/expiry required only if enforced or strict
+        # review/expiry required only when enforced or strict
         if enforced or strict:
-            if not _pick(r, REVIEW):
+            if not _pick(r, REVIEW_KEYS):
                 review_bad += 1
-            if not _pick(r, EXP):
+            if not _pick(r, EXP_KEYS):
                 expiry_bad += 1
 
-        # evidence: only enforced+strict must have http(s)
+        # evidence rules:
+        # - drafts can use local:NA
+        # - enforced+strict must have at least one http(s) link
         links = _row_evidence_links(r, evidence_col)
         links_norm = [x.strip() for x in links if x.strip() and x.strip().lower() != "local:na"]
         if enforced and strict:
@@ -219,7 +218,6 @@ def validate_mapping_table_task(
 
     p_json = outdir / name_json
     p_md = outdir / name_md
-
     p_json.write_text(json.dumps({"metrics": metrics, "flags": flags}, indent=2, sort_keys=True), encoding="utf-8")
     p_md.write_text(
         "# Mapping Table Validation\n\n"
@@ -229,6 +227,92 @@ def validate_mapping_table_task(
         f"- evidence_bad: **{evidence_bad}**\n"
         f"- review_missing: **{review_bad}**\n"
         f"- expiry_missing: **{expiry_bad}**\n"
+        f"- ok: **{ok}**\n",
+        encoding="utf-8"
+    )
+
+    return metrics, flags, [p_json, p_md]
+
+def validate_mapping_index_task(
+    task_doc: Dict[str, Any],
+    outdir: Path,
+    thresholds: Dict[str, Any],
+    *,
+    index_key: str = "mappings",
+    strict: bool = False,
+    name_json: str = "mapping_index_validate.json",
+    name_md: str = "mapping_index_validate.md",
+    **kwargs: Any,
+) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    entries = task_doc.get(index_key)
+    if entries is None:
+        entries = task_doc.get("tables") or task_doc.get("mappings") or []
+    if not isinstance(entries, list):
+        raise ValueError("validate_mapping_index requires a list at key 'mappings' (or 'tables')")
+
+    root = _repo_root()
+    missing_files = 0
+    bad_entries = 0
+    enforced_failed = 0
+    checked = 0
+
+    for e in entries:
+        if not isinstance(e, dict):
+            bad_entries += 1
+            continue
+        mid = str(e.get("id","")).strip()
+        path = str(e.get("path","")).strip()
+        if not mid or not path:
+            bad_entries += 1
+            continue
+
+        enforced = bool(e.get("enforced", False))
+        evidence_col = str(e.get("evidence_col","evidence"))
+
+        p = Path(path)
+        if not p.is_absolute():
+            p = root / p
+        if not p.exists():
+            missing_files += 1
+            continue
+
+        with p.open("r", encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.DictReader(f))
+
+        checked += 1
+        # enforce strict rules only for enforced entries (or global strict)
+        _, fl, _ = validate_mapping_table_task(
+            rows,
+            outdir / f"m_{mid}",
+            thresholds,
+            strict=(strict and enforced) or (strict and not enforced and False),
+            default_enforced=enforced,
+            evidence_col=evidence_col,
+        )
+        if enforced and not fl.get("mapping_table_ok", False):
+            enforced_failed += 1
+
+    ok = (missing_files==0 and bad_entries==0 and enforced_failed==0)
+    flags = {
+        "mapping_index_ok": ok,
+        "mapping_index_missing_files": missing_files,
+        "mapping_index_bad_entries": bad_entries,
+        "mapping_index_enforced_failed": enforced_failed,
+        "mapping_index_checked": checked,
+    }
+    metrics = dict(flags)
+
+    p_json = outdir / name_json
+    p_md = outdir / name_md
+    p_json.write_text(json.dumps({"metrics": metrics, "flags": flags}, indent=2, sort_keys=True), encoding="utf-8")
+    p_md.write_text(
+        "# Mapping Index Validation\n\n"
+        f"- checked: **{checked}**\n"
+        f"- missing_files: **{missing_files}**\n"
+        f"- bad_entries: **{bad_entries}**\n"
+        f"- enforced_failed: **{enforced_failed}**\n"
         f"- ok: **{ok}**\n",
         encoding="utf-8"
     )
