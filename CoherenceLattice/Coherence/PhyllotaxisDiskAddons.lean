@@ -23,7 +23,6 @@ def px (n N : Nat) : Real :=
 def py (n N : Nat) : Real :=
   radius n N * Real.sin (theta n)
 
-/-- Radius monotonicity: if n1 <= n2 and N != 0 then radius n1 N <= radius n2 N. -/
 lemma radius_mono_of_le (n1 n2 N : Nat) (hN0 : N ≠ 0) (h12 : n1 <= n2) :
     radius n1 N <= radius n2 N := by
   have hNpos : 0 < (N : Real) := by
@@ -89,18 +88,20 @@ lemma normSq_le_one_of_le (n N : Nat) (hN0 : N ≠ 0) (hn : n <= N) :
     _ <= 1 := hu1
 
 /--
-Combined corollary for “sunflower packing” narration:
+Combined corollary for “sunflower packing” narration (3 facts):
 
 If N != 0 and n1 <= n2 <= N, then:
-  (1) radius(n1) <= radius(n2)   (monotone spiral radius)
-  (2) x(n2)^2 + y(n2)^2 <= 1     (later point is inside the unit disk)
+  (1) radius(n1) <= radius(n2)
+  (2) point(n1) lies in unit disk: x(n1)^2 + y(n1)^2 <= 1
+  (3) point(n2) lies in unit disk: x(n2)^2 + y(n2)^2 <= 1
 -/
-lemma sunflower_packing_corollary (n1 n2 N : Nat) (hN0 : N ≠ 0)
-    (h12 : n1 <= n2) (h2N : n2 <= N) :
+lemma sunflower_packing_corollary3 (n1 n2 N : Nat) (hN0 : N ≠ 0)
+    (h12 : n1 <= n2) (h1N : n1 <= N) (h2N : n2 <= N) :
     And (radius n1 N <= radius n2 N)
-        ((px n2 N) ^ 2 + (py n2 N) ^ 2 <= 1) := by
+        (And ((px n1 N) ^ 2 + (py n1 N) ^ 2 <= 1)
+             ((px n2 N) ^ 2 + (py n2 N) ^ 2 <= 1)) := by
   refine And.intro (radius_mono_of_le n1 n2 N hN0 h12) ?_
-  exact normSq_le_one_of_le n2 N hN0 h2N
+  refine And.intro (normSq_le_one_of_le n1 N hN0 h1N) (normSq_le_one_of_le n2 N hN0 h2N)
 
 end
 end PhyllotaxisDisk
