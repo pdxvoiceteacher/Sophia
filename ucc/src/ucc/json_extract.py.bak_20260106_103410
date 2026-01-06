@@ -1,0 +1,186 @@
+from __future__ import annotations
+
+import csv
+import json
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+def _strip_local_prefix(s: str) -> str:
+    t = str(s).strip()
+    if t.lower().startswith("local:"):
+        return t[6:]
+    return t
+
+def _resolve_path(s: str) -> Path:
+    s = _strip_local_prefix(s)
+    p = Path(s)
+    if p.is_absolute():
+        return p
+    return _repo_root() / p
+
+def _load_json(p: Path) -> Any:
+    return json.loads(p.read_text(encoding="utf-8-sig"))
+
+def _get_path(obj: Any, path: str) -> Any:
+    """
+    Dotted path resolver with optional [idx] segments.
+    Example: metrics.delta_warn_LambdaT_steps
+             items[0].value
+    """
+    cur = obj
+    if not path:
+        return cur
+    for part in path.split("."):
+        if "[" in part and part.endswith("]"):
+            key, rest = part.split("[", 1)
+            idx = int(rest[:-1])
+            if key:
+                if not isinstance(cur, dict):
+                    raise KeyError(key)
+                cur = cur[key]
+            if not isinstance(cur, list):
+                raise TypeError("index access on non-list")
+            cur = cur[idx]
+        else:
+            if not isinstance(cur, dict):
+                raise KeyError(part)
+            cur = cur[part]
+    return cur
+
+def extract_json_fields_task(
+    task_doc: Dict[str, Any],
+    outdir: Path,
+    thresholds: Dict[str, Any],
+    *,
+    sections_key: str,
+    require_all_required: bool = True,
+    **kwargs: Any,
+) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+    """
+    UCC step: reads task_doc[sections_key] with schema:
+      {
+        "source_json": "path/to/file.json",
+        "fields": [{"id": "...", "path": "...", "type":"int|number|str|bool", "required": true}, ...],
+        "out_json": "extracted_metrics.json",
+        "out_csv": "extracted_metrics.csv",
+        "out_md":  "extracted_metrics.md"
+      }
+    Writes out_json/out_csv/out_md into outdir.
+    Returns metrics (flattened extracted values), flags, output paths.
+    """
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    section = task_doc.get(sections_key)
+    if not isinstance(section, dict):
+        raise ValueError(f"extract_json_fields requires task['{sections_key}'] to be an object")
+
+    source_json = str(section.get("source_json", "")).strip()
+    if not source_json:
+        raise ValueError("extract_json_fields requires source_json")
+
+    src_path = _resolve_path(source_json)
+    src = _load_json(src_path)
+
+    fields = section.get("fields", [])
+    if not isinstance(fields, list) or not fields:
+        raise ValueError("extract_json_fields requires non-empty fields list")
+
+    out_json_name = str(section.get("out_json", "extracted_metrics.json"))
+    out_csv_name = str(section.get("out_csv", "extracted_metrics.csv"))
+    out_md_name = str(section.get("out_md", "extracted_metrics.md"))
+
+    extracted: Dict[str, Any] = {}
+    missing_required: List[str] = []
+
+    for f in fields:
+        if not isinstance(f, dict):
+            continue
+        fid = str(f.get("id") or f.get("name") or "").strip()
+        jpath = str(f.get("path") or f.get("json_path") or "").strip()
+        required = bool(f.get("required", True))
+        ftype = str(f.get("type") or "").strip().lower()
+
+        if not fid or not jpath:
+            continue
+
+        try:
+            val = _get_path(src, jpath)
+        except Exception:
+            if required:
+                missing_required.append(fid)
+            continue
+
+        # Cast
+        try:
+            if ftype in {"int"}:
+                val = int(val)
+            elif ftype in {"number", "float"}:
+                val = float(val)
+            elif ftype in {"bool", "boolean"}:
+                val = bool(val)
+            elif ftype in {"str", "string"}:
+                val = str(val)
+        except Exception:
+            pass
+
+        extracted[fid] = val
+
+    ok = (len(missing_required) == 0) if require_all_required else True
+
+    flags: Dict[str, Any] = {
+        "json_extract_ok": ok,
+        "json_extract_missing": missing_required,
+    }
+
+    # metrics: include extracted values directly
+    metrics: Dict[str, Any] = dict(extracted)
+    metrics["json_extract_count"] = len(extracted)
+    metrics["json_extract_missing_count"] = len(missing_required)
+
+    # Write JSON
+    p_json = outdir / out_json_name
+    p_json.write_text(
+        json.dumps(
+            {
+                "source_json": str(src_path),
+                "extracted": extracted,
+                "missing_required": missing_required,
+                "ok": ok,
+            },
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
+    # Write CSV
+    p_csv = outdir / out_csv_name
+    with p_csv.open("w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["id", "value"])
+        for k, v in extracted.items():
+            w.writerow([k, v])
+
+    # Write MD
+    p_md = outdir / out_md_name
+    lines = [
+        "# JSON Extract Fields",
+        "",
+        f"- ok: **{ok}**",
+        f"- source_json: `{src_path}`",
+        "",
+        "## Extracted",
+        "",
+        "| id | value |",
+        "|---|---:|",
+    ]
+    for k, v in extracted.items():
+        lines.append(f"| {k} | {v} |")
+    if missing_required:
+        lines += ["", "## Missing required", ""] + [f"- {m}" for m in missing_required]
+    p_md.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    return metrics, flags, [p_json, p_csv, p_md]
