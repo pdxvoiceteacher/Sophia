@@ -10,6 +10,7 @@ HTTP_RE = re.compile(r"^https?://", re.IGNORECASE)
 
 
 def _repo_root() -> Path:
+    # .../ucc/src/ucc/mapping_validators.py -> repo root
     return Path(__file__).resolve().parents[3]
 
 
@@ -22,6 +23,7 @@ def _read_authorities_index() -> Dict[str, Any]:
     if not idx.exists():
         return {"authorities": []}
     d = _load_json_path(idx)
+    # Back-compat: {"packs":[...]}
     if "authorities" not in d and "packs" in d:
         d["authorities"] = d["packs"]
     if "authorities" not in d or not isinstance(d["authorities"], list):
@@ -122,6 +124,18 @@ def validate_mapping_table_task(
     name_csv: str = "mapping_validation.csv",
     **kwargs: Any,
 ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+    """
+    UCC step: validate_mapping_table
+
+    Ensures:
+      - packs referenced exist in ucc/authorities/index.json
+      - (optional) IDs exist in pack.json (IDs-only packs ok)
+      - strict+enforced requires review+expiry and http(s) evidence
+    Writes:
+      - mapping_validation.md
+      - mapping_validation.csv
+      - mapping_validation.json
+    """
     outdir.mkdir(parents=True, exist_ok=True)
     auth = _authority_by_id()
 
@@ -220,17 +234,27 @@ def validate_mapping_table_task(
     p_csv = outdir / name_csv
 
     p_json.write_text(json.dumps({"metrics": metrics, "flags": flags, "issues": issues}, indent=2, sort_keys=True), encoding="utf-8")
-    p_md.write_text(
-        "# Mapping Table Validation\n\n"
-        f"- checked_rows: **{checked}**\n"
-        f"- missing_packs: **{missing_packs}**\n"
-        f"- missing_ids: **{missing_ids}**\n"
-        f"- evidence_bad: **{evidence_bad}**\n"
-        f"- review_missing: **{review_missing}**\n"
-        f"- expiry_missing: **{expiry_missing}**\n"
-        f"- ok: **{ok}**\n",
-        encoding="utf-8",
-    )
+
+    md_lines = [
+        "# Mapping Table Validation",
+        "",
+        f"- checked_rows: **{checked}**",
+        f"- missing_packs: **{missing_packs}**",
+        f"- missing_ids: **{missing_ids}**",
+        f"- evidence_bad: **{evidence_bad}**",
+        f"- review_missing: **{review_missing}**",
+        f"- expiry_missing: **{expiry_missing}**",
+        f"- ok: **{ok}**",
+        "",
+    ]
+    if issues:
+        md_lines.append("## Issues")
+        for it in issues[:200]:
+            md_lines.append(f"- {it}")
+        if len(issues) > 200:
+            md_lines.append(f"- ...(truncated; {len(issues)} total)")
+        md_lines.append("")
+    p_md.write_text("\n".join(md_lines), encoding="utf-8")
 
     with p_csv.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
@@ -254,10 +278,17 @@ def validate_mapping_index_task(
     drafts_key: str = "drafts",
     require_http_urls: bool = False,
     strict_enforced_no_local_na: bool = False,
+    out_json: Optional[str] = None,
+    out_md: Optional[str] = None,
     name_json: str = "mapping_index_check.json",
     name_md: str = "mapping_index_check.md",
     **kwargs: Any,
 ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+    """
+    UCC step: validate_mapping_index
+    Input: parsed JSON of ucc/authorities/mappings/index.json (ingest_json)
+    Output: mapping_index_check.json + mapping_index_check.md (names can be overridden)
+    """
     outdir.mkdir(parents=True, exist_ok=True)
 
     metrics: Dict[str, Any] = {}
@@ -267,8 +298,8 @@ def validate_mapping_index_task(
     if not isinstance(index_doc, dict):
         flags["mapping_index_ok"] = False
         metrics["mapping_index_error"] = "index must be a JSON object"
-        p_json = outdir / name_json
-        p_md = outdir / name_md
+        p_json = outdir / (out_json or name_json)
+        p_md = outdir / (out_md or name_md)
         p_json.write_text(json.dumps({"metrics": metrics, "flags": flags}, indent=2, sort_keys=True), encoding="utf-8")
         p_md.write_text("# Mapping Index Validation\n\n- ok: **False**\n\nReason: index not an object\n", encoding="utf-8")
         return metrics, flags, [p_json, p_md]
@@ -302,22 +333,18 @@ def validate_mapping_index_task(
     def resolve_mapping_csv(p: str) -> Path:
         s = str(p).strip()
         rr = _repo_root()
-
-        cand: List[Path] = []
-        cand.append(rr / s)
-        cand.append(rr / s.replace("ucc/", ""))
-
-        if not s.startswith("ucc/"):
-            cand.append(rr / "ucc" / s)
-
-        cand.append(rr / "ucc" / s.replace("ucc/", ""))
-        cand.append(base_dir / s)
-        cand.append(base_dir / s.replace("ucc/", ""))
-
-        for c in cand:
+        candidates = [
+            rr / s,
+            rr / s.replace("ucc/", ""),
+            rr / ("ucc" / s),
+            rr / ("ucc" / s.replace("ucc/", "")),
+            base_dir / s,
+            base_dir / s.replace("ucc/", ""),
+        ]
+        for c in candidates:
             if c.exists():
                 return c
-        return cand[0]
+        return candidates[0]
 
     for group, it in entries:
         p = it.get("path")
@@ -365,8 +392,8 @@ def validate_mapping_index_task(
         "mapping_index_issues": len(issues),
     })
 
-    p_json = outdir / name_json
-    p_md = outdir / name_md
+    p_json = outdir / (out_json or name_json)
+    p_md = outdir / (out_md or name_md)
     p_json.write_text(json.dumps({"metrics": metrics, "flags": flags, "issues": issues}, indent=2, sort_keys=True), encoding="utf-8")
 
     md = ["# Mapping Index Validation", "", f"- ok: **{ok}**", ""]
