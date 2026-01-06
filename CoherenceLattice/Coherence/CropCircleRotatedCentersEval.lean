@@ -10,21 +10,17 @@ namespace CropCircleRotatedCentersEval
 /-!
 # CropCircleRotatedCentersEval
 
-Float-only CSV output demonstrating rotation invariance of distance-from-origin,
-with:
-- per-angle summary row (i=-1)
-- eps tolerance and okAngle flag
-- comment separator lines starting with "#"
+Float-only CSV output demonstrating rotation invariance of distance-from-origin, with:
+
+- per-angle summary row (i=-1) reporting:
+  maxAbsDiff, maxAbsDiffToR, okAngle
+- per-angle comment separators starting with "#"
+- okAngle field filled on data rows as empty-string "" (strict CSV-friendly)
+- global summary row at end with theta=-1, i=-1:
+  maxAbsDiffAll, maxAbsDiffToRAll, okAll
 
 CSV columns:
 theta,i,cx,cy,cxRot,cyRot,rBase,rRot,absDiff,absDiffToR,okAngle
-
-Summary row:
-- i = -1
-- cx..rRot blank
-- absDiff = maxAbsDiff
-- absDiffToR = maxAbsDiffToR
-- okAngle = true/false for the angle (max errors < eps)
 -/
 
 def piF : Float := 3.141592653589793
@@ -66,6 +62,8 @@ def emit : IO Unit := do
   IO.println csvHeader
 
   let mut first : Bool := true
+  let mut maxAbsDiffAll : Float := 0.0
+  let mut maxAbsDiffToRAll : Float := 0.0
 
   for th in angles do
     if first then
@@ -77,7 +75,7 @@ def emit : IO Unit := do
     let mut maxAbsDiffToR : Float := 0.0
 
     for row in base do
-      let iNat  := row.1
+      let iNat := row.1
       let cx := row.2.1
       let cy := row.2.2
       let p2 := rotPointF th (cx, cy)
@@ -91,10 +89,21 @@ def emit : IO Unit := do
       maxAbsDiff := maxF maxAbsDiff absDiff
       maxAbsDiffToR := maxF maxAbsDiffToR absDiffToR
 
-      IO.println s!"{th},{(Int.ofNat iNat)},{cx},{cy},{cx2},{cy2},{rBase},{rRot},{absDiff},{absDiffToR},"
+      -- Fill okAngle field explicitly as empty string "" for strict CSV parsers.
+      IO.println s!"{th},{(Int.ofNat iNat)},{cx},{cy},{cx2},{cy2},{rBase},{rRot},{absDiff},{absDiffToR},\"\""
 
     let okAngle : Bool := (maxAbsDiff < eps) && (maxAbsDiffToR < eps)
-    IO.println s!"{th},-1,,,,,,,{maxAbsDiff},{maxAbsDiffToR},{okAngle}"
+
+    -- Per-angle summary row (i=-1), aligned to columns (cx..rRot blank)
+    IO.println s!"{th},-1,,,,,,{maxAbsDiff},{maxAbsDiffToR},{okAngle}"
+
+    -- Update global maxima
+    maxAbsDiffAll := maxF maxAbsDiffAll maxAbsDiff
+    maxAbsDiffToRAll := maxF maxAbsDiffToRAll maxAbsDiffToR
+
+  let okAll : Bool := (maxAbsDiffAll < eps) && (maxAbsDiffToRAll < eps)
+  IO.println "# ---- global summary ----"
+  IO.println s!"{-1.0},-1,,,,,,{maxAbsDiffAll},{maxAbsDiffToRAll},{okAll}"
 
 #eval emit
 
