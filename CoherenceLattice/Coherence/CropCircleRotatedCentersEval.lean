@@ -10,20 +10,28 @@ namespace CropCircleRotatedCentersEval
 /-!
 # CropCircleRotatedCentersEval
 
-Float-only CSV output that demonstrates rotation invariance of distance-from-origin.
+Float-only CSV output demonstrating rotation invariance of distance-from-origin,
+with:
+- per-angle summary row (i=-1)
+- eps tolerance and okAngle flag
+- comment separator lines starting with "#"
 
-Columns:
-theta,i,cx,cy,cxRot,cyRot,rBase,rRot,absDiff,absDiffToR
+CSV columns:
+theta,i,cx,cy,cxRot,cyRot,rBase,rRot,absDiff,absDiffToR,okAngle
 
-- rBase = sqrt(cx^2+cy^2)
-- rRot  = sqrt(cxRot^2+cyRot^2)
-- absDiff = |rRot - rBase|
-- absDiffToR = |rRot - R|
+Summary row:
+- i = -1
+- cx..rRot blank
+- absDiff = maxAbsDiff
+- absDiffToR = maxAbsDiffToR
+- okAngle = true/false for the angle (max errors < eps)
 -/
 
 def piF : Float := 3.141592653589793
+def eps : Float := 0.000001
 
 def absF (x : Float) : Float := if x < 0.0 then -x else x
+def maxF (a b : Float) : Float := if a < b then b else a
 
 def rotPointF (theta : Float) (p : Float × Float) : Float × Float :=
   (p.1 * Float.cos theta - p.2 * Float.sin theta,
@@ -40,7 +48,7 @@ def rosetteCentersF (k : Nat) (RF : Float) : List (Nat × Float × Float) :=
 def normF (x y : Float) : Float := Float.sqrt (x*x + y*y)
 
 def csvHeader : String :=
-  "theta,i,cx,cy,cxRot,cyRot,rBase,rRot,absDiff,absDiffToR"
+  "theta,i,cx,cy,cxRot,cyRot,rBase,rRot,absDiff,absDiffToR,okAngle"
 
 def emit : IO Unit := do
   let k0 : Nat := 12
@@ -57,9 +65,19 @@ def emit : IO Unit := do
 
   IO.println csvHeader
 
+  let mut first : Bool := true
+
   for th in angles do
+    if first then
+      first := false
+    else
+      IO.println "# ---- next angle ----"
+
+    let mut maxAbsDiff : Float := 0.0
+    let mut maxAbsDiffToR : Float := 0.0
+
     for row in base do
-      let i  := row.1
+      let iNat  := row.1
       let cx := row.2.1
       let cy := row.2.2
       let p2 := rotPointF th (cx, cy)
@@ -69,7 +87,14 @@ def emit : IO Unit := do
       let rRot  := normF cx2 cy2
       let absDiff := absF (rRot - rBase)
       let absDiffToR := absF (rRot - RF0)
-      IO.println s!"{th},{i},{cx},{cy},{cx2},{cy2},{rBase},{rRot},{absDiff},{absDiffToR}"
+
+      maxAbsDiff := maxF maxAbsDiff absDiff
+      maxAbsDiffToR := maxF maxAbsDiffToR absDiffToR
+
+      IO.println s!"{th},{(Int.ofNat iNat)},{cx},{cy},{cx2},{cy2},{rBase},{rRot},{absDiff},{absDiffToR},"
+
+    let okAngle : Bool := (maxAbsDiff < eps) && (maxAbsDiffToR < eps)
+    IO.println s!"{th},-1,,,,,,,{maxAbsDiff},{maxAbsDiffToR},{okAngle}"
 
 #eval emit
 
