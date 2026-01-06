@@ -2,6 +2,8 @@ import Mathlib
 import CoherenceLattice.Coherence.Basic
 import CoherenceLattice.Coherence.Lattice
 import CoherenceLattice.Coherence.SacredGeometryAddons
+import CoherenceLattice.Coherence.SacredGeometryLemmasAddons
+import CoherenceLattice.Coherence.PhyllotaxisAddons
 import CoherenceLattice.Coherence.BetaRefutationAddons
 import CoherenceLattice.Coherence.TotalActionFunctionalAddons
 import CoherenceLattice.Coherence.PaperGlossAddons
@@ -13,34 +15,27 @@ namespace Coherence
 
 noncomputable section
 
--- Sacred geometry sanity checks
-example : Coherence.SacredGeometry.centeredHex 2 = 19 := by
-  norm_num [Coherence.SacredGeometry.centeredHex]
+-- PaperGloss checks (these guarantee the manuscript-facing layer stays green)
+example (n : Nat) :
+    Coherence.SacredGeometry.centeredHex (n + 1)
+      = Coherence.SacredGeometry.centeredHex n + 6 * (n + 1) :=
+  Coherence.PaperGloss.Lemma_CenteredHex_Succ n
+
+example (n : Nat) :
+    0 ≤ Coherence.Phyllotaxis.turnFrac n ∧ Coherence.Phyllotaxis.turnFrac n < 1 :=
+  Coherence.PaperGloss.Lemma_TurnFracBounds n
+
+example (n : Nat) :
+    0 ≤ Coherence.Phyllotaxis.angle n ∧ Coherence.Phyllotaxis.angle n < (2 * Real.pi) :=
+  Coherence.PaperGloss.Lemma_AngleBounds n
 
 example :
-    Coherence.SacredGeometry.phi * Coherence.SacredGeometry.phi
-      = Coherence.SacredGeometry.phi + 1 :=
-  Coherence.SacredGeometry.phi_sq
+    Coherence.SacredGeometry.ratioFourth < Coherence.SacredGeometry.ratioFifth :=
+  Coherence.PaperGloss.Lemma_RatioFourth_lt_RatioFifth
 
--- Coherence lattice bounds sanity check
-example (s : Coherence.Lattice.State) :
-    0 ≤ Coherence.Lattice.psi s ∧ Coherence.Lattice.psi s ≤ 1 :=
-  Coherence.Lattice.psi_bounds s
-
--- Beta refutation proposition check
 example :
-    ¬ ∃ b : ℝ,
-        Coherence.BetaRefutation.systemHigh.M =
-          Coherence.BetaRefutation.systemHigh.I ^ b ∧
-        Coherence.BetaRefutation.systemLow.M =
-          Coherence.BetaRefutation.systemLow.I ^ b :=
-  Coherence.BetaRefutation.no_fixed_b_example
-
--- PaperGloss layer check (TAF unfold wrapper)
-example (phi : Coherence.TAF.Phi) (x : Coherence.TAF.XSt) (a : Coherence.TAF.Agent) :
-    Coherence.TAF.S_total phi x a
-      = Coherence.TAF.S_theta phi + Coherence.TAF.S_info phi x + Coherence.TAF.S_coh x a := by
-  simpa using Coherence.PaperGloss.Lemma_TAF_Unfold phi x a
+    Coherence.SacredGeometry.ratioFifth < Coherence.SacredGeometry.ratioOctave :=
+  Coherence.PaperGloss.Lemma_RatioFifth_lt_RatioOctave
 
 end
 end Coherence

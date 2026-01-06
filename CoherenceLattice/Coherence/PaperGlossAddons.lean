@@ -1,5 +1,7 @@
 import Mathlib
 import CoherenceLattice.Coherence.SacredGeometryAddons
+import CoherenceLattice.Coherence.SacredGeometryLemmasAddons
+import CoherenceLattice.Coherence.PhyllotaxisAddons
 import CoherenceLattice.Coherence.BetaRefutationAddons
 import CoherenceLattice.Coherence.TotalActionFunctionalAddons
 
@@ -14,8 +16,7 @@ noncomputable section
 /-!
 # PaperGlossAddons
 
-Paper-facing lemma names for manuscript citation.
-No new theory: this file re-exports stable theorem names that wrap internal lemmas.
+Paper-facing lemma names for manuscript citation. No new theory.
 -/
 
 /-- (Paper Lemma) Golden ratio identity: phi^2 = phi + 1. -/
@@ -24,10 +25,36 @@ theorem Lemma_PhiSquared :
       = Coherence.SacredGeometry.phi + 1 :=
   Coherence.SacredGeometry.phi_sq
 
-/-- (Paper Lemma) Centered hex number at n=2 is 19 (Flower-of-Life ring count sanity). -/
+/-- (Paper Lemma) Centered hex number at n=2 is 19. -/
 theorem Lemma_CenteredHex_2 :
     Coherence.SacredGeometry.centeredHex 2 = 19 := by
   simpa using Coherence.SacredGeometry.centeredHex_2
+
+/-- (Paper Lemma) Centered-hex recurrence: N(n+1)=N(n)+6(n+1). -/
+theorem Lemma_CenteredHex_Succ (n : Nat) :
+    Coherence.SacredGeometry.centeredHex (n + 1)
+      = Coherence.SacredGeometry.centeredHex n + 6 * (n + 1) :=
+  Coherence.SacredGeometryLemmas.centeredHex_succ n
+
+/-- (Paper Lemma) Pythagorean interval ordering: 4/3 < 3/2. -/
+theorem Lemma_RatioFourth_lt_RatioFifth :
+    Coherence.SacredGeometry.ratioFourth < Coherence.SacredGeometry.ratioFifth :=
+  Coherence.SacredGeometryLemmas.ratioFourth_lt_ratioFifth
+
+/-- (Paper Lemma) Pythagorean interval ordering: 3/2 < 2. -/
+theorem Lemma_RatioFifth_lt_RatioOctave :
+    Coherence.SacredGeometry.ratioFifth < Coherence.SacredGeometry.ratioOctave :=
+  Coherence.SacredGeometryLemmas.ratioFifth_lt_ratioOctave
+
+/-- (Paper Lemma) turnFrac is always in [0,1). -/
+theorem Lemma_TurnFracBounds (n : Nat) :
+    0 ≤ Coherence.Phyllotaxis.turnFrac n ∧ Coherence.Phyllotaxis.turnFrac n < 1 :=
+  Coherence.Phyllotaxis.turnFrac_bounds n
+
+/-- (Paper Lemma) angle is always in [0,2*pi). -/
+theorem Lemma_AngleBounds (n : Nat) :
+    0 ≤ Coherence.Phyllotaxis.angle n ∧ Coherence.Phyllotaxis.angle n < (2 * Real.pi) :=
+  Coherence.Phyllotaxis.angle_bounds n
 
 /-- (Paper Theorem) No fixed exponent b satisfies M = I^b for both example systems. -/
 theorem Theorem_NoFixedExponentExample :
