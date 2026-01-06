@@ -3,8 +3,11 @@ import CoherenceLattice.Coherence.Basic
 import CoherenceLattice.Coherence.Lattice
 import CoherenceLattice.Coherence.SacredGeometryAddons
 import CoherenceLattice.Coherence.BetaRefutationAddons
+import CoherenceLattice.Coherence.TotalActionFunctionalAddons
+import CoherenceLattice.Coherence.PaperGlossAddons
 
 set_option linter.style.commandStart false
+set_option linter.style.emptyLine false
 
 namespace Coherence
 
@@ -24,7 +27,7 @@ example (s : Coherence.Lattice.State) :
     0 ≤ Coherence.Lattice.psi s ∧ Coherence.Lattice.psi s ≤ 1 :=
   Coherence.Lattice.psi_bounds s
 
--- Beta refutation: state the proposition as the type, use the theorem as proof
+-- Beta refutation proposition check
 example :
     ¬ ∃ b : ℝ,
         Coherence.BetaRefutation.systemHigh.M =
@@ -33,5 +36,11 @@ example :
           Coherence.BetaRefutation.systemLow.I ^ b :=
   Coherence.BetaRefutation.no_fixed_b_example
 
-end  -- closes noncomputable section
+-- PaperGloss layer check (TAF unfold wrapper)
+example (phi : Coherence.TAF.Phi) (x : Coherence.TAF.XSt) (a : Coherence.TAF.Agent) :
+    Coherence.TAF.S_total phi x a
+      = Coherence.TAF.S_theta phi + Coherence.TAF.S_info phi x + Coherence.TAF.S_coh x a := by
+  simpa using Coherence.PaperGloss.Lemma_TAF_Unfold phi x a
+
+end
 end Coherence

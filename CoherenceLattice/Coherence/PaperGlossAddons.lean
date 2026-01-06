@@ -1,6 +1,7 @@
 import Mathlib
 import CoherenceLattice.Coherence.SacredGeometryAddons
 import CoherenceLattice.Coherence.BetaRefutationAddons
+import CoherenceLattice.Coherence.TotalActionFunctionalAddons
 
 set_option linter.style.commandStart false
 set_option linter.style.emptyLine false
@@ -13,8 +14,8 @@ noncomputable section
 /-!
 # PaperGlossAddons
 
-Paper-facing lemma names for the addon modules so the manuscript can cite stable identifiers.
-No new theory: just curated wrappers.
+Paper-facing lemma names for manuscript citation.
+No new theory: this file re-exports stable theorem names that wrap internal lemmas.
 -/
 
 /-- (Paper Lemma) Golden ratio identity: phi^2 = phi + 1. -/
@@ -37,6 +38,13 @@ theorem Theorem_NoFixedExponentExample :
           Coherence.BetaRefutation.systemLow.I ^ b :=
   Coherence.BetaRefutation.no_fixed_b_example
 
-end  -- closes noncomputable section
+/-- (Paper Lemma) Total Action Functional unfolds into its component sum. -/
+theorem Lemma_TAF_Unfold
+    (phi : Coherence.TAF.Phi) (x : Coherence.TAF.XSt) (a : Coherence.TAF.Agent) :
+    Coherence.TAF.S_total phi x a
+      = Coherence.TAF.S_theta phi + Coherence.TAF.S_info phi x + Coherence.TAF.S_coh x a := by
+  simpa using Coherence.TAF.S_total_unfold phi x a
+
+end
 end PaperGloss
 end Coherence
