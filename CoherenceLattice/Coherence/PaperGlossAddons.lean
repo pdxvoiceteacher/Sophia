@@ -1,6 +1,7 @@
 import Mathlib
 import CoherenceLattice.Coherence.PhyllotaxisDiskAddons
 import CoherenceLattice.Coherence.PaperGlossSunflowerPointAddons
+import CoherenceLattice.Coherence.PaperGlossPackingBundleAddons
 
 set_option linter.style.commandStart false
 set_option linter.style.emptyLine false
@@ -11,13 +12,10 @@ namespace PaperGloss
 noncomputable section
 
 /-!
-# PaperGlossAddons (clean + sunflowerPoint restored)
+# PaperGlossAddons (surface)
 
-This paper-facing surface intentionally uses ASCII-only relational syntax:
-- not-zero is expressed as (N = 0 -> False)
-- ordering uses <=
-We restore `sunflowerPoint` and `sunflowerPolarPoint` by importing
-`PaperGlossSunflowerPointAddons`.
+This file is the paper-facing surface layer.
+It imports the narrative constructors and packing bundle so downstream imports stay simple.
 -/
 
 /-- (Paper Corollary) Monotone spiral radius + both points in unit disk (3 facts). -/

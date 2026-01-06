@@ -234,3 +234,110 @@ def validate_mapping_table_task(
     )
 
     return metrics, flags, [p_json, p_md]
+# --------------------------------------------------------------------------------------
+# Mapping index validation (v0): added to satisfy core import + CI.
+# This validates ucc/authorities/mappings/index.json at a structural level.
+# --------------------------------------------------------------------------------------
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Tuple, Optional
+import json
+
+def _is_http_url(s: str) -> bool:
+    return s.startswith("http://") or s.startswith("https://")
+
+def validate_mapping_index_task(
+    task_doc: Dict[str, Any],
+    outdir: Path,
+    thresholds: Dict[str, Any],
+    *,
+    enforced_key: str = "enforced",
+    drafts_key: str = "drafts",
+    require_http_urls: bool = False,
+    strict_enforced_no_local_na: bool = False,
+    out_json: str = "mapping_index_check.json",
+) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+    """
+    UCC step: validate_mapping_index
+    Input is the parsed JSON object for ucc/authorities/mappings/index.json (ingest_json).
+    Returns: (metrics, flags, output_paths)
+    """
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    metrics: Dict[str, Any] = {}
+    flags: Dict[str, Any] = {}
+    outs: List[Path] = []
+
+    if not isinstance(task_doc, dict):
+        flags["mapping_index_ok"] = False
+        metrics["mapping_index_error"] = "index.json must be a JSON object"
+        return metrics, flags, outs
+
+    enforced = task_doc.get(enforced_key, [])
+    drafts = task_doc.get(drafts_key, [])
+
+    bad_shape = 0
+    entries: List[Tuple[str, Dict[str, Any]]] = []
+
+    for group, xs in [("enforced", enforced), ("drafts", drafts)]:
+        if xs is None:
+            continue
+        if not isinstance(xs, list):
+            bad_shape += 1
+            continue
+        for it in xs:
+            if isinstance(it, dict):
+                entries.append((group, it))
+            else:
+                bad_shape += 1
+
+    missing_path = 0
+    bad_path = 0
+    bad_url = 0
+
+    for group, it in entries:
+        path = it.get("path")
+        if not path:
+            missing_path += 1
+            continue
+
+        pth = str(path).strip()
+        if not pth.endswith(".csv"):
+            bad_path += 1
+
+        # Evidence URL checks (optional/strict)
+        ev = ""
+        if isinstance(it.get("evidence_url"), str):
+            ev = it["evidence_url"].strip()
+        elif isinstance(it.get("url"), str):
+            ev = it["url"].strip()
+
+        if require_http_urls and ev and (not _is_http_url(ev)):
+            bad_url += 1
+
+        if strict_enforced_no_local_na and group == "enforced":
+            # disallow local:NA / blank in enforced set
+            if (not ev) or ev.lower() in ("local:na", "na", "n/a"):
+                bad_url += 1
+            elif require_http_urls and (not _is_http_url(ev)):
+                bad_url += 1
+
+    ok = (bad_shape == 0 and missing_path == 0 and bad_path == 0 and bad_url == 0)
+
+    metrics.update({
+        "mapping_index_entries": len(entries),
+        "mapping_index_bad_shape": bad_shape,
+        "mapping_index_missing_path": missing_path,
+        "mapping_index_bad_path": bad_path,
+        "mapping_index_bad_url": bad_url,
+    })
+    flags["mapping_index_ok"] = bool(ok)
+
+    # Write a tiny JSON artifact for traceability
+    outp = outdir / out_json
+    outp.write_text(json.dumps({"metrics": metrics, "flags": flags}, indent=2, sort_keys=True), encoding="utf-8")
+    outs.append(outp)
+
+    return metrics, flags, outs
