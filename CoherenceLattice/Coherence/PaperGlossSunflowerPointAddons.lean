@@ -12,23 +12,23 @@ noncomputable section
 /-!
 # PaperGlossSunflowerPointAddons
 
-A narrative-friendly constructor that returns a sunflower point (x,y) together with
-a proof that it lies in the unit disk (x^2 + y^2 <= 1).
+Narrative-friendly bundled constructors:
 
-This is intentionally lightweight: it reuses the proven disk bound from PhyllotaxisDiskAddons.
+1) sunflowerPoint: returns (x,y) + proof it lies in the unit disk.
+2) sunflowerPolarPoint: returns (r, theta, x, y) + proof it lies in the unit disk.
+
+We use ASCII for nonzero assumptions: hN0 : (N = 0 -> False).
 -/
 
-/-- A sunflower point bundled with its unit-disk bound. -/
+-- -------------------------
+-- (A) Point-only bundle
+-- -------------------------
+
 structure SunflowerPoint where
   x : Real
   y : Real
   bound : x ^ 2 + y ^ 2 <= 1
 
-/--
-Constructor: produce the sunflower point at index n for total N, along with its bound.
-
-We use ASCII for not-equal assumption: hN0 : (N = 0 -> False).
--/
 def sunflowerPoint (n N : Nat) (hN0 : N = 0 -> False) (hn : n <= N) : SunflowerPoint :=
   let hN0' : N ≠ 0 := by
     intro h
@@ -38,10 +38,47 @@ def sunflowerPoint (n N : Nat) (hN0 : N = 0 -> False) (hn : n <= N) : SunflowerP
     bound := by
       simpa using Coherence.PhyllotaxisDisk.normSq_le_one_of_le n N hN0' hn }
 
-/-- (Paper Lemma) The bundled constructor’s bound, as a stable citation hook. -/
 theorem Lemma_SunflowerPointBound (n N : Nat) (hN0 : N = 0 -> False) (hn : n <= N) :
     (sunflowerPoint n N hN0 hn).x ^ 2 + (sunflowerPoint n N hN0 hn).y ^ 2 <= 1 :=
   (sunflowerPoint n N hN0 hn).bound
+
+-- -------------------------
+-- (B) Polar + point bundle
+-- -------------------------
+
+structure SunflowerPolarPoint where
+  r : Real
+  theta : Real
+  x : Real
+  y : Real
+  bound : x ^ 2 + y ^ 2 <= 1
+
+def sunflowerPolarPoint (n N : Nat) (hN0 : N = 0 -> False) (hn : n <= N) : SunflowerPolarPoint :=
+  let hN0' : N ≠ 0 := by
+    intro h
+    exact hN0 h
+  { r := Coherence.PhyllotaxisDisk.radius n N
+    theta := Coherence.PhyllotaxisDisk.theta n
+    x := Coherence.PhyllotaxisDisk.px n N
+    y := Coherence.PhyllotaxisDisk.py n N
+    bound := by
+      simpa using Coherence.PhyllotaxisDisk.normSq_le_one_of_le n N hN0' hn }
+
+theorem Lemma_SunflowerPolarPointBound (n N : Nat) (hN0 : N = 0 -> False) (hn : n <= N) :
+    (sunflowerPolarPoint n N hN0 hn).x ^ 2 + (sunflowerPolarPoint n N hN0 hn).y ^ 2 <= 1 :=
+  (sunflowerPolarPoint n N hN0 hn).bound
+
+theorem Lemma_SunflowerPolarPointXY (n N : Nat) (hN0 : N = 0 -> False) (hn : n <= N) :
+    (sunflowerPolarPoint n N hN0 hn).x
+      = (sunflowerPolarPoint n N hN0 hn).r
+          * Real.cos ((sunflowerPolarPoint n N hN0 hn).theta)
+    ∧
+    (sunflowerPolarPoint n N hN0 hn).y
+      = (sunflowerPolarPoint n N hN0 hn).r
+          * Real.sin ((sunflowerPolarPoint n N hN0 hn).theta) := by
+  constructor
+  · simp [sunflowerPolarPoint, Coherence.PhyllotaxisDisk.px]
+  · simp [sunflowerPolarPoint, Coherence.PhyllotaxisDisk.py]
 
 end
 end PaperGloss
