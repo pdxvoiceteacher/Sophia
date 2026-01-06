@@ -14,6 +14,10 @@ from jsonschema import Draft202012Validator
 from .audit import AuditBundle, env_info, now_utc_iso, sha256_file, write_bundle
 from .lean_symbols import check_lean_symbols_task
 from .authority_validators import validate_authority_profile
+from .json_assertions import verify_json_assertions_task
+from .json_patterns import verify_json_patterns_task
+from .json_extract import extract_json_fields_task
+from .mapping_validators import validate_mapping_table_task, validate_mapping_index_task
 
 
 BUILTIN_STEP_TYPES = {
@@ -614,6 +618,54 @@ def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: P
         elif stype == "threshold_flags":
             context["flags"].update(threshold_flags(context["metrics"], thresholds))
 
+        elif stype == "extract_json_fields":
+            if context["input"] is None or not isinstance(context["input"], dict):
+                raise ValueError("extract_json_fields requires ingest_json of a dict")
+            m, fl, outs = extract_json_fields_task(context["input"], outdir, thresholds, **params)
+            context["metrics"].update(m)
+            context["flags"].update(fl)
+            context["output_files"].extend(outs)
+
+        elif stype == "verify_json_assertions":
+            if context["input"] is None or not isinstance(context["input"], dict):
+                raise ValueError("verify_json_assertions requires ingest_json of a dict")
+            m, fl, outs = verify_json_assertions_task(context["input"], outdir, thresholds, **params)
+            context["metrics"].update(m)
+            context["flags"].update(fl)
+            context["output_files"].extend(outs)
+
+        elif stype == "verify_json_patterns":
+            if context["input"] is None or not isinstance(context["input"], dict):
+                raise ValueError("verify_json_patterns requires ingest_json of a dict")
+            m, fl, outs = verify_json_patterns_task(context["input"], outdir, thresholds, **params)
+            context["metrics"].update(m)
+            context["flags"].update(fl)
+            context["output_files"].extend(outs)
+
+        elif stype == "coherence_audit":
+            if context["input"] is None or not isinstance(context["input"], dict):
+                raise ValueError("coherence_audit requires ingest_json of a dict")
+            m, fl, outs = coherence_audit_task(context["input"], outdir, thresholds, **params)
+            context["metrics"].update(m)
+            context["flags"].update(fl)
+            context["output_files"].extend(outs)
+
+        elif stype == "validate_mapping_index":
+            if context["input"] is None or not isinstance(context["input"], dict):
+                raise ValueError("validate_mapping_index requires ingest_json of a dict")
+            m, fl, outs = validate_mapping_index_task(context["input"], outdir, thresholds, **params)
+            context["metrics"].update(m)
+            context["flags"].update(fl)
+            context["output_files"].extend(outs)
+
+        elif stype == "validate_mapping_table":
+            if context["input"] is None or not isinstance(context["input"], list):
+                raise ValueError("validate_mapping_table requires ingest_csv (list of dict rows)")
+            m, fl, outs = validate_mapping_table_task(context["input"], outdir, thresholds, **params)
+            context["metrics"].update(m)
+            context["flags"].update(fl)
+            context["output_files"].extend(outs)
+
         else:
             raise ValueError(f"Unsupported step type: {stype}")
 
@@ -641,3 +693,13 @@ def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: P
     write_bundle(outdir, bundle)
 
     return context["metrics"], context["flags"]
+
+# --- AUTO ENABLE EXTRA STEP TYPES ---
+BUILTIN_STEP_TYPES.update({
+    "coherence_audit",
+    "extract_json_fields",
+    "verify_json_assertions",
+    "verify_json_patterns",
+    "validate_mapping_table",
+    "validate_mapping_index",
+})
