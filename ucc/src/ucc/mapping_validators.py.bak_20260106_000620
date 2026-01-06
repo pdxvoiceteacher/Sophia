@@ -238,6 +238,7 @@ def validate_mapping_table_task(
 # Mapping index validation (v0): added to satisfy core import + CI.
 # This validates ucc/authorities/mappings/index.json at a structural level.
 # --------------------------------------------------------------------------------------
+from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path

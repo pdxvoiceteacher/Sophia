@@ -23,6 +23,7 @@ steps:
       write_validation_csv: true
       md_name: "mapping_validation.md"
       csv_name: "mapping_validation.csv"
+      name_md: mapping_validation.md
   - type: emit_report
     id: report
     params:
