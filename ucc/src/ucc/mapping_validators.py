@@ -1,345 +1,327 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Dict, List, Tuple, Set, Optional
+import csv
 import json
 import re
-import csv
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-ISO_UTC_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
-SPLIT_TOKENS_RE = re.compile(r"[\s,;]+")
+HTTP_RE = re.compile(r"^https?://", re.IGNORECASE)
 
-BASE_REQUIRED_COLUMNS = [
-    "source_authority",
-    "source_id",
-    "target_authority",
-    "target_id",
-    "rationale",
-    "evidence_link",
-]
-
-def _parse_iso_utc(s: str) -> Optional[datetime]:
-    if not isinstance(s, str):
-        return None
-    ss = s.strip()
-    if not ISO_UTC_RE.match(ss):
-        return None
-    try:
-        return datetime.strptime(ss, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-    except Exception:
-        return None
-
+# -----------------------------
+# Utilities
+# -----------------------------
 def _repo_root() -> Path:
-    # .../ucc/src/ucc/mapping_validators.py -> repo root = parents[3]
     return Path(__file__).resolve().parents[3]
 
-def _read_json(path: Path) -> Dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8-sig"))
+def _load_json_path(p: Path) -> Any:
+    return json.loads(p.read_text(encoding="utf-8-sig"))
 
-def _load_registry_index(registry_path: Path) -> Dict[str, Any]:
-    data = _read_json(registry_path)
-    # Support either {authorities:[...]} or {packs:[...]}
-    if isinstance(data.get("authorities"), list):
-        return {"authorities": data["authorities"]}
-    if isinstance(data.get("packs"), list):
-        return {"authorities": data["packs"]}
-    raise ValueError(f"Invalid registry index: expected 'authorities' or 'packs' list in {registry_path}")
+def _read_authorities_index() -> Dict[str, Any]:
+    idx = _repo_root() / "ucc" / "authorities" / "index.json"
+    if not idx.exists():
+        return {"authorities": []}
+    d = _load_json_path(idx)
+    # tolerate legacy key "packs"
+    if "authorities" not in d and "packs" in d:
+        d["authorities"] = d["packs"]
+    if "authorities" not in d:
+        d["authorities"] = []
+    return d
 
-def _collect_ids_from_pack(pack_doc: Any) -> Set[str]:
-    ids: Set[str] = set()
+def _authority_by_id() -> Dict[str, Dict[str, Any]]:
+    idx = _read_authorities_index()
+    out: Dict[str, Dict[str, Any]] = {}
+    for a in idx.get("authorities", []):
+        if isinstance(a, dict) and "id" in a:
+            out[str(a["id"])] = a
+    return out
 
-    def walk(o: Any) -> None:
-        if isinstance(o, dict):
-            for k, v in o.items():
-                if k == "ids" and isinstance(v, list):
-                    for x in v:
-                        if isinstance(x, str) and x.strip():
-                            ids.add(x.strip())
-                else:
-                    walk(v)
-        elif isinstance(o, list):
-            for x in o:
-                walk(x)
+def _truthy(s: str) -> bool:
+    return str(s).strip().lower() in {"1", "true", "yes", "y", "on"}
 
-    walk(pack_doc)
-    return ids
-
-def _split_ids(val: Any) -> List[str]:
+def _split_links(val: str) -> List[str]:
     if val is None:
         return []
-    if isinstance(val, list):
-        out: List[str] = []
-        for x in val:
-            out.extend(_split_ids(x))
-        return out
-    if not isinstance(val, str):
-        return [str(val)]
-    s = val.strip()
+    s = str(val).strip()
     if not s:
         return []
-    return [t for t in SPLIT_TOKENS_RE.split(s) if t]
+    # allow ';' or ',' separated
+    parts = re.split(r"[;,]\s*", s)
+    return [p.strip() for p in parts if p.strip()]
 
-def _write_csv(path: Path, rows: List[Dict[str, Any]]) -> None:
-    if not rows:
-        path.write_text("", encoding="utf-8")
-        return
-    fieldnames = list(rows[0].keys())
-    with path.open("w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=fieldnames)
-        w.writeheader()
-        for r in rows:
-            w.writerow(r)
+def _pick(row: Dict[str, Any], keys: List[str]) -> str:
+    for k in keys:
+        if k in row and str(row[k]).strip():
+            return str(row[k]).strip()
+    return ""
 
-def _write_md(path: Path, text: str) -> None:
-    path.write_text(text, encoding="utf-8")
+def _resolve_pack_path(authority_entry: Dict[str, Any]) -> Optional[Path]:
+    p = authority_entry.get("path") or authority_entry.get("pack_path") or authority_entry.get("pack")
+    if not p:
+        return None
+    p = str(p)
+    # allow "ucc/authorities/..." relative
+    root = _repo_root()
+    pp = Path(p)
+    if pp.is_absolute():
+        return pp
+    return root / pp
 
-@dataclass
-class RowResult:
-    ok: bool
-    errors: List[str]
+def _collect_ids_from_pack(pack_doc: Any) -> set[str]:
+    """
+    Best-effort: recursively collect plausible ID strings from pack.json.
+    Keeps it permissive for IDs-only packs.
+    """
+    ids: set[str] = set()
 
+    def rec(x: Any):
+        if isinstance(x, dict):
+            for k, v in x.items():
+                rec(v)
+        elif isinstance(x, list):
+            for v in x:
+                rec(v)
+        elif isinstance(x, str):
+            s = x.strip()
+            # keep typical control id patterns
+            if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]*", s) and len(s) <= 64:
+                ids.add(s)
+
+    rec(pack_doc)
+    return ids
+
+# -----------------------------
+# Table validator
+# -----------------------------
 def validate_mapping_table_task(
-    rows: Any,
+    rows: List[Dict[str, Any]],
     outdir: Path,
-    thresholds: Dict[str, Any] | None = None,
+    thresholds: Dict[str, Any],
     *,
-    registry_index_path: str = "ucc/authorities/index.json",
-    required_columns: List[str] | None = None,
-    require_evidence_link: bool = True,
-    allow_local_na: bool = True,
-    require_review_utc: bool = False,
-    require_expires_utc: bool = False,
-    enforce_not_expired: bool = True,
-    write_validation_md: bool = True,
-    write_validation_csv: bool = True,
-    md_name: str = "mapping_validation.md",
-    csv_name: str = "mapping_validation.csv",
+    strict: bool = False,
+    require_review: bool = True,
+    require_expiry: bool = True,
+    default_enforced: bool = False,
+    evidence_col: str = "evidence",
+    **kwargs: Any,
 ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
-    thresholds = thresholds or {}
+    """
+    Input: rows from ingest_csv (list[dict]).
+    Validates:
+      - from_pack/to_pack exist in authorities index
+      - optional: IDs appear in packs (best-effort)
+      - evidence rules:
+          * if strict AND enforced -> require at least one http(s) URL
+          * if not strict OR not enforced -> local:NA allowed
+      - review/expiry present (if required)
+    """
     outdir.mkdir(parents=True, exist_ok=True)
 
-    if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
-        raise ValueError("validate_mapping_table requires ingest_csv; context['input'] must be a list[dict]")
+    auth = _authority_by_id()
 
-    req_cols = list(required_columns) if required_columns else list(BASE_REQUIRED_COLUMNS)
-    if require_review_utc and "review_utc" not in req_cols:
-        req_cols.append("review_utc")
-    if require_expires_utc and "expires_utc" not in req_cols:
-        req_cols.append("expires_utc")
+    # column name flex
+    FROM_PACK_KEYS = ["from_pack", "from_authority", "from_standard", "from_framework"]
+    TO_PACK_KEYS   = ["to_pack", "to_authority", "to_standard", "to_framework"]
+    FROM_ID_KEYS   = ["from_id", "from_control", "from_control_id", "from_req", "from_requirement"]
+    TO_ID_KEYS     = ["to_id", "to_control", "to_control_id", "to_req", "to_requirement"]
+    ENF_KEYS       = ["enforced", "strict", "enforced_mapping"]
+    REVIEW_KEYS    = ["review_utc", "last_review_utc", "review_date"]
+    EXP_KEYS       = ["expires_utc", "expiry_utc", "expires", "expiry_date"]
 
-    present_cols: Set[str] = set()
-    for r in rows:
-        present_cols |= set(r.keys())
+    missing_packs = 0
+    missing_ids = 0
+    evidence_bad = 0
+    review_bad = 0
+    expiry_bad = 0
+    checked = 0
 
-    missing_cols = [c for c in req_cols if c not in present_cols]
+    # cache pack id sets
+    pack_ids_cache: Dict[str, set[str]] = {}
 
-    repo = _repo_root()
-    reg_path = (repo / registry_index_path).resolve()
-    reg = _load_registry_index(reg_path)
-
-    # Build authority map id -> entry
-    auth_map: Dict[str, Dict[str, Any]] = {}
-    for a in reg["authorities"]:
-        if isinstance(a, dict) and isinstance(a.get("id"), str):
-            auth_map[a["id"]] = a
-
-    # Cache pack IDs by authority id
-    id_cache: Dict[str, Set[str]] = {}
-    pack_path_cache: Dict[str, str] = {}
-
-    def load_ids_for_authority(aid: str) -> Set[str]:
-        if aid in id_cache:
-            return id_cache[aid]
-        entry = auth_map.get(aid)
-        if not entry:
-            id_cache[aid] = set()
-            return id_cache[aid]
-        p = entry.get("path")
-        if not isinstance(p, str) or not p.strip():
-            id_cache[aid] = set()
-            return id_cache[aid]
-        pack_path_cache[aid] = p
-        pack_doc = _read_json((repo / p).resolve())
-        ids = _collect_ids_from_pack(pack_doc)
-        id_cache[aid] = ids
+    def pack_ids(pack_id: str) -> set[str]:
+        if pack_id in pack_ids_cache:
+            return pack_ids_cache[pack_id]
+        entry = auth.get(pack_id, {})
+        p = _resolve_pack_path(entry) if entry else None
+        if p and p.exists():
+            doc = _load_json_path(p)
+            ids = _collect_ids_from_pack(doc)
+        else:
+            ids = set()
+        pack_ids_cache[pack_id] = ids
         return ids
 
-    now = datetime.now(timezone.utc)
+    for r in rows:
+        if not isinstance(r, dict):
+            continue
+        checked += 1
+        fp = _pick(r, FROM_PACK_KEYS)
+        tp = _pick(r, TO_PACK_KEYS)
+        fid = _pick(r, FROM_ID_KEYS)
+        tid = _pick(r, TO_ID_KEYS)
 
-    results: List[RowResult] = []
-    unknown_authorities = 0
-    unknown_ids = 0
-    missing_evidence = 0
-    bad_review = 0
-    bad_expiry = 0
-    expired = 0
+        if fp not in auth or tp not in auth:
+            missing_packs += 1
 
-    # Validate rows
-    for i, r in enumerate(rows, start=1):
-        errs: List[str] = []
+        # best-effort ID existence check (only if pack doc exists and has ids)
+        if fp in auth and fid:
+            ids = pack_ids(fp)
+            if ids and fid not in ids:
+                missing_ids += 1
+        if tp in auth and tid:
+            ids = pack_ids(tp)
+            if ids and tid not in ids:
+                missing_ids += 1
 
-        # required columns per row
-        for c in req_cols:
-            if c not in r:
-                errs.append(f"missing_column:{c}")
+        enforced = default_enforced
+        enf_raw = _pick(r, ENF_KEYS)
+        if enf_raw:
+            enforced = _truthy(enf_raw)
 
-        sa = str(r.get("source_authority", "")).strip()
-        ta = str(r.get("target_authority", "")).strip()
+        links = _split_links(r.get(evidence_col, ""))
 
-        if sa not in auth_map:
-            errs.append(f"unknown_source_authority:{sa}")
-        if ta not in auth_map:
-            errs.append(f"unknown_target_authority:{ta}")
+        if strict and enforced:
+            # strict-enforced must have at least one http(s) link
+            if not any(HTTP_RE.match(u or "") for u in links):
+                evidence_bad += 1
+        else:
+            # drafts can use local:NA
+            pass
 
-        if sa not in auth_map or ta not in auth_map:
-            unknown_authorities += 1
+        if require_review:
+            rv = _pick(r, REVIEW_KEYS)
+            if not rv:
+                review_bad += 1
 
-        sids = _split_ids(r.get("source_id", ""))
-        tids = _split_ids(r.get("target_id", ""))
+        if require_expiry:
+            ex = _pick(r, EXP_KEYS)
+            if not ex:
+                expiry_bad += 1
 
-        if sa in auth_map:
-            allowed = load_ids_for_authority(sa)
-            for sid in sids:
-                if sid not in allowed:
-                    errs.append(f"unknown_source_id:{sid}")
-                    unknown_ids += 1
+    flags = {
+        "mapping_table_ok": (missing_packs == 0 and missing_ids == 0 and evidence_bad == 0 and review_bad == 0 and expiry_bad == 0),
+        "mapping_missing_packs": missing_packs,
+        "mapping_missing_ids": missing_ids,
+        "mapping_evidence_bad": evidence_bad,
+        "mapping_review_missing": review_bad,
+        "mapping_expiry_missing": expiry_bad,
+        "mapping_checked_rows": checked,
+    }
 
-        if ta in auth_map:
-            allowed = load_ids_for_authority(ta)
-            for tid in tids:
-                if tid not in allowed:
-                    errs.append(f"unknown_target_id:{tid}")
-                    unknown_ids += 1
+    metrics = {
+        "mapping_checked_rows": checked,
+        "mapping_missing_packs": missing_packs,
+        "mapping_missing_ids": missing_ids,
+        "mapping_evidence_bad": evidence_bad,
+        "mapping_review_missing": review_bad,
+        "mapping_expiry_missing": expiry_bad,
+    }
 
-        if require_evidence_link:
-            ev = str(r.get("evidence_link", "")).strip()
-            if not ev:
-                errs.append("missing_evidence_link")
-                missing_evidence += 1
-            else:
-                if (not allow_local_na) and ev.lower().startswith("local:"):
-                    errs.append("evidence_link_disallowed_local")
-                    missing_evidence += 1
-
-        if require_review_utc:
-            rv = str(r.get("review_utc", "")).strip()
-            dt = _parse_iso_utc(rv)
-            if dt is None:
-                errs.append("bad_review_utc")
-                bad_review += 1
-
-        if require_expires_utc:
-            ex = str(r.get("expires_utc", "")).strip()
-            dt = _parse_iso_utc(ex)
-            if dt is None:
-                errs.append("bad_expires_utc")
-                bad_expiry += 1
-            else:
-                if enforce_not_expired and dt < now:
-                    errs.append("expired_mapping_row")
-                    expired += 1
-
-        ok = len(errs) == 0 and len(missing_cols) == 0
-        results.append(RowResult(ok=ok, errors=errs))
-
-    rows_ok = sum(1 for rr in results if rr.ok)
-    rows_err = len(results) - rows_ok
-
-    mapping_columns_ok = (len(missing_cols) == 0)
-    mapping_authorities_ok = (unknown_authorities == 0)
-    mapping_ids_ok = (unknown_ids == 0)
-    mapping_evidence_ok = (missing_evidence == 0)
-    mapping_review_ok = (bad_review == 0) if require_review_utc else True
-    mapping_expiry_ok = (bad_expiry == 0 and expired == 0) if require_expires_utc else True
-
-    mapping_table_ok = bool(
-        mapping_columns_ok
-        and mapping_authorities_ok
-        and mapping_ids_ok
-        and mapping_evidence_ok
-        and mapping_review_ok
-        and mapping_expiry_ok
+    # Write summary
+    p_json = outdir / "mapping_table_validate.json"
+    p_md = outdir / "mapping_table_validate.md"
+    p_json.write_text(json.dumps({"metrics": metrics, "flags": flags}, indent=2, sort_keys=True), encoding="utf-8")
+    p_md.write_text(
+        "# Mapping Table Validation\n\n"
+        f"- checked_rows: **{checked}**\n"
+        f"- missing_packs: **{missing_packs}**\n"
+        f"- missing_ids: **{missing_ids}**\n"
+        f"- evidence_bad: **{evidence_bad}**\n"
+        f"- review_missing: **{review_bad}**\n"
+        f"- expiry_missing: **{expiry_bad}**\n"
+        f"- ok: **{flags['mapping_table_ok']}**\n",
+        encoding="utf-8"
     )
 
-    metrics: Dict[str, Any] = {
-        "mapping_rows_total": len(results),
-        "mapping_rows_ok": rows_ok,
-        "mapping_rows_error": rows_err,
-        "missing_required_columns": missing_cols,
-        "unknown_authority_count": unknown_authorities,
-        "unknown_id_count": unknown_ids,
-        "missing_evidence_count": missing_evidence,
-        "bad_review_count": bad_review,
-        "bad_expiry_count": bad_expiry,
-        "expired_count": expired,
-        "registry_index_path": str(reg_path),
-        "authorities_loaded": len(auth_map),
-        "packs_loaded": len([k for k in id_cache.keys() if id_cache[k]]),
+    return metrics, flags, [p_json, p_md]
+
+# -----------------------------
+# Index validator (registry walker)
+# -----------------------------
+def validate_mapping_index_task(
+    task_doc: Dict[str, Any],
+    outdir: Path,
+    thresholds: Dict[str, Any],
+    *,
+    index_key: str = "mappings",
+    strict: bool = False,
+    **kwargs: Any,
+) -> Tuple[Dict[str, Any], Dict[str, Any], List[Path]]:
+    """
+    Validates mapping registry index.json:
+      - entries have id/path/enforced
+      - file exists
+      - if enforced OR strict -> run validate_mapping_table_task on CSV
+    """
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    idx = task_doc
+    # tolerate older key names
+    entries = idx.get(index_key)
+    if entries is None:
+        entries = idx.get("tables") or idx.get("mappings") or []
+
+    if not isinstance(entries, list):
+        raise ValueError("validate_mapping_index requires a list at key 'mappings' (or 'tables')")
+
+    missing_files = 0
+    bad_entries = 0
+    enforced_failed = 0
+    checked = 0
+
+    root = _repo_root()
+
+    for e in entries:
+        if not isinstance(e, dict):
+            bad_entries += 1
+            continue
+        mid = str(e.get("id", "")).strip()
+        path = str(e.get("path", "")).strip()
+        enforced = bool(e.get("enforced", False))
+        if not mid or not path:
+            bad_entries += 1
+            continue
+
+        p = Path(path)
+        if not p.is_absolute():
+            p = root / p
+        if not p.exists():
+            missing_files += 1
+            continue
+
+        checked += 1
+
+        # if enforced or strict, validate table content
+        if enforced or strict:
+            # must be CSV mapping table
+            with p.open("r", encoding="utf-8-sig", newline="") as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+            _, fl, _ = validate_mapping_table_task(rows, outdir / f"m_{mid}", thresholds, strict=strict)
+            if not fl.get("mapping_table_ok", False):
+                enforced_failed += 1
+
+    flags = {
+        "mapping_index_ok": (missing_files == 0 and bad_entries == 0 and enforced_failed == 0),
+        "mapping_index_missing_files": missing_files,
+        "mapping_index_bad_entries": bad_entries,
+        "mapping_index_enforced_failed": enforced_failed,
+        "mapping_index_checked": checked,
     }
+    metrics = dict(flags)
 
-    flags: Dict[str, Any] = {
-        "mapping_columns_ok": mapping_columns_ok,
-        "mapping_authorities_ok": mapping_authorities_ok,
-        "mapping_ids_ok": mapping_ids_ok,
-        "mapping_evidence_ok": mapping_evidence_ok,
-        "mapping_review_ok": mapping_review_ok,
-        "mapping_expiry_ok": mapping_expiry_ok,
-        "mapping_table_ok": mapping_table_ok,
-    }
+    p_json = outdir / "mapping_index_validate.json"
+    p_md = outdir / "mapping_index_validate.md"
+    p_json.write_text(json.dumps({"metrics": metrics, "flags": flags}, indent=2, sort_keys=True), encoding="utf-8")
+    p_md.write_text(
+        "# Mapping Index Validation\n\n"
+        f"- checked: **{checked}**\n"
+        f"- missing_files: **{missing_files}**\n"
+        f"- bad_entries: **{bad_entries}**\n"
+        f"- enforced_failed: **{enforced_failed}**\n"
+        f"- ok: **{flags['mapping_index_ok']}**\n",
+        encoding="utf-8",
+    )
 
-    out_files: List[Path] = []
-
-    # Write validation CSV
-    if write_validation_csv:
-        out_rows: List[Dict[str, Any]] = []
-        for idx, (r, rr) in enumerate(zip(rows, results), start=1):
-            out_rows.append({
-                "row": idx,
-                "ok": rr.ok,
-                "source_authority": r.get("source_authority",""),
-                "source_id": r.get("source_id",""),
-                "target_authority": r.get("target_authority",""),
-                "target_id": r.get("target_id",""),
-                "evidence_link": r.get("evidence_link",""),
-                "review_utc": r.get("review_utc",""),
-                "expires_utc": r.get("expires_utc",""),
-                "errors": "|".join(rr.errors),
-            })
-        csv_path = outdir / csv_name
-        _write_csv(csv_path, out_rows)
-        out_files.append(csv_path)
-
-    # Write markdown summary
-    if write_validation_md:
-        lines: List[str] = []
-        lines.append("# Mapping Table Validation")
-        lines.append("")
-        lines.append(f"- rows_total: **{metrics['mapping_rows_total']}**")
-        lines.append(f"- rows_ok: **{metrics['mapping_rows_ok']}**")
-        lines.append(f"- rows_error: **{metrics['mapping_rows_error']}**")
-        lines.append(f"- mapping_table_ok: **{flags['mapping_table_ok']}**")
-        lines.append("")
-        if missing_cols:
-            lines.append("## Missing required columns")
-            for c in missing_cols:
-                lines.append(f"- {c}")
-            lines.append("")
-        # show first 10 row errors
-        lines.append("## First errors (up to 10 rows)")
-        shown = 0
-        for idx, rr in enumerate(results, start=1):
-            if rr.ok:
-                continue
-            shown += 1
-            lines.append(f"- row {idx}: " + ", ".join(rr.errors))
-            if shown >= 10:
-                break
-        if shown == 0:
-            lines.append("- (none)")
-        md_path = outdir / md_name
-        _write_md(md_path, "\n".join(lines) + "\n")
-        out_files.append(md_path)
-
-    return metrics, flags, out_files
+    return metrics, flags, [p_json, p_md]
