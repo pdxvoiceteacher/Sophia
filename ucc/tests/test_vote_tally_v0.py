@@ -101,3 +101,53 @@ def test_tally_can_sign_and_anchor(tmp_path: Path):
 
     L = Ledger(path=ledger)
     L.verify()
+
+def test_tally_coherence_weighting_registry(tmp_path: Path):
+    # Requires coherenceledger (installed in your venv & in CI workflows that install it)
+    from coherenceledger.keystore import KeyStore
+
+    # Make a small repo root with keystore so we can sign a ballot and know the DID
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / ".secrets").mkdir()
+    keystore = repo_root / ".secrets" / "ks.json"
+    KeyStore(path=keystore).generate()
+
+    # Create an OPEN manifest with coherence weighting + cap
+    outdir = tmp_path / "vote"
+    m = build_vote_manifest(
+        title="M",
+        purpose_id="p",
+        purpose_statement="s",
+        scope="org.governance",
+        anonymity_mode="open",
+        tally_mode="plaintext",
+        weighting_mode="coherence",
+        weighting_params={"scale": 1.0, "cap": 1.0},
+    )
+    mp = write_vote_manifest(outdir=outdir, manifest=m, sign=False, anchor=False)
+    manifest = json.loads(mp.read_text(encoding="utf-8"))
+
+    # Sign one ballot (gives us a DID)
+    b = build_ballot(
+        manifest_id=manifest["manifest_id"],
+        ballot_type="single_choice",
+        selection={"choice": "YES"},
+    )
+    write_ballot(outdir=outdir, ballot=b, manifest=manifest, sign=True, anchor=False, repo_root=repo_root, keystore_path=keystore, ledger_path=repo_root / "ledger.jsonl")
+
+    # Build registry giving that DID score 0.5 -> expected weighted YES = 0.5
+    did_obj, _ = KeyStore(path=keystore).load_keypair()
+    reg = {did_obj.did: 0.5}
+
+    from ucc.vote_tally import tally_ballots
+    ballots = list((outdir / "ballots").glob("*.json"))
+    t = tally_ballots(
+        manifest=manifest,
+        ballot_paths=ballots,
+        verify_ballot_signatures=True,
+        strict=True,
+        coherence_registry=reg,
+    )
+
+    assert t["weighted_counts"]["YES"] == pytest.approx(0.5)

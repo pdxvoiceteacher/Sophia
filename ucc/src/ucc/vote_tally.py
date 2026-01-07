@@ -1,23 +1,4 @@
-﻿"""
-Tally v0 (purpose-bound to Vote Manifest v0)
-
-Reads:
-- vote_manifest.json (required)
-- ballots/*.json (0..N)
-
-Produces:
-- tally.json (counts by choice)
-Optionally:
-- DID-signs the tally file
-- ledger-anchors the tally file when COHERENCELEDGER_ENABLE is truthy
-
-Design goals:
-- Cross-platform (pathlib)
-- Deterministic canonicalization for signatures
-- BOM-tolerant reads (utf-8-sig)
-- Modular: tally works without coherenceledger unless sign/anchor is enabled
-"""
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
@@ -29,7 +10,7 @@ import json
 import os
 
 
-TALLY_SCHEMA_ID = "ucc.vote_tally.v0"
+TALLY_SCHEMA_ID = "ucc.vote_tally.v1"
 
 
 def _utc_now_iso() -> str:
@@ -81,25 +62,64 @@ def load_ballot(ballot_path: Path) -> Dict[str, Any]:
     return b
 
 
-def _verify_signed_payload(obj: Dict[str, Any]) -> None:
+def load_coherence_registry(path: Path) -> Dict[str, float]:
+    """
+    Coherence registry format (JSON):
+      { "did:key:...": 0.83, "did:key:...": 0.42 }
+
+    Accepts BOM (utf-8-sig). Values are coerced to float.
+    """
+    if not path.exists():
+        return {}
+    obj = json.loads(path.read_text(encoding="utf-8-sig"))
+    out: Dict[str, float] = {}
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            try:
+                out[str(k)] = float(v)
+            except Exception:
+                continue
+    return out
+
+
+def _verify_signed_payload(obj: Dict[str, Any]) -> str:
     """
     Verifies a DID signature if present.
-    If signature is absent, caller decides whether that is allowed.
+    Returns signer DID.
     """
     sig = obj.get("signature")
     if not sig:
         raise ValueError("signature missing")
 
-    # Build payload = obj without signature, canonicalized
     body = dict(obj)
     body.pop("signature", None)
     payload = _canonical_dumps(body).encode("utf-8")
 
-    # verify using coherenceledger helpers
     from coherenceledger.crypto import b64decode, load_public_key_raw  # type: ignore
 
     pub = load_public_key_raw(b64decode(sig["public_key_b64"]))
     pub.verify(b64decode(sig["signature"]), payload)
+
+    did = sig.get("did")
+    if not isinstance(did, str) or not did:
+        raise ValueError("signature.did missing")
+    return did
+
+
+def _weight_from_coherence(
+    *,
+    did: str,
+    registry: Dict[str, float],
+    scale: float,
+    cap: float,
+) -> float:
+    score = float(registry.get(did, 0.0))
+    if score < 0:
+        score = 0.0
+    w = score * scale
+    if cap > 0:
+        w = min(w, cap)
+    return float(w)
 
 
 def tally_ballots(
@@ -108,6 +128,7 @@ def tally_ballots(
     ballot_paths: List[Path],
     verify_ballot_signatures: bool = False,
     strict: bool = False,
+    coherence_registry: Optional[Dict[str, float]] = None,
 ) -> Dict[str, Any]:
     """
     Returns tally dict. Does NOT write to disk.
@@ -115,28 +136,42 @@ def tally_ballots(
     manifest_id = manifest["manifest_id"]
     anon_mode = (manifest.get("anonymity", {}) or {}).get("mode", "open")
 
+    weighting = manifest.get("weighting", {}) if isinstance(manifest.get("weighting"), dict) else {}
+    w_mode = weighting.get("mode", "one_person_one_vote")
+    w_params = weighting.get("params", {}) if isinstance(weighting.get("params"), dict) else {}
+
+    # Coherence weighting parameters (guardrail enforces cap for public.deliberation in strict)
+    scale = float(w_params.get("scale", 1.0)) if w_mode == "coherence" else 1.0
+    cap = float(w_params.get("cap", 0.0)) if w_mode == "coherence" else 0.0
+    if w_mode == "coherence" and strict and cap <= 0:
+        raise ValueError("coherence weighting in strict mode requires weighting.params.cap > 0")
+
+    # Weighted counts are floats; unweighted counts are ints.
     counts: Dict[str, int] = {}
+    weighted_counts: Dict[str, float] = {}
+
     seen = 0
     valid = 0
     invalid = 0
     invalid_reasons: List[Dict[str, str]] = []
-
     type_counts: Dict[str, int] = {}
+
+    # For coherence weighting, we require signer DID (open ballots only)
+    registry = coherence_registry or {}
 
     for bp in ballot_paths:
         seen += 1
         try:
             b = load_ballot(bp)
 
-            # enforce manifest match
             if b.get("manifest_id") != manifest_id:
                 raise ValueError("manifest_id mismatch")
 
-            # optional signature verification (only meaningful for open ballots)
-            if verify_ballot_signatures:
+            signer_did: Optional[str] = None
+            if verify_ballot_signatures or w_mode == "coherence":
                 if anon_mode != "open" and strict:
                     raise ValueError(f"manifest anonymity '{anon_mode}' forbids DID ballot signatures in strict mode")
-                _verify_signed_payload(b)
+                signer_did = _verify_signed_payload(b)
 
             bt = (b.get("ballot") or {}).get("type")
             sel = (b.get("ballot") or {}).get("selection")
@@ -145,11 +180,30 @@ def tally_ballots(
 
             type_counts[bt] = type_counts.get(bt, 0) + 1
 
+            def add_choice(choice: str, weight: float) -> None:
+                counts[choice] = counts.get(choice, 0) + 1
+                weighted_counts[choice] = float(weighted_counts.get(choice, 0.0) + weight)
+
+            # Determine weight per ballot
+            if w_mode == "one_person_one_vote":
+                weight = 1.0
+            elif w_mode == "coherence":
+                assert signer_did is not None
+                weight = _weight_from_coherence(did=signer_did, registry=registry, scale=scale, cap=cap)
+            elif w_mode == "quadratic":
+                # placeholder: treat as 1 for now (future: quadratic credits)
+                weight = 1.0
+            elif w_mode == "token":
+                # placeholder: treat as 1 for now (future: token balance)
+                weight = 1.0
+            else:
+                raise ValueError(f"unsupported weighting mode: {w_mode}")
+
             if bt == "single_choice":
                 choice = (sel or {}).get("choice")
                 if not isinstance(choice, str) or not choice:
                     raise ValueError("single_choice requires selection.choice string")
-                counts[choice] = counts.get(choice, 0) + 1
+                add_choice(choice, weight)
 
             elif bt == "approval":
                 approve = (sel or {}).get("approve", [])
@@ -157,7 +211,7 @@ def tally_ballots(
                     raise ValueError("approval requires selection.approve list")
                 for c in approve:
                     if isinstance(c, str) and c:
-                        counts[c] = counts.get(c, 0) + 1
+                        add_choice(c, weight)
 
             elif bt == "ranked":
                 rank = (sel or {}).get("rank", [])
@@ -165,7 +219,8 @@ def tally_ballots(
                     raise ValueError("ranked requires non-empty selection.rank list")
                 first = rank[0]
                 if isinstance(first, str) and first:
-                    counts[first] = counts.get(first, 0) + 1
+                    add_choice(first, weight)
+
             else:
                 raise ValueError(f"unsupported ballot type: {bt}")
 
@@ -176,7 +231,7 @@ def tally_ballots(
             invalid_reasons.append({"path": str(bp), "reason": str(e)})
 
     tally: Dict[str, Any] = {
-        "version": 1,
+        "version": 2,
         "schema_id": TALLY_SCHEMA_ID,
         "tally_id": str(uuid4()),
         "created_at": _utc_now_iso(),
@@ -185,6 +240,8 @@ def tally_ballots(
             "manifest_anonymity_mode": anon_mode,
             "verify_ballot_signatures": bool(verify_ballot_signatures),
             "strict": bool(strict),
+            "weighting_mode": w_mode,
+            "weighting_params": w_params,
         },
         "ballots": {
             "seen": seen,
@@ -195,7 +252,11 @@ def tally_ballots(
         "counts": counts,
     }
 
-    # include invalid reasons only if asked (avoid leaking paths in some contexts)
+    # Always include weighted_counts for coherence mode; otherwise omit for stability
+    if w_mode == "coherence":
+        tally["weighted_counts"] = weighted_counts
+        tally["coherence_registry_used"] = True
+
     if strict and invalid_reasons:
         tally["invalid_reasons"] = invalid_reasons
 
@@ -281,10 +342,8 @@ def write_tally(
     keystore_path: Optional[Path] = None,
     ledger_path: Optional[Path] = None,
     ledger_purpose: str = "ucc.vote_tally.anchor",
+    coherence_registry_path: Optional[Path] = None,
 ) -> Path:
-    """
-    Writes outdir/tally.json and optionally signs+anchors it.
-    """
     outdir = outdir.resolve()
     outdir.mkdir(parents=True, exist_ok=True)
 
@@ -300,11 +359,19 @@ def write_tally(
     ballots_dir = outdir / "ballots"
     ballot_paths = sorted(ballots_dir.glob("*.json")) if ballots_dir.exists() else []
 
+    # Load coherence registry if requested or env provided
+    reg_path = coherence_registry_path
+    if reg_path is None and os.getenv("COHERENCE_REGISTRY", ""):
+        reg_path = Path(os.getenv("COHERENCE_REGISTRY", "")).expanduser()
+
+    registry = load_coherence_registry(reg_path) if reg_path else {}
+
     tally = tally_ballots(
         manifest=manifest,
         ballot_paths=ballot_paths,
         verify_ballot_signatures=verify_ballot_signatures,
         strict=strict,
+        coherence_registry=registry,
     )
 
     if sign:
@@ -330,11 +397,6 @@ def write_tally(
 
 
 def write_tally_env(*, outdir: Path, manifest_path: Path, verify_ballot_signatures: bool = False) -> Path:
-    """
-    Env-gated convenience:
-      if COHERENCELEDGER_ENABLE -> sign+anchor
-      else -> write only
-    """
     enable = _truthy_env("COHERENCELEDGER_ENABLE")
     strict = _truthy_env("COHERENCELEDGER_STRICT")
     purpose = os.getenv("COHERENCELEDGER_PURPOSE", "ucc.vote_tally.anchor")
