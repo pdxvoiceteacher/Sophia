@@ -1,0 +1,44 @@
+{
+  "engine_id": "crop_circle",
+  "engine_version": "0.1.0",
+  "description": "Crop-circle motif + rotation invariance numeric checks; emits rotated centers CSV + global summary row.",
+  "outputs": {
+    "run_files": [
+      { "name": "logs_crop_circle_rotated_centers.json", "path": "logs_crop_circle_rotated_centers.json", "format": "json" }
+    ],
+    "artifacts": [
+      { "name": "crop_circle_rotated_centers.csv", "path": "artifacts/crop_circle_rotated_centers.csv", "format": "csv" }
+    ]
+  },
+  "metrics": {
+    "owns": [
+      "/properties/crop_circle"
+    ],
+    "produces": [
+      "/properties/crop_circle",
+      "/properties/telemetry_ok/properties/crop_rotation_ok"
+    ],
+    "schema_fragments": [
+      {
+        "json_pointer": "/properties/crop_circle",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rotation"],
+          "properties": {
+            "rotation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["max_absDiff_all", "max_absDiffToR_all", "okAll"],
+              "properties": {
+                "max_absDiff_all": { "type": ["number", "null"], "minimum": 0 },
+                "max_absDiffToR_all": { "type": ["number", "null"], "minimum": 0 },
+                "okAll": { "type": ["boolean", "null"] }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

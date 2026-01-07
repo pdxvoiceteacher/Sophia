@@ -1,0 +1,95 @@
+{
+  "engine_id": "run_wrapper_core",
+  "engine_version": "0.1.0",
+  "description": "Run wrapper core: executes Lean evals, writes run folder, metrics.json, manifest.json, events.jsonl.",
+  "outputs": {
+    "run_files": [
+      { "name": "events.jsonl", "path": "events.jsonl", "format": "jsonl" },
+      { "name": "metrics.json", "path": "metrics.json", "format": "json" },
+      { "name": "manifest.json", "path": "manifest.json", "format": "json" },
+      { "name": "logs_*.json", "path": "logs_*.json", "format": "json" }
+    ],
+    "artifacts": [
+      { "name": "tree_of_life_bands.csv", "path": "artifacts/tree_of_life_bands.csv", "format": "csv" },
+      { "name": "crop_circle_rotated_centers.csv", "path": "artifacts/crop_circle_rotated_centers.csv", "format": "csv" },
+      { "name": "music_scaffold_profiles.csv", "path": "artifacts/music_scaffold_profiles.csv", "format": "csv" },
+      { "name": "music_scale.csv", "path": "artifacts/music_scale.csv", "format": "csv" },
+      { "name": "music_chords_major.csv", "path": "artifacts/music_chords_major.csv", "format": "csv" },
+      { "name": "music_chords_minor.csv", "path": "artifacts/music_chords_minor.csv", "format": "csv" }
+    ]
+  },
+  "metrics": {
+    "owns": [
+      "/properties/schema_version",
+      "/properties/run_id",
+      "/properties/generated_utc",
+      "/properties/counts",
+      "/properties/timings",
+      "/properties/guft",
+      "/properties/telemetry_ok"
+    ],
+    "produces": [
+      "/properties/schema_version",
+      "/properties/run_id",
+      "/properties/generated_utc",
+      "/properties/counts",
+      "/properties/timings"
+    ],
+    "schema_fragments": [
+      {
+        "json_pointer": "/properties/counts",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["events", "artifacts_csv"],
+          "properties": {
+            "events": { "type": "integer", "minimum": 2 },
+            "artifacts_csv": { "type": "integer", "minimum": 1 }
+          }
+        }
+      },
+      {
+        "json_pointer": "/properties/timings",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["step_duration_sec"],
+          "properties": {
+            "step_duration_sec": {
+              "type": "object",
+              "additionalProperties": { "type": "number", "minimum": 0 }
+            }
+          }
+        }
+      },
+      {
+        "json_pointer": "/properties/guft",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["E", "T", "psi", "deltaS"],
+          "properties": {
+            "E": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "T": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "psi": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "deltaS": { "type": ["number", "null"] }
+          }
+        }
+      },
+      {
+        "json_pointer": "/properties/telemetry_ok",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["crop_rotation_ok", "music_major_summary_ok", "music_minor_summary_ok", "all_ok"],
+          "properties": {
+            "crop_rotation_ok": { "type": "boolean" },
+            "music_major_summary_ok": { "type": "boolean" },
+            "music_minor_summary_ok": { "type": "boolean" },
+            "all_ok": { "type": "boolean" }
+          }
+        }
+      }
+    ]
+  }
+}

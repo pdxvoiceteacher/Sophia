@@ -1,0 +1,12 @@
+{
+  "taxonomy_version": "telemetry-taxonomy.v1",
+  "schema_root": "../telemetry_v1.schema.json",
+  "modules": [
+    { "engine_id": "run_wrapper_core", "path": "modules/run_wrapper_core.module.json" },
+    { "engine_id": "tree_of_life", "path": "modules/tree_of_life.module.json" },
+    { "engine_id": "crop_circle", "path": "modules/crop_circle.module.json" },
+    { "engine_id": "music_scaffold", "path": "modules/music_scaffold.module.json" },
+    { "engine_id": "telemetry_music_bridge", "path": "modules/telemetry_music_bridge.module.json" },
+    { "engine_id": "telemetry_dashboard", "path": "modules/telemetry_dashboard.module.json" }
+  ]
+}

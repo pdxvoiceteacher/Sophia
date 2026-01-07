@@ -1,0 +1,17 @@
+{
+  "engine_id": "telemetry_music_bridge",
+  "engine_version": "0.1.0",
+  "description": "Post-run MIDI emission from chord CSVs: writes music_major.mid and music_minor.mid to run artifacts.",
+  "outputs": {
+    "run_files": [],
+    "artifacts": [
+      { "name": "music_major.mid", "path": "artifacts/music_major.mid", "format": "midi" },
+      { "name": "music_minor.mid", "path": "artifacts/music_minor.mid", "format": "midi" }
+    ]
+  },
+  "metrics": {
+    "owns": [],
+    "produces": [],
+    "schema_fragments": []
+  }
+}

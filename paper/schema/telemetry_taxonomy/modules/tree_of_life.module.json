@@ -1,0 +1,43 @@
+{
+  "engine_id": "tree_of_life",
+  "engine_version": "0.1.0",
+  "description": "Tree-of-Life mapping to coherence bands; exports sephira table + band counts; provides guft E/T/psi proxy means.",
+  "outputs": {
+    "run_files": [
+      { "name": "logs_tree_of_life_bands.json", "path": "logs_tree_of_life_bands.json", "format": "json" }
+    ],
+    "artifacts": [
+      { "name": "tree_of_life_bands.csv", "path": "artifacts/tree_of_life_bands.csv", "format": "csv" }
+    ]
+  },
+  "metrics": {
+    "owns": [
+      "/properties/tree_of_life"
+    ],
+    "produces": [
+      "/properties/tree_of_life",
+      "/properties/guft/properties/E",
+      "/properties/guft/properties/T",
+      "/properties/guft/properties/psi"
+    ],
+    "schema_fragments": [
+      {
+        "json_pointer": "/properties/tree_of_life",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["band_counts", "n_rows", "E_mean", "T_mean", "psi_min", "psi_max", "psi_mean"],
+          "properties": {
+            "band_counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+            "n_rows": { "type": "integer", "minimum": 0 },
+            "E_mean": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "T_mean": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "psi_min": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "psi_max": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "psi_mean": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+          }
+        }
+      }
+    ]
+  }
+}

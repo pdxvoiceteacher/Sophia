@@ -1,0 +1,40 @@
+{
+  "engine_id": "music_scaffold",
+  "engine_version": "0.1.0",
+  "description": "Music ratio scaffold + chord profile CSVs; produces summary_ok flags for major/minor and contributes to telemetry_ok.",
+  "outputs": {
+    "run_files": [
+      { "name": "logs_music_profiles.json", "path": "logs_music_profiles.json", "format": "json" }
+    ],
+    "artifacts": [
+      { "name": "music_scaffold_profiles.csv", "path": "artifacts/music_scaffold_profiles.csv", "format": "csv" },
+      { "name": "music_scale.csv", "path": "artifacts/music_scale.csv", "format": "csv" },
+      { "name": "music_chords_major.csv", "path": "artifacts/music_chords_major.csv", "format": "csv" },
+      { "name": "music_chords_minor.csv", "path": "artifacts/music_chords_minor.csv", "format": "csv" }
+    ]
+  },
+  "metrics": {
+    "owns": [
+      "/properties/music"
+    ],
+    "produces": [
+      "/properties/music",
+      "/properties/telemetry_ok/properties/music_major_summary_ok",
+      "/properties/telemetry_ok/properties/music_minor_summary_ok"
+    ],
+    "schema_fragments": [
+      {
+        "json_pointer": "/properties/music",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["major", "minor"],
+          "properties": {
+            "major": { "type": "object", "additionalProperties": false, "required": ["summary_ok"], "properties": { "summary_ok": { "type": ["boolean", "null"] } } },
+            "minor": { "type": "object", "additionalProperties": false, "required": ["summary_ok"], "properties": { "summary_ok": { "type": ["boolean", "null"] } } }
+          }
+        }
+      }
+    ]
+  }
+}

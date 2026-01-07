@@ -1,0 +1,14 @@
+{
+  "engine_id": "telemetry_dashboard",
+  "engine_version": "0.1.0",
+  "description": "Live dashboard server: reads runs, serves metrics/artifacts, streams ws events. No run outputs by default.",
+  "outputs": {
+    "run_files": [],
+    "artifacts": []
+  },
+  "metrics": {
+    "owns": [],
+    "produces": [],
+    "schema_fragments": []
+  }
+}
