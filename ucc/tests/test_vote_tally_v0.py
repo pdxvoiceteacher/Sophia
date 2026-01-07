@@ -18,6 +18,7 @@ def test_tally_counts_single_choice(tmp_path: Path):
         purpose_statement="s",
         scope="org.governance",
         anonymity_mode="open",
+    electorate_rules={"max_ballots_per_did": 2},
     )
     mp = write_vote_manifest(outdir=outdir, manifest=m, sign=False, anchor=False)
     manifest = json.loads(mp.read_text(encoding="utf-8"))
@@ -59,6 +60,7 @@ def test_tally_can_sign_and_anchor(tmp_path: Path):
         purpose_statement="s2",
         scope="org.governance",
         anonymity_mode="open",
+    electorate_rules={"max_ballots_per_did": 2},
     )
     mp = write_vote_manifest(outdir=outdir, manifest=m, sign=False, anchor=False, repo_root=repo_root, keystore_path=keystore, ledger_path=ledger)
     manifest = json.loads(mp.read_text(encoding="utf-8"))
@@ -151,3 +153,5 @@ def test_tally_coherence_weighting_registry(tmp_path: Path):
     )
 
     assert t["weighted_counts"]["YES"] == pytest.approx(0.5)
+
+
