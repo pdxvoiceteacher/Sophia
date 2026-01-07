@@ -16,12 +16,12 @@ def load_json_dict(arg_value: str, file_value: str | None, label: str) -> dict:
     """
     if file_value:
         p = Path(file_value)
-        return json.loads(p.read_text(encoding="utf-8"))
+        return json.loads(p.read_text(encoding="utf-8-sig"))
 
     s = (arg_value or "").strip()
     if s.startswith("@"):
         p = Path(s[1:])
-        return json.loads(p.read_text(encoding="utf-8"))
+        return json.loads(p.read_text(encoding="utf-8-sig"))
 
     try:
         return json.loads(s) if s else {}
@@ -85,3 +85,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
