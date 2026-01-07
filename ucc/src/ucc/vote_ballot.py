@@ -216,6 +216,29 @@ def write_ballot(
     if sign and anon_mode != "open" and strict:
         raise ValueError(f"Manifest anonymity mode '{anon_mode}' forbids DID signing in strict mode.")
 
+
+    # VOTE_REGISTRY_ENFORCE: open-mode replay protection (one ballot per DID in strict unless overridden)
+    if sign and anon_mode == "open":
+        # determine max ballots per DID
+        rules = (manifest.get("electorate") or {}).get("rules") or {}
+        max_raw = rules.get("max_ballots_per_did", None)
+
+        if max_raw is None:
+            max_per_did = 1 if strict else 0
+        else:
+            try:
+                max_per_did = int(max_raw)
+            except Exception:
+                max_per_did = 1 if strict else 0
+
+        if max_per_did > 0:
+            from coherenceledger.keystore import KeyStore  # type: ignore
+            from ucc.vote_registry import enforce_max_ballots_per_did
+
+            ks = KeyStore(path=keystore_path)
+            did_obj, _kp = ks.load_keypair()
+            enforce_max_ballots_per_did(outdir / "ballots", did_obj.did, max_per_did)
+
     if sign:
         _sign_ballot_inplace(ballot, keystore_path=keystore_path)
 

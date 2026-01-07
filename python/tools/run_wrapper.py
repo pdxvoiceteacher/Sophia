@@ -136,25 +136,32 @@ def parse_tree_of_life(csv_path: str) -> Dict[str, Any]:
     }
 
 def parse_crop_circle_summary(csv_path: str) -> Dict[str, Any]:
-    # global summary row: theta=-1, i=-1, ... , absDiff, absDiffToR, okAngle
-    max_absdiff = None
-    max_absdiff_to_r = None
-    ok_all = None
+    """
+    Parse the global summary row (theta=-1, i=-1) from crop_circle_rotated_centers.csv.
+
+    Robust to shorter rows (missing placeholder columns) by reading from row end:
+      last-3 = absDiff, last-2 = absDiffToR, last-1 = okAngle
+    """
+    max_absdiff: Optional[float] = None
+    max_absdiff_to_r: Optional[float] = None
+    ok_all: Optional[bool] = None
 
     with open(csv_path, "r", encoding="utf-8", newline="") as f:
         r = csv.reader(f)
-        _ = next(r, None)
+        _ = next(r, None)  # header
         for row in r:
-            if not row or len(row) < 11:
+            if not row:
                 continue
-            if row[0].strip().startswith("-1") and row[1].strip() == "-1":
-                max_absdiff = safe_float(row[8])
-                max_absdiff_to_r = safe_float(row[9])
-                ok_all = safe_bool(row[10])
+            theta = row[0].strip()
+            i = row[1].strip() if len(row) > 1 else ""
+            if theta.startswith("-1") and i == "-1":
+                if len(row) >= 3:
+                    max_absdiff = safe_float(row[-3])
+                    max_absdiff_to_r = safe_float(row[-2])
+                    ok_all = safe_bool(row[-1])
                 break
 
     return {"max_absDiff_all": max_absdiff, "max_absDiffToR_all": max_absdiff_to_r, "okAll": ok_all}
-
 def parse_music_summary_ok(csv_path: str) -> Optional[bool]:
     with open(csv_path, "r", encoding="utf-8", newline="") as f:
         r = csv.reader(f)

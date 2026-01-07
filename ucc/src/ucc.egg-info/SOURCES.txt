@@ -20,6 +20,7 @@ src/ucc/validate_grammar.py
 src/ucc/vote_ballot.py
 src/ucc/vote_guardrail.py
 src/ucc/vote_manifest.py
+src/ucc/vote_registry.py
 src/ucc/vote_tally.py
 src/ucc.egg-info/PKG-INFO
 src/ucc.egg-info/SOURCES.txt
