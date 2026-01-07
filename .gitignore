@@ -68,3 +68,7 @@ python/kontainer/logs/
 # CoherenceLedger
 /.secrets/
 
+
+# Local vote artifacts
+/ucc/out/votes/
+
