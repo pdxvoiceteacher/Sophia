@@ -1,0 +1,40 @@
+﻿name: vote-manifest-security
+
+on:
+  push:
+    paths:
+      - "ucc/src/ucc/vote_manifest.py"
+      - "ucc/tests/test_vote_manifest_v0.py"
+      - "tools/coherenceledger_bootstrap/**"
+      - ".github/workflows/vote_manifest_security.yml"
+  pull_request:
+    paths:
+      - "ucc/src/ucc/vote_manifest.py"
+      - "ucc/tests/test_vote_manifest_v0.py"
+      - "tools/coherenceledger_bootstrap/**"
+      - ".github/workflows/vote_manifest_security.yml"
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e "tools/coherenceledger_bootstrap[dev]"
+          python -m pip install -e "ucc"
+
+      - name: Run vote manifest tests
+        run: |
+          python -m pytest -q ucc/tests/test_vote_manifest_v0.py
