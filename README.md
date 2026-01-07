@@ -14,7 +14,7 @@
 
 This repository is a working lab for cross-domain coherence modeling and formal verification (Lean 4 + Mathlib) alongside Python engines (UCC + coherence/music utilities). The goal is a unified, testable interface for reasoning about coherence, coarse-graining, safety transitions, and generative mappings (including sacred geometry and musical ratio systems), with paper-facing “gloss” layers and reproducible artifacts.
 
-# Status: ✅ Everything referenced below is building green under Lean 4.27.0-rc1.
+**Status: ✅ Everything referenced below is building green under Lean 4.27.0-rc1.**
 
 ## Repo Structure (high level)
 
@@ -64,7 +64,7 @@ Two safe update styles are formalized:
 
 E/T-centric step (stepET) — update E and T independently, clamp each into [0,1]
 
-# Key theorems:
+**Key theorems:**
 
 validTransition_stepPsi / validTransition_stepET
 Each step respects the regime graph.
@@ -78,7 +78,7 @@ Paper-facing wrapper layer
 
 A “gloss” layer provides stable lemma names and narrative-friendly constructors so a manuscript can cite Lean without exposing internal file structure.
 
-# This includes:
+**This includes:**
 
 stable lemma wrappers
 
@@ -86,18 +86,18 @@ sunflower packing bundle constructors
 
 successor-specialized corollaries
 
-Lean: Sacred Geometry Formalizations (formal + scaffolds)
+**Lean: Sacred Geometry Formalizations (formal + scaffolds)**
 Flower of Life / centered hex counts (formal)
 
 A Flower-of-Life / hex-lattice point count model using centered hex numbers:
 
-# recursive flowerPoints and proof that:
+recursive flowerPoints and proof that:
 
 flowerPoints n = centeredHex n
 
 Sacred circles + crop-circle scaffolding (formal + validation)
 
-Algebraic circle primitives:
+**Algebraic circle primitives:**
 
 circle structure with radius nonneg proof
 
@@ -113,7 +113,7 @@ count lemmas (rosette length; rosette+center count = k+1)
 
 signature structure (order,count) + validation lemma
 
-# Lean: Tree of Life → Coherence Lattice mapping (synced)
+**Lean: Tree of Life → Coherence Lattice mapping (synced)**
 
 We model the Tree of Life (Sephirot) as a mapping into the coherence lattice state space:
 
@@ -129,10 +129,10 @@ sephiraPsi_bounds : 0 ≤ sephiraPsi s ∧ sephiraPsi s ≤ 1
 
 A lightweight adjacency graph over Sephirot is included (TreeOfLifeGraphAddons) with psiPath + bounds over paths.
 
-## Lean: Music — ratios + scale scaffolds (synced profiles)
+**Lean: Music — ratios + scale scaffolds (synced profiles)**
 Just ratios (formal, Lean-light)
 
-# canonical ratios: unison, minor third, major third, fourth, fifth, octave
+canonical ratios: unison, minor third, major third, fourth, fifth, octave
 
 ordering / chain lemmas usable in narrative
 
@@ -168,11 +168,11 @@ generating CSV outputs for Python diffs
 
 reproducible paper artifacts
 
-# Crop circles: rotated centers + invariance checks
+**Crop circles: rotated centers + invariance checks**
 
 CropCircleRotatedCentersEval.lean
 
-# outputs CSV rows for each rotation angle:
+outputs CSV rows for each rotation angle:
 
 rotated centers
 
@@ -186,11 +186,11 @@ strict CSV column completion (okAngle column always present)
 
 comment separators # ---- next angle ---- for readability
 
-# Tree of Life: band table CSV
+**Tree of Life: band table CSV**
 
 TreeOfLifeBandCSV.lean
 
-# prints:
+prints:
 
 name, E, T, psi, band
 
@@ -198,7 +198,7 @@ band thresholds are configurable in the file
 
 exportable to paper/out/tree_of_life_bands.csv
 
-# Tree of Life: Real/Float spot checks
+**Tree of Life: Real/Float spot checks**
 
 TreeOfLifeRealFloatEval.lean
 
@@ -206,7 +206,7 @@ prints exact Rat psi and Float psi
 
 uses #reduce on Real psi terms for structural sanity (no execution)
 
-# Music: profile comparison CSVs
+**Music: profile comparison CSVs**
 
 MusicScaffoldEval.lean
 
