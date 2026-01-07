@@ -37,7 +37,7 @@ def test_vote_manifest_can_sign_and_anchor(tmp_path: Path):
 
     # Create keystore
     ks = KeyStore(path=keystore)
-    ks.generate_and_store()
+    ks.generate()
 
     outdir = tmp_path / "vote2"
     m = build_vote_manifest(
@@ -87,3 +87,4 @@ def test_vote_manifest_can_sign_and_anchor(tmp_path: Path):
 
     pub = load_public_key_raw(b64decode(sig["public_key_b64"]))
     pub.verify(b64decode(sig["signature"]), payload)
+
