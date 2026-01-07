@@ -10,13 +10,13 @@
 **Python + UCC + KONOMI:**  
 [![Python + UCC + KONOMI](https://github.com/pdxvoiceteacher/CoherenceLattice/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pdxvoiceteacher/CoherenceLattice/actions/workflows/ci.yml?query=branch%3Amaster)
 
-CoherenceLattice — GUFT / Coherence / Sacred Geometry / Generative Engines (Lean + Python)
+## CoherenceLattice — GUFT / Coherence / Sacred Geometry / Generative Engines (Lean + Python)
 
 This repository is a working lab for cross-domain coherence modeling and formal verification (Lean 4 + Mathlib) alongside Python engines (UCC + coherence/music utilities). The goal is a unified, testable interface for reasoning about coherence, coarse-graining, safety transitions, and generative mappings (including sacred geometry and musical ratio systems), with paper-facing “gloss” layers and reproducible artifacts.
 
-Status: ✅ Everything referenced below is building green under Lean 4.27.0-rc1.
+# Status: ✅ Everything referenced below is building green under Lean 4.27.0-rc1.
 
-Repo Structure (high level)
+## Repo Structure (high level)
 
 CoherenceLattice/Coherence/
 Lean modules for coherence lattice, ΔSyn dynamics guardrails, paper-facing wrappers, sacred geometry formalizations, and eval-only diagnostics.
@@ -40,7 +40,7 @@ State: points (E,T) in the unit square [0,1]×[0,1]
 
 Coherence: psi = E*T
 
-Proofs include:
+# Proofs include:
 
 psi_nonneg and psi_le_one → 0 ≤ psi ≤ 1
 
@@ -64,7 +64,7 @@ Two safe update styles are formalized:
 
 E/T-centric step (stepET) — update E and T independently, clamp each into [0,1]
 
-Key theorems:
+# Key theorems:
 
 validTransition_stepPsi / validTransition_stepET
 Each step respects the regime graph.
@@ -77,7 +77,8 @@ interpretation lemma variants linking ΔS sign to monotone drift (paper-friendly
 Paper-facing wrapper layer
 
 A “gloss” layer provides stable lemma names and narrative-friendly constructors so a manuscript can cite Lean without exposing internal file structure.
-This includes:
+
+# This includes:
 
 stable lemma wrappers
 
@@ -90,7 +91,7 @@ Flower of Life / centered hex counts (formal)
 
 A Flower-of-Life / hex-lattice point count model using centered hex numbers:
 
-recursive flowerPoints and proof that:
+# recursive flowerPoints and proof that:
 
 flowerPoints n = centeredHex n
 
@@ -112,7 +113,7 @@ count lemmas (rosette length; rosette+center count = k+1)
 
 signature structure (order,count) + validation lemma
 
-Lean: Tree of Life → Coherence Lattice mapping (synced)
+# Lean: Tree of Life → Coherence Lattice mapping (synced)
 
 We model the Tree of Life (Sephirot) as a mapping into the coherence lattice state space:
 
@@ -128,10 +129,10 @@ sephiraPsi_bounds : 0 ≤ sephiraPsi s ∧ sephiraPsi s ≤ 1
 
 A lightweight adjacency graph over Sephirot is included (TreeOfLifeGraphAddons) with psiPath + bounds over paths.
 
-Lean: Music — ratios + scale scaffolds (synced profiles)
+## Lean: Music — ratios + scale scaffolds (synced profiles)
 Just ratios (formal, Lean-light)
 
-canonical ratios: unison, minor third, major third, fourth, fifth, octave
+# canonical ratios: unison, minor third, major third, fourth, fifth, octave
 
 ordering / chain lemmas usable in narrative
 
@@ -167,11 +168,11 @@ generating CSV outputs for Python diffs
 
 reproducible paper artifacts
 
-Crop circles: rotated centers + invariance checks
+# Crop circles: rotated centers + invariance checks
 
 CropCircleRotatedCentersEval.lean
 
-outputs CSV rows for each rotation angle:
+# outputs CSV rows for each rotation angle:
 
 rotated centers
 
@@ -185,11 +186,11 @@ strict CSV column completion (okAngle column always present)
 
 comment separators # ---- next angle ---- for readability
 
-Tree of Life: band table CSV
+# Tree of Life: band table CSV
 
 TreeOfLifeBandCSV.lean
 
-prints:
+# prints:
 
 name, E, T, psi, band
 
@@ -197,7 +198,7 @@ band thresholds are configurable in the file
 
 exportable to paper/out/tree_of_life_bands.csv
 
-Tree of Life: Real/Float spot checks
+# Tree of Life: Real/Float spot checks
 
 TreeOfLifeRealFloatEval.lean
 
@@ -205,7 +206,7 @@ prints exact Rat psi and Float psi
 
 uses #reduce on Real psi terms for structural sanity (no execution)
 
-Music: profile comparison CSVs
+# Music: profile comparison CSVs
 
 MusicScaffoldEval.lean
 
@@ -220,7 +221,7 @@ includes per-profile __SUMMARY__ rows
 Exporting CSV Artifacts to paper/out
 One-shot export (Tree of Life, Crop circles, Music)
 
-Use the PowerShell export script shared in chat to generate:
+## Use the PowerShell export script shared in chat to generate:
 
 paper/out/tree_of_life_bands.csv
 
@@ -258,7 +259,7 @@ ucc/ (Universal Control Codex)
 
 python/src/ (coherence sim + coherence music experiments)
 
-Typical workflow:
+# Typical workflow:
 
 set up venv
 
@@ -268,13 +269,13 @@ compare outputs against exported Lean CSVs when relevant (e.g., music ratios / p
 
 (If you want, we can add a dedicated python/tools/compare_csv.py to diff Lean-exported CSVs vs Python engine output.)
 
-Notes on Encoding + Windows
+# Notes on Encoding + Windows
 
 The project uses UTF-8 (no BOM) for Lean files generated via PowerShell.
 
 ASCII-safe identifiers are used where Windows encoding pitfalls have previously caused “unexpected token” errors.
 
-Contributing / Workflow
+# Contributing / Workflow
 
 Make a change in Lean or Python
 
@@ -284,7 +285,7 @@ Run eval artifacts when appropriate and export to paper/out
 
 Commit Lean + exported CSV artifacts together when they substantively update the paper-facing story
 
-License / Attribution
+## License / Attribution
 
 This repo includes original work by UVLM/Prislac and collaborators, plus dependencies from Mathlib and standard toolchains.
 
