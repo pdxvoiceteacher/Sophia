@@ -12,6 +12,9 @@
     table td { padding: 2px 8px; vertical-align: top; }
     .muted { color: #666; }
     .err { color: #b00020; }
+    .ok { color: #0a7b2b; font-weight: 600; }
+    .bad { color: #b00020; font-weight: 600; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   </style>
 </head>
 <body>
@@ -36,6 +39,18 @@
     <button id="connectBtn">Connect</button>
 
     <span id="status" class="muted"></span>
+  </div>
+
+  <div class="row" style="margin-top:12px;">
+    <div class="box" style="min-width:320px;">
+      <div class="muted">GUFT Panel</div>
+      <div id="guftPanel" class="mono"></div>
+    </div>
+    <div class="box" style="flex:1; min-width:320px;">
+      <div class="muted">ψ sparkline (last N runs)</div>
+      <div id="sparkline" class="mono"></div>
+      <div id="sparkmeta" class="muted"></div>
+    </div>
   </div>
 
   <div class="row" style="margin-top:12px;">
@@ -76,7 +91,26 @@ function pretty(v) {
   return String(v);
 }
 
+function renderGuftPanel(metrics) {
+  const el = document.getElementById("guftPanel");
+  const guft = (metrics && metrics.guft) ? metrics.guft : {};
+  const tok = (metrics && metrics.telemetry_ok) ? metrics.telemetry_ok : {};
+  const ok = tok.all_ok === true;
+
+  const E = guft.E; const T = guft.T; const psi = guft.psi;
+  const okStr = ok ? "OK" : "NOT_OK";
+  const okCls = ok ? "ok" : "bad";
+
+  el.innerHTML =
+    `E=${E ?? ""}\n` +
+    `T=${T ?? ""}\n` +
+    `psi=${psi ?? ""}\n` +
+    `all_ok=<span class="${okCls}">${okStr}</span>`;
+}
+
 function renderMetrics(obj) {
+  renderGuftPanel(obj);
+
   const tbl = document.getElementById("metricsTbl");
   tbl.innerHTML = "";
   if (!obj || typeof obj !== "object") return;
@@ -127,6 +161,42 @@ async function loadRuns(keepValue=true) {
   }
 }
 
+async function loadSparkline(n=25) {
+  try {
+    const r = await fetch(`/api/runs/summaries?n=${n}`, { cache: "no-store" });
+    const j = await r.json();
+    const s = j.summaries || [];
+    const vals = s.map(x => x.psi).filter(v => typeof v === "number");
+    const blocks = "▁▂▃▄▅▆▇█";
+
+    if (!vals.length) {
+      document.getElementById("sparkline").textContent = "(no psi values)";
+      document.getElementById("sparkmeta").textContent = "";
+      return;
+    }
+
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const span = (max - min) || 1;
+
+    let line = "";
+    for (const x of s) {
+      const v = (typeof x.psi === "number") ? x.psi : null;
+      if (v === null) { line += " "; continue; }
+      const t = (v - min) / span;
+      const idx = Math.max(0, Math.min(blocks.length - 1, Math.floor(t * (blocks.length - 1))));
+      line += blocks[idx];
+    }
+
+    document.getElementById("sparkline").textContent = line;
+    document.getElementById("sparkmeta").textContent = `N=${s.length}  min=${min.toFixed(4)}  max=${max.toFixed(4)}`;
+
+  } catch (e) {
+    document.getElementById("sparkline").textContent = "(sparkline error)";
+    document.getElementById("sparkmeta").textContent = String(e);
+  }
+}
+
 async function loadArtifacts(runId) {
   const div = document.getElementById("artifacts");
   div.innerHTML = "";
@@ -166,9 +236,9 @@ async function connect() {
 
   if (!runId) { setStatus("no run_id selected", true); return; }
 
-  // Always populate via HTTP first (works even if WS fails)
   setStatus(`loading run_id=${runId}…`);
   await loadInitial(runId);
+  await loadSparkline(25);
 
   const wsProto = (location.protocol === "https:") ? "wss" : "ws";
   const url = `${wsProto}://${location.host}/ws?run_id=${encodeURIComponent(runId)}&from_start=${fromStart}&poll=${encodeURIComponent(poll)}`;
@@ -193,10 +263,11 @@ async function connect() {
 }
 
 document.getElementById("connectBtn").addEventListener("click", () => { connect(); });
-document.getElementById("refreshBtn").addEventListener("click", async () => { await loadRuns(true); });
+document.getElementById("refreshBtn").addEventListener("click", async () => { await loadRuns(true); await loadSparkline(25); });
 
 setInterval(async () => {
   const runs = await loadRuns(true);
+  await loadSparkline(25);
   if (!runs.length) return;
 
   const follow = document.getElementById("followLatest").checked;
@@ -211,6 +282,7 @@ setInterval(async () => {
 
 (async function init() {
   const runs = await loadRuns(false);
+  await loadSparkline(25);
   if (runs.length) document.getElementById("runSelect").value = runs[0].run_id;
 })();
 </script>

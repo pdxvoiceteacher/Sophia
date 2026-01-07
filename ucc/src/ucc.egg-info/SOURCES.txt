@@ -19,6 +19,7 @@ src/ucc/models.py
 src/ucc/validate_grammar.py
 src/ucc/vote_ballot.py
 src/ucc/vote_manifest.py
+src/ucc/vote_tally.py
 src/ucc.egg-info/PKG-INFO
 src/ucc.egg-info/SOURCES.txt
 src/ucc.egg-info/dependency_links.txt
@@ -69,3 +70,4 @@ tests/test_ucc_smoke.py
 tests/test_validate_mapping_table_step.py
 tests/test_vote_ballot_v0.py
 tests/test_vote_manifest_v0.py
+tests/test_vote_tally_v0.py
