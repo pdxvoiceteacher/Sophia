@@ -9,7 +9,7 @@
     .box { border: 1px solid #ddd; padding: 12px; border-radius: 10px; }
     #events { height: 320px; overflow: auto; background: #0b0b0b; color: #e8e8e8; padding: 10px; border-radius: 10px; }
     code { white-space: pre; }
-    table td { padding: 2px 8px; }
+    table td { padding: 2px 8px; vertical-align: top; }
     .muted { color: #666; }
     .err { color: #b00020; }
   </style>
@@ -25,7 +25,8 @@
 
     <div>
       <div class="muted">Options</div>
-      <label><input type="checkbox" id="fromStart"> from_start</label>
+      <label><input type="checkbox" id="followLatest" checked> follow latest</label>
+      <label style="margin-left:10px;"><input type="checkbox" id="fromStart"> from_start</label>
       <label style="margin-left:10px;">poll
         <input id="poll" type="number" value="0.5" step="0.1" min="0.1" style="width:70px;">
       </label>
@@ -38,11 +39,11 @@
   </div>
 
   <div class="row" style="margin-top:12px;">
-    <div class="box" style="flex:1; min-width:320px;">
+    <div class="box" style="flex:1; min-width:360px;">
       <div class="muted">Latest metrics.json</div>
       <table id="metricsTbl"></table>
     </div>
-    <div class="box" style="flex:1; min-width:320px;">
+    <div class="box" style="flex:1; min-width:360px;">
       <div class="muted">Artifacts</div>
       <div id="artifacts"></div>
     </div>
@@ -69,6 +70,12 @@ function addEventLine(line) {
   box.scrollTop = box.scrollHeight;
 }
 
+function pretty(v) {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "object") return JSON.stringify(v, null, 2);
+  return String(v);
+}
+
 function renderMetrics(obj) {
   const tbl = document.getElementById("metricsTbl");
   tbl.innerHTML = "";
@@ -76,7 +83,7 @@ function renderMetrics(obj) {
   for (const k of Object.keys(obj).sort()) {
     const tr = document.createElement("tr");
     const td1 = document.createElement("td"); td1.textContent = k;
-    const td2 = document.createElement("td"); td2.textContent = String(obj[k]);
+    const td2 = document.createElement("td"); td2.textContent = pretty(obj[k]);
     tr.appendChild(td1); tr.appendChild(td2);
     tbl.appendChild(tr);
   }
@@ -102,20 +109,10 @@ function setRunSelectOptions(runs, keepValue) {
     sel.appendChild(opt);
   }
 
-  if (prev && runs.some(r => r.run_id === prev)) {
-    sel.value = prev;
-  }
+  if (prev && runs.some(r => r.run_id === prev)) sel.value = prev;
 }
 
 async function loadRuns(keepValue=true) {
-  const sel = document.getElementById("runSelect");
-  if (!sel.options.length) {
-    const opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "Loading runs…";
-    sel.appendChild(opt);
-  }
-
   try {
     const r = await fetch("/api/runs", { cache: "no-store" });
     const j = await r.json();
@@ -134,7 +131,6 @@ async function loadArtifacts(runId) {
   const div = document.getElementById("artifacts");
   div.innerHTML = "";
   if (!runId) return;
-
   const r = await fetch(`/api/run/${runId}/artifacts`, { cache: "no-store" });
   const j = await r.json();
   const items = j.artifacts || [];
@@ -149,20 +145,18 @@ async function loadArtifacts(runId) {
 
 async function loadInitial(runId) {
   if (!runId) return;
-
   const m = await fetch(`/api/run/${runId}/metrics`, { cache: "no-store" });
   renderMetrics(await m.json());
-
   await loadArtifacts(runId);
 
-  const tail = await fetch(`/api/run/${runId}/events_tail?n=20`, { cache: "no-store" });
+  const tail = await fetch(`/api/run/${runId}/events_tail?n=30`, { cache: "no-store" });
   const tj = await tail.json();
   addEventLine("=== tail ===");
   for (const ln of (tj.lines || [])) addEventLine(ln);
   addEventLine("=== live ===");
 }
 
-function connect() {
+async function connect() {
   const runId = document.getElementById("runSelect").value;
   const fromStart = document.getElementById("fromStart").checked ? "1" : "0";
   const poll = document.getElementById("poll").value || "0.5";
@@ -170,21 +164,19 @@ function connect() {
   if (ws) { ws.close(); ws = null; }
   document.getElementById("eventsCode").textContent = "";
 
-  if (!runId) {
-    setStatus("no run_id selected", true);
-    return;
-  }
+  if (!runId) { setStatus("no run_id selected", true); return; }
 
-  setStatus(`connecting… run_id=${runId}`);
+  // Always populate via HTTP first (works even if WS fails)
+  setStatus(`loading run_id=${runId}…`);
+  await loadInitial(runId);
 
-  const url = `ws://${location.host}/ws?run_id=${encodeURIComponent(runId)}&from_start=${fromStart}&poll=${encodeURIComponent(poll)}`;
+  const wsProto = (location.protocol === "https:") ? "wss" : "ws";
+  const url = `${wsProto}://${location.host}/ws?run_id=${encodeURIComponent(runId)}&from_start=${fromStart}&poll=${encodeURIComponent(poll)}`;
+
+  setStatus(`connecting ws… run_id=${runId}`);
   ws = new WebSocket(url);
 
-  ws.onopen = async () => {
-    setStatus(`connected run_id=${runId}`);
-    await loadInitial(runId);
-  };
-
+  ws.onopen = () => setStatus(`connected ws run_id=${runId}`);
   ws.onmessage = (ev) => {
     try {
       const msg = JSON.parse(ev.data);
@@ -194,29 +186,33 @@ function connect() {
       else if (msg.type === "hello") addEventLine("HELLO: " + JSON.stringify(msg));
       else if (msg.type === "error") addEventLine("ERROR: " + JSON.stringify(msg));
       else addEventLine(ev.data);
-    } catch {
-      addEventLine(ev.data);
-    }
+    } catch { addEventLine(ev.data); }
   };
-
-  ws.onclose = () => setStatus("disconnected");
+  ws.onclose = () => setStatus("ws disconnected");
   ws.onerror = () => setStatus("ws error", true);
 }
 
-document.getElementById("connectBtn").addEventListener("click", connect);
+document.getElementById("connectBtn").addEventListener("click", () => { connect(); });
 document.getElementById("refreshBtn").addEventListener("click", async () => { await loadRuns(true); });
 
-// Auto-refresh runs list every 5s (keeps selection)
-setInterval(() => { loadRuns(true); }, 5000);
+setInterval(async () => {
+  const runs = await loadRuns(true);
+  if (!runs.length) return;
+
+  const follow = document.getElementById("followLatest").checked;
+  const latest = runs[0].run_id;
+  const sel = document.getElementById("runSelect");
+
+  if (follow && latest && sel.value !== latest) {
+    sel.value = latest;
+    if (ws) { await connect(); }
+  }
+}, 5000);
 
 (async function init() {
   const runs = await loadRuns(false);
-  if (runs.length > 0) {
-    // select latest by default
-    document.getElementById("runSelect").value = runs[0].run_id;
-  }
+  if (runs.length) document.getElementById("runSelect").value = runs[0].run_id;
 })();
 </script>
-
 </body>
 </html>
