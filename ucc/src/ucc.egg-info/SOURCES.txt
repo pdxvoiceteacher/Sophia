@@ -64,6 +64,7 @@ tests/test_authority_packs_cisbench_top10_samm.py
 tests/test_authority_packs_cobit_cis_asvs_soc2.py
 tests/test_authority_packs_rmf_iso31000.py
 tests/test_authority_packs_v2.py
+tests/test_build_proof_envelope_snarkjs_v2_2.py
 tests/test_check_lean_symbols.py
 tests/test_circuit_registry_v1_6.py
 tests/test_cis_benchmarks_catalog.py
