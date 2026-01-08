@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 from pathlib import Path
 import subprocess
+import sys
 import json
 
 def test_music_strict_coherence_audit(tmp_path: Path):
@@ -15,7 +16,7 @@ def test_music_strict_coherence_audit(tmp_path: Path):
     demo = repo.parent / "python" / "experiments" / "coherence_music" / "demo_bhairav_audit.py"
     assert demo.exists()
 
-    cmd_py = [str(py)] if py else ["python"]
+    cmd_py = [sys.executable]
     subprocess.run(cmd_py + [str(demo)], cwd=str(repo.parent), check=True)
 
     task = repo / "tasks" / "coherence_runs" / "music_bhairav_coherence.json"
@@ -36,3 +37,4 @@ def test_music_strict_coherence_audit(tmp_path: Path):
     rep = json.loads((outdir / "report.json").read_text(encoding="utf-8"))
     # Strict should not fail section completeness
     assert "flags" in rep
+

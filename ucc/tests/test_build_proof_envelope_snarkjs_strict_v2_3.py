@@ -61,7 +61,7 @@ def test_strict_public_order_ok(tmp_path: Path):
     (vote / "vote_manifest.json").write_text(json.dumps({
         "manifest_id": manifest_id,
         "purpose": {"scope": "public.deliberation"},
-        "proof_policy": {"verifier_id": "test.public.groth16"}
+        "proof_policy": {"verifier_id": "test.public.groth16", "circuit_id": "vote_proof_envelope_public.v1"}
     }), encoding="utf-8")
 
     # prover_manifest.json strict order == expected order
@@ -150,7 +150,7 @@ def test_strict_public_order_rejects_mismatch(tmp_path: Path):
     (vote / "vote_manifest.json").write_text(json.dumps({
         "manifest_id": manifest_id,
         "purpose": {"scope": "public.deliberation"},
-        "proof_policy": {"verifier_id": "test.public.groth16"}
+        "proof_policy": {"verifier_id": "test.public.groth16", "circuit_id": "vote_proof_envelope_public.v1"}
     }), encoding="utf-8")
 
     # WRONG order (swap nullifier and ciphertext)
@@ -188,3 +188,4 @@ def test_strict_public_order_rejects_mismatch(tmp_path: Path):
     )
     assert r.returncode != 0
     assert "STRICT order mismatch" in (r.stderr + r.stdout)
+
