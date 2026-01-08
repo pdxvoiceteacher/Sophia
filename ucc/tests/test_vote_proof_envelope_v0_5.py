@@ -25,7 +25,7 @@ def test_proof_envelope_roundtrip(tmp_path: Path):
     rp.write_text(json.dumps(reveal, sort_keys=True), encoding="utf-8")
 
     proof = build_proof_envelope_from_commit_and_reveal(commit, reveal)
-    verify_proof_envelope(proof)
+    assert "verifier_id" in proof; verify_proof_envelope(proof)
 
     proofs = outdir / "secret_v03" / "proofs"
     proofs.mkdir(parents=True, exist_ok=True)
@@ -36,3 +36,4 @@ def test_proof_envelope_roundtrip(tmp_path: Path):
     t = tally_proofs(outdir=outdir, manifest_id=mid, strict=True, options_path=None)
     assert t["ballots"]["valid"] == 1
     assert sum(t["counts_by_choice_hash"].values()) == 1
+

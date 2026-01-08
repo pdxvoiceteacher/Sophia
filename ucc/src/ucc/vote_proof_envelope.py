@@ -1,24 +1,5 @@
 ﻿from __future__ import annotations
 
-"""
-Proof Envelope v0.5 (ZK-ready stub)
-
-- Generates a proof envelope from AEAD commit + reveal key (witness)
-- Stores ONLY public signals + proof_b64 (no plaintext, no key)
-- proof_b64 is a deterministic hash of public signals (placeholder for real ZK proof)
-
-Public signals:
-  - manifest_id
-  - ballot_id
-  - nullifier_sha256
-  - ciphertext_sha256
-  - aad_sha256
-  - choice_hash (sha256 of decrypted plaintext choice)
-
-Later: replace proof_b64 with real SNARK/STARK proof, keep public signals stable.
-"""
-
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -28,6 +9,8 @@ import json
 import os
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+from ucc.verifier_registry import DEFAULT_VERIFIER_ID, get_spec, load_registry
 
 
 def _utc_now_iso() -> str:
@@ -67,25 +50,19 @@ def choice_hash(choice: str) -> str:
 
 
 def proof_stub_b64(public_signals: Dict[str, Any]) -> str:
-    """
-    Deterministic placeholder proof: SHA256 over canonical concatenation of public signals.
-    (Verifiable without secrets; NOT ZK.)
-    """
     order = ["manifest_id","ballot_id","nullifier_sha256","ciphertext_sha256","aad_sha256","choice_hash"]
     s = "|".join(f"{k}={public_signals.get(k,'')}" for k in order).encode("utf-8")
     digest = hashlib.sha256(b"proof_stub|" + s).digest()
     return base64.b64encode(digest).decode("ascii")
 
 
-def build_proof_envelope_from_commit_and_reveal(commit: dict, reveal: dict) -> dict:
-    # Extract required from commit
+def build_proof_envelope_from_commit_and_reveal(commit: dict, reveal: dict, verifier_id: str = DEFAULT_VERIFIER_ID) -> dict:
     manifest_id = str(commit["manifest_id"])
     ballot_id = str(commit["ballot_id"])
     nullifier_sha256 = str(commit["nullifier_sha256"])
     ct_sha = str(commit["ciphertext_sha256"])
     aad_sha = str(commit["aad_sha256"])
 
-    # Decrypt using reveal key (witness) to derive choice_hash
     nonce = base64.b64decode(commit["nonce_b64"])
     ct = base64.b64decode(commit["ciphertext_b64"])
     key = base64.b64decode(reveal["key_b64"])
@@ -110,25 +87,37 @@ def build_proof_envelope_from_commit_and_reveal(commit: dict, reveal: dict) -> d
         "choice_hash": ch,
     }
 
-    return {
+    proof_doc = {
         "version": 1,
         "schema_id": "ucc.vote_proof_envelope.v0_5",
         "created_at": _utc_now_iso(),
+        "verifier_id": verifier_id,
         "public_signals": public_signals,
         "proof_b64": proof_stub_b64(public_signals),
         "proof_alg": "PROOF_STUB_SHA256",
     }
+    return proof_doc
 
 
-def verify_proof_envelope(doc: dict) -> None:
+def verify_proof_envelope(doc: dict, registry: Optional[Dict[str, Dict[str, Any]]] = None) -> None:
     if doc.get("schema_id") != "ucc.vote_proof_envelope.v0_5":
         raise ValueError("wrong schema_id for proof envelope")
+
     ps = doc.get("public_signals")
     if not isinstance(ps, dict):
         raise ValueError("public_signals missing")
-    expected = proof_stub_b64(ps)
-    if doc.get("proof_b64") != expected:
-        raise ValueError("proof_b64 invalid for provided public_signals")
+
+    verifier_id = doc.get("verifier_id", DEFAULT_VERIFIER_ID)
+    spec = get_spec(str(verifier_id), registry or load_registry())
+
+    if spec.get("kind") == "stub":
+        expected = proof_stub_b64(ps)
+        if doc.get("proof_b64") != expected:
+            raise ValueError("proof_b64 invalid for provided public_signals")
+        return
+
+    # Future: real verifier dispatch
+    raise NotImplementedError(f"Verifier kind not implemented yet: {spec.get('kind')}")
 
 
 def _anchor_artifact(
