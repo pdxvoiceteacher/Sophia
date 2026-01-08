@@ -41,9 +41,11 @@ jobs:
       - name: Install UCC (dev)
         run: |
           python -m pip install -e "./ucc[dev]"
-          python -m pip install -r tools/coherenceledger_bootstrap/requirements.txt
+          # coherenceledger: add to environment if it is a package; otherwise PYTHONPATH in test step handles imports
+          if [ -f tools/coherenceledger_bootstrap/pyproject.toml ] || [ -f tools/coherenceledger_bootstrap/setup.py ]; then
+            python -m pip install -e ./tools/coherenceledger_bootstrap
+          fi
           # Best-effort editable install if it's a package (OK if it fails; PYTHONPATH below still works)
-          python -m pip install -e ./tools/coherenceledger_bootstrap || true
           python -c "import ucc; import konomi; print('ucc+konomi import ok')"
 
       - name: Run UCC tests
