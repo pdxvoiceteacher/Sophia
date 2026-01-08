@@ -11,6 +11,7 @@ import os
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from ucc.verifier_registry import DEFAULT_VERIFIER_ID, get_spec, load_registry
+from ucc.proof_verifiers import proof_stub_b64, verify_envelope
 
 
 def _utc_now_iso() -> str:
@@ -36,10 +37,6 @@ def _safe_relpath(path: Path, base: Optional[Path]) -> str:
         return str(path.resolve())
 
 
-def _load_json(p: Path) -> dict:
-    return json.loads(p.read_text(encoding="utf-8-sig"))
-
-
 def _aad_bytes(manifest_id: str, ballot_id: str, nullifier_sha256: str) -> bytes:
     s = f"manifest_id={manifest_id}|ballot_id={ballot_id}|nullifier_sha256={nullifier_sha256}"
     return s.encode("utf-8")
@@ -49,15 +46,7 @@ def choice_hash(choice: str) -> str:
     return _sha256_hex(choice.encode("utf-8"))
 
 
-def proof_stub_b64(public_signals: Dict[str, Any]) -> str:
-    order = ["manifest_id","ballot_id","nullifier_sha256","ciphertext_sha256","aad_sha256","choice_hash"]
-    s = "|".join(f"{k}={public_signals.get(k,'')}" for k in order).encode("utf-8")
-    digest = hashlib.sha256(b"proof_stub|" + s).digest()
-    return base64.b64encode(digest).decode("ascii")
-
-
 def build_proof_envelope_from_commit_and_reveal(commit: dict, reveal: dict, verifier_id: str = DEFAULT_VERIFIER_ID) -> dict:
-    # Load registry + spec so we can pin vk_sha256 if provided
     registry = load_registry()
     spec = get_spec(verifier_id, registry)
 
@@ -91,7 +80,7 @@ def build_proof_envelope_from_commit_and_reveal(commit: dict, reveal: dict, veri
         "choice_hash": ch,
     }
 
-    proof_doc = {
+    return {
         "version": 2,
         "schema_id": "ucc.vote_proof_envelope.v0_5",
         "created_at": _utc_now_iso(),
@@ -101,36 +90,10 @@ def build_proof_envelope_from_commit_and_reveal(commit: dict, reveal: dict, veri
         "proof_b64": proof_stub_b64(public_signals),
         "proof_alg": spec.get("alg", "PROOF_STUB_SHA256"),
     }
-    return proof_doc
 
 
 def verify_proof_envelope(doc: dict, registry: Optional[Dict[str, Dict[str, Any]]] = None) -> None:
-    if doc.get("schema_id") != "ucc.vote_proof_envelope.v0_5":
-        raise ValueError("wrong schema_id for proof envelope")
-
-    ps = doc.get("public_signals")
-    if not isinstance(ps, dict):
-        raise ValueError("public_signals missing")
-
-    registry = registry or load_registry()
-    verifier_id = str(doc.get("verifier_id", DEFAULT_VERIFIER_ID))
-    spec = get_spec(verifier_id, registry)
-
-    # v0.7 pinning: if pin_required, proof must carry matching vk_sha256
-    if spec.get("pin_required", False):
-        expected_vk = spec.get("vk_sha256")
-        got_vk = doc.get("vk_sha256")
-        if not expected_vk or not got_vk or str(got_vk) != str(expected_vk):
-            raise ValueError("vk_sha256 pin mismatch (verifier substitution risk)")
-
-    if spec.get("kind") == "stub":
-        expected = proof_stub_b64(ps)
-        if doc.get("proof_b64") != expected:
-            raise ValueError("proof_b64 invalid for provided public_signals")
-        return
-
-    # Future: real verifier dispatch
-    raise NotImplementedError(f"Verifier kind not implemented yet: {spec.get('kind')}")
+    verify_envelope(doc, registry=registry)
 
 
 def _anchor_artifact(

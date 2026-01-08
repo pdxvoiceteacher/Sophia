@@ -1,39 +1,83 @@
-﻿from pathlib import Path
-import json
+﻿import json
+import hashlib
+from pathlib import Path
+
+import pytest
 
 from ucc.vote_ballot_aead import build_aead_commit_and_reveal
 from ucc.vote_proof_envelope import build_proof_envelope_from_commit_and_reveal, verify_proof_envelope
-from ucc.vote_tally_proof import tally_proofs
 
 
-def test_proof_envelope_roundtrip(tmp_path: Path):
-    outdir = tmp_path / "vote"
-    mid = "manifest-proof"
+def _write_overlay_registry(path: Path, verifier_id: str, vk_path: Path, vk_sha256: str) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                verifier_id: {
+                    "kind": "stub",
+                    "alg": "PROOF_STUB_SHA256",
+                    "enabled": True,
+                    "vk_path": str(vk_path),   # absolute path OK
+                    "vk_sha256": vk_sha256,
+                    "pin_required": True,
+                }
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
-    # Build AEAD commit + key-only reveal (v0.4 style)
-    commit, reveal = build_aead_commit_and_reveal(manifest_id=mid, plaintext_choice="YES", nullifier_hex="aa"*16)
 
-    # Write into expected dirs
-    commits = outdir / "secret_v03" / "commits"
-    reveals = outdir / "secret_v03" / "reveals"
-    commits.mkdir(parents=True, exist_ok=True)
-    reveals.mkdir(parents=True, exist_ok=True)
+def test_vk_pinning_rejects_vk_sha_tamper(tmp_path: Path, monkeypatch):
+    # Create a temp vk file + pinned registry
+    vk = tmp_path / "vk.json"
+    vk.write_text('{"vk":"one"}', encoding="utf-8")
+    sha = hashlib.sha256(vk.read_bytes()).hexdigest()
 
-    cp = commits / f"commit_{commit['ballot_id']}.json"
-    rp = reveals / f"reveal_{commit['ballot_id']}.json"
-    cp.write_text(json.dumps(commit, sort_keys=True), encoding="utf-8")
-    rp.write_text(json.dumps(reveal, sort_keys=True), encoding="utf-8")
+    reg = tmp_path / "reg.json"
+    _write_overlay_registry(reg, "test.pinned", vk, sha)
+    monkeypatch.setenv("UCC_VERIFIER_REGISTRY_PATH", str(reg))
 
+    commit, reveal = build_aead_commit_and_reveal(manifest_id="m", plaintext_choice="YES", nullifier_hex="aa"*16)
+    proof = build_proof_envelope_from_commit_and_reveal(commit, reveal, verifier_id="test.pinned")
+
+    # Carries pinned sha
+    assert proof["vk_sha256"] == sha
+
+    # Verifies OK
+    verify_proof_envelope(proof)
+
+    # Tamper proof's vk_sha256 => must fail
+    proof2 = dict(proof)
+    proof2["vk_sha256"] = "deadbeef"
+    with pytest.raises(ValueError):
+        verify_proof_envelope(proof2)
+
+
+def test_vk_file_sha_mismatch_rejected(tmp_path: Path, monkeypatch):
+    vk = tmp_path / "vk.json"
+    vk.write_text('{"vk":"one"}', encoding="utf-8")
+    sha = hashlib.sha256(vk.read_bytes()).hexdigest()
+
+    reg = tmp_path / "reg.json"
+    _write_overlay_registry(reg, "test.pinned", vk, sha)
+    monkeypatch.setenv("UCC_VERIFIER_REGISTRY_PATH", str(reg))
+
+    commit, reveal = build_aead_commit_and_reveal(manifest_id="m", plaintext_choice="YES", nullifier_hex="aa"*16)
+    proof = build_proof_envelope_from_commit_and_reveal(commit, reveal, verifier_id="test.pinned")
+
+    # OK initially
+    verify_proof_envelope(proof)
+
+    # Mutate vk file => registry pin must fail on next verify
+    vk.write_text('{"vk":"two"}', encoding="utf-8")
+    with pytest.raises(ValueError):
+        verify_proof_envelope(proof)
+
+
+def test_default_stub_roundtrip(tmp_path: Path):
+    # No overlay registry; uses default stub verifier
+    commit, reveal = build_aead_commit_and_reveal(manifest_id="m", plaintext_choice="YES", nullifier_hex="aa"*16)
     proof = build_proof_envelope_from_commit_and_reveal(commit, reveal)
-    assert "verifier_id" in proof; verify_proof_envelope(proof)
-
-    proofs = outdir / "secret_v03" / "proofs"
-    proofs.mkdir(parents=True, exist_ok=True)
-    pp = proofs / f"proof_{commit['ballot_id']}.json"
-    pp.write_text(json.dumps(proof, sort_keys=True), encoding="utf-8")
-
-    # Tally proofs by choice_hash
-    t = tally_proofs(outdir=outdir, manifest_id=mid, strict=True, options_path=None)
-    assert t["ballots"]["valid"] == 1
-    assert sum(t["counts_by_choice_hash"].values()) == 1
-
+    assert "verifier_id" in proof
+    assert "vk_sha256" in proof
+    verify_proof_envelope(proof)

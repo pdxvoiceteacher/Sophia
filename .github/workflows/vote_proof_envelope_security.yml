@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "ucc/src/ucc/vote_proof_envelope.py"
-      - "ucc/src/ucc/vote_tally_proof.py"
+      - "ucc/src/ucc/vote_tally_proof.py"`r`n      - "ucc/src/ucc/proof_verifiers.py"
       - "ucc/tests/test_vote_proof_envelope_v0_5.py"
       - "tools/security/prove_aead_ballot.py"
       - "tools/security/tally_aead_proof_votes.py"
@@ -13,7 +13,7 @@ on:
   pull_request:
     paths:
       - "ucc/src/ucc/vote_proof_envelope.py"
-      - "ucc/src/ucc/vote_tally_proof.py"
+      - "ucc/src/ucc/vote_tally_proof.py"`r`n      - "ucc/src/ucc/proof_verifiers.py"
       - "ucc/tests/test_vote_proof_envelope_v0_5.py"
       - "tools/security/prove_aead_ballot.py"
       - "tools/security/tally_aead_proof_votes.py"
@@ -41,4 +41,5 @@ jobs:
       - name: Run proof envelope tests
         run: |
           python -m pytest -q ucc/tests/test_vote_proof_envelope_v0_5.py
+
 
