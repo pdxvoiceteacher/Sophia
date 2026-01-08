@@ -12,6 +12,9 @@
     "enabled": true,
     "kind": "stub",
     "pin_required": true,
+    "signals_schema_path": "ucc/schemas/public_signals/vote_proof_envelope_public_signals_v1.schema.json",
+    "signals_schema_required": true,
+    "signals_schema_sha256": "f482279fa645d0fcc0a09ecc8139021a8748aea9bc026152f86f170ab47eabc7",
     "vk_path": "ucc/verifiers/dummy_vk.json",
     "vk_sha256": "af979024778853493a1b2a71ae0a5259a95314148cb2a0724219df8bf90151c2"
   },
@@ -20,6 +23,9 @@
     "enabled": true,
     "kind": "stub",
     "pin_required": false,
+    "signals_schema_path": "ucc/schemas/public_signals/vote_proof_envelope_public_signals_v1.schema.json",
+    "signals_schema_required": true,
+    "signals_schema_sha256": "f482279fa645d0fcc0a09ecc8139021a8748aea9bc026152f86f170ab47eabc7",
     "vk_path": null,
     "vk_sha256": null
   }

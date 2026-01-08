@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 """
 Verifier Registry v0.7
@@ -88,3 +88,14 @@ def resolve_vk_path(spec: Dict[str, Any]) -> Optional[Path]:
     repo_root = Path(__file__).resolve().parents[3]
     return (repo_root / pth).resolve()
 
+
+
+def resolve_signals_schema_path(spec: Dict[str, Any]) -> Optional[Path]:
+    p = spec.get("signals_schema_path")
+    if not p:
+        return None
+    pth = Path(str(p))
+    if pth.is_absolute():
+        return pth
+    repo_root = Path(__file__).resolve().parents[3]
+    return (repo_root / pth).resolve()

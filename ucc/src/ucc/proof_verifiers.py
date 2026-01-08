@@ -20,6 +20,7 @@ import base64
 import hashlib
 
 from ucc.verifier_registry import DEFAULT_VERIFIER_ID, get_spec, load_registry, resolve_vk_path
+from ucc.public_signal_schemas import validate_public_signals
 from ucc.snark_backend import get_backend_from_env
 
 
@@ -101,6 +102,7 @@ def verify_envelope(doc: Dict[str, Any], registry: Optional[Dict[str, Dict[str, 
     reg = registry or load_registry()
     verifier_id = str(doc.get("verifier_id", DEFAULT_VERIFIER_ID))
     spec = get_spec(verifier_id, reg)
+    validate_public_signals(public_signals, spec)
 
     # Pinning: if required, proof doc must carry the same vk_sha256 as registry
     if spec.get("pin_required", False):

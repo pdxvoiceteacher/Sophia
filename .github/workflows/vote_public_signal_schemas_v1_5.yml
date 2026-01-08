@@ -1,0 +1,42 @@
+﻿name: vote-public-signal-schemas-v1-5
+
+on:
+  push:
+    paths:
+      - "ucc/src/ucc/public_signal_schemas.py"
+      - "ucc/src/ucc/proof_verifiers.py"
+      - "ucc/src/ucc/verifier_registry.py"
+      - "ucc/verifiers/registry.json"
+      - "ucc/schemas/public_signals/**"
+      - "ucc/tests/test_public_signal_schemas_v1_5.py"
+      - ".github/workflows/vote_public_signal_schemas_v1_5.yml"
+  pull_request:
+    paths:
+      - "ucc/src/ucc/public_signal_schemas.py"
+      - "ucc/src/ucc/proof_verifiers.py"
+      - "ucc/src/ucc/verifier_registry.py"
+      - "ucc/verifiers/registry.json"
+      - "ucc/schemas/public_signals/**"
+      - "ucc/tests/test_public_signal_schemas_v1_5.py"
+      - ".github/workflows/vote_public_signal_schemas_v1_5.yml"
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e "ucc[dev]"
+      - name: Run v1.5 tests
+        run: |
+          python -m pytest -q ucc/tests/test_public_signal_schemas_v1_5.py
