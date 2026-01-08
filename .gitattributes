@@ -1,0 +1,4 @@
+﻿# Deterministic hashing across platforms (avoid CRLF/LF sha drift)
+ucc/schemas/**/*.json text eol=lf
+ucc/verifiers/**/*.json text eol=lf
+ucc/circuits/**/*.json text eol=lf
