@@ -1,5 +1,5 @@
 {
-  "$id": "ucc.public_signals.vote_proof_envelope.v1",
+  "$id": "ucc.public_signals.vote_proof_envelope_public.v1",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
@@ -34,18 +34,21 @@
           "const": "snarkjs.public_inputs.v1"
         },
         "order": {
-          "items": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "minItems": 1,
-          "type": "array"
+          "const": [
+            "manifest_id",
+            "ballot_id",
+            "nullifier_sha256",
+            "ciphertext_sha256",
+            "aad_sha256",
+            "choice_hash"
+          ]
         },
         "values": {
           "items": {
             "type": "string"
           },
-          "minItems": 1,
+          "maxItems": 6,
+          "minItems": 6,
           "type": "array"
         },
         "version": {

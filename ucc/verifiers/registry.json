@@ -20,6 +20,19 @@
     "vk_path": "ucc/verifiers/dummy_vk.json",
     "vk_sha256": "af979024778853493a1b2a71ae0a5259a95314148cb2a0724219df8bf90151c2"
   },
+  "stub.sha256.public.pinned.v1": {
+    "alg": "PROOF_STUB_SHA256",
+    "circuit_id": "vote_proof_envelope_public.v1",
+    "circuit_required": true,
+    "enabled": true,
+    "kind": "stub",
+    "pin_required": true,
+    "signals_schema_path": "ucc/schemas/public_signals/vote_proof_envelope_public_signals_v1.schema.json",
+    "signals_schema_required": true,
+    "signals_schema_sha256": "775a3b1331a62d6593db486bafc82e6edd8c79d45ad0eef3bc275ceaa7e8f132",
+    "vk_path": "ucc/verifiers/dummy_vk.json",
+    "vk_sha256": "af979024778853493a1b2a71ae0a5259a95314148cb2a0724219df8bf90151c2"
+  },
   "stub.sha256.v1": {
     "alg": "PROOF_STUB_SHA256",
     "circuit_id": "vote_proof_envelope.v1",

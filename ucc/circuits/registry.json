@@ -4,5 +4,11 @@
     "circuit_sha256": "75f14aa0bc413c881c5706a85f9948491be2005e14eb137bb489824852f3c93f",
     "enabled": true,
     "notes": "Circuit for proof envelope public_signals constraints (placeholder until real ZK circuit exists)."
+  },
+  "vote_proof_envelope_public.v1": {
+    "circuit_path": "ucc/circuits/vote_proof_envelope_public_v1.circuit.json",
+    "circuit_sha256": "8f881320b7e5416d77f55c39d664c01db34e65cdeb3d47a30ac11bbe8dabb9e3",
+    "enabled": true,
+    "notes": "Strict circuit for public.deliberation scope"
   }
 }

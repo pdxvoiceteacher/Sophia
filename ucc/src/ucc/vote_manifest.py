@@ -107,6 +107,7 @@ def build_vote_manifest(
     opens_at: Optional[str] = None,
     closes_at: Optional[str] = None,
     timezone: str = "UTC",
+    proof_policy: Optional[Dict[str, Any]] = None,
     extra: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     electorate_rules = electorate_rules or {}
@@ -146,6 +147,9 @@ def build_vote_manifest(
             "timezone": timezone,
         },
     }
+
+    if proof_policy:
+        manifest["proof_policy"] = proof_policy
 
     if extra:
         manifest["extra"] = extra

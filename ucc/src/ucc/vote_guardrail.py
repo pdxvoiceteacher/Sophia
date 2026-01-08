@@ -1,4 +1,4 @@
-﻿"""
+"""
 Vote Purpose Guardrail v0
 
 Audits a Vote Manifest against a policy table keyed by purpose.scope.
@@ -18,6 +18,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
+
+from ucc.vote_scope_policy import scope_policy_violations
 
 import hashlib
 import json
@@ -184,6 +186,13 @@ def audit_vote_manifest(manifest: Dict[str, Any], *, manifest_sha256: str, stric
         if policy.get("coherence_requires_cap") and w_mode == "coherence" and strict:
             if "cap" not in w_params:
                 violations.append(_v("coherence.cap", "weighting.params.cap", "coherence weighting requires params.cap in strict mode"))
+
+    # v1.7: scope-bound proof/circuit policy
+
+
+    violations.extend(scope_policy_violations(manifest, strict=strict))
+
+
 
     passed = len(violations) == 0
 
