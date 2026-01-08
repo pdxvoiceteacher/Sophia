@@ -23,10 +23,12 @@ src/ucc/vote_ballot_cipher.py
 src/ucc/vote_ballot_secret.py
 src/ucc/vote_guardrail.py
 src/ucc/vote_manifest.py
+src/ucc/vote_proof_envelope.py
 src/ucc/vote_registry.py
 src/ucc/vote_tally.py
 src/ucc/vote_tally_aead.py
 src/ucc/vote_tally_cipher.py
+src/ucc/vote_tally_proof.py
 src/ucc/vote_tally_secret.py
 src/ucc.egg-info/PKG-INFO
 src/ucc.egg-info/SOURCES.txt
@@ -81,5 +83,6 @@ tests/test_vote_ballot_v0.py
 tests/test_vote_cipher_v0_2.py
 tests/test_vote_guardrail_v0.py
 tests/test_vote_manifest_v0.py
+tests/test_vote_proof_envelope_v0_5.py
 tests/test_vote_secret_v0_1.py
 tests/test_vote_tally_v0.py
