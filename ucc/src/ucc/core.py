@@ -725,9 +725,36 @@ def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: P
             context["flags"].update(fl)
             context["output_files"].extend(outs)
 
-        else:
-            raise ValueError(f"Unsupported step type: {stype}")
+        elif stype == "emit_report":
 
+            # UCC_PATCH_EMIT_REPORT_RUNTIME_FIX
+
+            report_name = str((step.get("params", {}) or {}).get("report_name", "report.json"))
+
+            outdir.mkdir(parents=True, exist_ok=True)
+
+            report_path = outdir / report_name
+
+            report = {
+
+                "module": {"id": mod["id"], "version": mod["version"], "title": mod.get("title", "")},
+
+                "input_path": str(input_path),
+
+                "metrics": context["metrics"],
+
+                "flags": context["flags"],
+
+            }
+
+            report_path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+
+            context["output_files"].append(report_path)
+
+
+        else:
+
+            raise ValueError(f"Unsupported step type: {stype}")
     module_sha = sha256_file(module_path)
     input_sha = sha256_file(input_path)
     outputs: Dict[str, str] = {}
@@ -762,6 +789,7 @@ BUILTIN_STEP_TYPES.update({
     "validate_mapping_table",
     "validate_mapping_index",
 })
+
 
 
 
