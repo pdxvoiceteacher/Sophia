@@ -1,0 +1,29 @@
+{
+  "bundle_version": "0.1",
+  "environment": {
+    "git_commit": "a0984e85ed9065e6e7d931aac2b004a0616195e6",
+    "platform": "Windows-11-10.0.26100-SP0",
+    "python_version": "3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]"
+  },
+  "flags": {},
+  "input": {
+    "path": "C:\\Users\\pdxvo\\Documents\\Lean\\CoherenceLattice\\out\\telemetry_smoke\\ucc_cov_out\\audit_bundle.json",
+    "sha256": "99535d58c9b3ce24d516d66cb0cd0e1d55f0d3bff7e49f1ec0fdc853b9138371"
+  },
+  "metrics": {},
+  "module": {
+    "id": "telemetry.snapshot.v1",
+    "path": "ucc\\modules\\telemetry_snapshot_v1.yml",
+    "sha256": "e8ee9d2446a3710a06f69b361795ae71ce72f573c36b078e8af9830c4dad6a9d",
+    "version": "0.1.0"
+  },
+  "notes": {
+    "runner": "ucc.core.run_module",
+    "schema": "ucc\\schema\\ucc_module.schema.json"
+  },
+  "outputs": {
+    "report.json": "3a207228adc26380cf1db2ae67498b50c2fffa8802632e5b08de869b388660e9",
+    "telemetry_snapshot.json": "289b52a1b7dae689585c725abdf7976d6c501c79d0b7f23b9e2a130f58fd8d88"
+  },
+  "timestamp_utc": "2026-01-09T03:16:58.130238+00:00"
+}

@@ -1,0 +1,53 @@
+{
+  "base": {
+    "audit_bundle_path": "out/telemetry_smoke/ucc_cov_out/audit_bundle.json",
+    "metrics": {
+      "E": 1.0,
+      "Es": 1.0,
+      "Psi": 1.0,
+      "T": 1.0
+    },
+    "telemetry_snapshot_path": "out/telemetry_smoke/ucc_cov_out/telemetry_snapshot_out/telemetry_snapshot.json"
+  },
+  "deltaS": 0.0,
+  "kind": "telemetry_perturbations.v1",
+  "lambda": 0.0,
+  "perturbations": [
+    {
+      "audit_bundle_path": "out/telemetry_smoke/ucc_cov_perturb_1/audit_bundle.json",
+      "drift_from_base": 0.0,
+      "i": 1,
+      "metrics": {
+        "E": 1.0,
+        "Es": 1.0,
+        "Psi": 1.0,
+        "T": 1.0
+      },
+      "telemetry_snapshot_path": "out/telemetry_smoke/ucc_cov_perturb_1/telemetry_snapshot_out/telemetry_snapshot.json"
+    },
+    {
+      "audit_bundle_path": "out/telemetry_smoke/ucc_cov_perturb_2/audit_bundle.json",
+      "drift_from_base": 0.0,
+      "i": 2,
+      "metrics": {
+        "E": 1.0,
+        "Es": 1.0,
+        "Psi": 1.0,
+        "T": 1.0
+      },
+      "telemetry_snapshot_path": "out/telemetry_smoke/ucc_cov_perturb_2/telemetry_snapshot_out/telemetry_snapshot.json"
+    },
+    {
+      "audit_bundle_path": "out/telemetry_smoke/ucc_cov_perturb_3/audit_bundle.json",
+      "drift_from_base": 0.0,
+      "i": 3,
+      "metrics": {
+        "E": 1.0,
+        "Es": 1.0,
+        "Psi": 1.0,
+        "T": 1.0
+      },
+      "telemetry_snapshot_path": "out/telemetry_smoke/ucc_cov_perturb_3/telemetry_snapshot_out/telemetry_snapshot.json"
+    }
+  ]
+}
