@@ -1,0 +1,21 @@
+{
+  "checkpoint": {
+    "checkpoint_id": "c09d9083-b45d-40f1-b674-684e2d55a915",
+    "created_at": "2026-01-09T01:21:14Z",
+    "hash_alg": "sha256",
+    "last_seal_in_range": "dfb05cb6a9930be9190e2551ed36f187fba7bc860d6225f8649bbe3d169e2682",
+    "leaf_mode": "seal_or_hash(event)",
+    "ledger_path": "C:\\Users\\pdxvo\\Documents\\Lean\\CoherenceLattice\\ledger.jsonl",
+    "merkle_root": "30c086b95b9cb8416988a0836444a28fd8cfa0042edabafc8a649ab3401399cb",
+    "range": {
+      "count": 485,
+      "end_index": 485,
+      "start_index": 0
+    },
+    "version": 1
+  },
+  "event": {
+    "event_id": "c09d9083-b45d-40f1-b674-684e2d55a915",
+    "seal": "e5585bdef2dd4c29e6e9d0a118d8dba8df71ecea893afff117fa34bfccf8372e"
+  }
+}
