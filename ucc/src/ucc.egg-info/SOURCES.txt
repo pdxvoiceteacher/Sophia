@@ -83,6 +83,7 @@ tests/test_coherence_harness.py
 tests/test_coherence_music_audit_coverage.py
 tests/test_coherence_music_strict.py
 tests/test_coherence_real_runs.py
+tests/test_did_vc_electorate_enforcement_v0_1.py
 tests/test_enforced_mapping_index.py
 tests/test_grammar.py
 tests/test_helmholtz_compare.py
