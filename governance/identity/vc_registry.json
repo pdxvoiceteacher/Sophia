@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "issued_at": "2026-01-09T01:33:27Z",
+      "issuer_did": "did:key:z6Mkh3tFanNayYT1Fr9qoe8145nAXXHnZiSaUdYDbtuqfJYz",
+      "subject_did": "did:key:alice",
+      "types": [
+        "VerifiableCredential",
+        "MemberCredential"
+      ],
+      "vc_id": "urn:uuid:73f106ab-1804-4ae9-928a-66c198c6976a",
+      "vc_sha256": "836dba24485e6e6367bc01ac0cced26b0c206d093ee846f409fb27c13d189436"
+    }
+  ],
+  "revocations": [],
+  "schema_id": "ucc.identity.vc_registry.v0_1",
+  "version": 1
+}

@@ -1,0 +1,23 @@
+{
+  "credentialSubject": {
+    "id": "did:key:alice",
+    "member_level": "gold"
+  },
+  "id": "urn:uuid:73f106ab-1804-4ae9-928a-66c198c6976a",
+  "issuanceDate": "2026-01-09T01:33:27Z",
+  "issuer": "did:key:z6Mkh3tFanNayYT1Fr9qoe8145nAXXHnZiSaUdYDbtuqfJYz",
+  "proof": {
+    "created": "2026-01-09T01:33:27Z",
+    "jws": "A_8RJvPlS_IbkSUuL0EB0inld-JBnKJVJMaiv_2YGDBJxr5j_Uv6KiaskUPOYXsJnX4uJiULwdDIt8jYWkmfDQ",
+    "payload_sha256": "165930267af5d94f927fd272e8e1b20e83b3c129cd717cbad606c4e03621040c",
+    "proofPurpose": "assertionMethod",
+    "type": "Ed25519Signature2020",
+    "verificationMethod": "did:key:z6Mkh3tFanNayYT1Fr9qoe8145nAXXHnZiSaUdYDbtuqfJYz#key-1"
+  },
+  "schema_id": "ucc.identity.vc.v0_1",
+  "type": [
+    "VerifiableCredential",
+    "MemberCredential"
+  ],
+  "version": 1
+}
