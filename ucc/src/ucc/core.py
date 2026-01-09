@@ -39,6 +39,13 @@ BUILTIN_STEP_TYPES = {
     "coherence_audit",
 }
 
+# --- CoherenceLattice extension: register custom step types (keep module validation strict) ---
+if "emit_telemetry_snapshot" not in BUILTIN_STEP_TYPES:
+    try:
+        BUILTIN_STEP_TYPES.add("emit_telemetry_snapshot")  # set
+    except AttributeError:
+        BUILTIN_STEP_TYPES.append("emit_telemetry_snapshot")  # list
+
 def load_yaml(path: Path) -> Dict[str, Any]:
     return yaml.safe_load(path.read_text(encoding="utf-8-sig"))
 
@@ -959,6 +966,7 @@ BUILTIN_STEP_TYPES.update({
     "validate_mapping_table",
     "validate_mapping_index",
 })
+
 
 
 

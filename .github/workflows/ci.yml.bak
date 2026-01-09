@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -35,22 +35,6 @@ jobs:
       - name: Run UCC tests
         run: .venv/bin/python -m pytest -q ucc/tests
 
-      - name: Telemetry smoke (wrapper)
-        run: .venv/bin/python tools/telemetry/run_wrapper.py --out out/telemetry_smoke --quick
-
-      - name: Validate telemetry (quality gates)
-        run: .venv/bin/python tools/telemetry/validate_run.py out/telemetry_smoke/telemetry.json --min-psi 0.80 --min-t 0.80 --min-es 0.80
-
-      - name: Compare telemetry vs baseline
-        run: .venv/bin/python tools/telemetry/compare_runs.py tests/baselines/telemetry_smoke.baseline.json out/telemetry_smoke/telemetry.json
-
-      - name: Upload telemetry artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: telemetry_smoke
-          path: out/telemetry_smoke
-
       - name: KONOMI smoke run (quick)
         run: .venv/bin/python python/experiments/konomi_smoke/run_smoke.py --quick --outdir python/experiments/konomi_smoke/out
 
@@ -66,4 +50,3 @@ jobs:
 
       - name: Registry walker (all packs + enforced mappings)
         run: .venv/bin/python ucc/tools/run_registry_walker.py
-

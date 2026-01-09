@@ -1,6 +1,6 @@
 {
   "cube_bench": {
-    "git_commit": "1ab96db6536e60c9f50a371223b12120ec4cef19",
+    "git_commit": "604b3af30e5e48f90a34305765653f3def362186",
     "machine_profile": {
       "platform": "Windows-11-10.0.26100-SP0",
       "python": "3.14.2",
@@ -29,12 +29,12 @@
         "process_delay_s": 0.0,
         "concurrency": 1,
         "n_requests": 1200,
-        "p50_ms": 0.0469,
-        "p95_ms": 0.0646,
-        "mean_ms": 0.056176416666666666,
-        "throughput_rps": 11602.375006689314,
-        "alloc_cur_kb_delta": 853.6943359375,
-        "alloc_peak_kb": 1717.341796875
+        "p50_ms": 0.0423,
+        "p95_ms": 0.0765,
+        "mean_ms": 0.05124541666666667,
+        "throughput_rps": 12897.525921884711,
+        "alloc_cur_kb_delta": 853.6630859375,
+        "alloc_peak_kb": 1717.310546875
       },
       {
         "n_nodes": 9,
@@ -43,12 +43,12 @@
         "process_delay_s": 0.0,
         "concurrency": 9,
         "n_requests": 1200,
-        "p50_ms": 0.281,
-        "p95_ms": 0.3543,
-        "mean_ms": 0.32811866666666667,
-        "throughput_rps": 15345.660996647888,
-        "alloc_cur_kb_delta": 833.4638671875,
-        "alloc_peak_kb": 1693.5283203125
+        "p50_ms": 0.2737,
+        "p95_ms": 0.5217,
+        "mean_ms": 0.37711316666666667,
+        "throughput_rps": 14150.876634675164,
+        "alloc_cur_kb_delta": 833.4326171875,
+        "alloc_peak_kb": 1693.4970703125
       },
       {
         "n_nodes": 9,
@@ -57,12 +57,12 @@
         "process_delay_s": 0.0,
         "concurrency": 64,
         "n_requests": 1200,
-        "p50_ms": 1.7808,
-        "p95_ms": 9.0386,
-        "mean_ms": 2.2306565000000003,
-        "throughput_rps": 14902.963044768278,
-        "alloc_cur_kb_delta": 840.3779296875,
-        "alloc_peak_kb": 1710.6357421875
+        "p50_ms": 1.5773,
+        "p95_ms": 8.9743,
+        "mean_ms": 1.9417372499999999,
+        "throughput_rps": 17421.602807978128,
+        "alloc_cur_kb_delta": 840.3466796875,
+        "alloc_peak_kb": 1710.6044921875
       }
     ],
     "notes": "KONOMI Cube runtime toy: deterministic routing + bounded inflight + bounded queues (CPU-only)."
