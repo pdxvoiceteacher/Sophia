@@ -247,6 +247,19 @@ def write_ballot(
                 pass
 
 
+
+    # VOTE_VC_ENFORCE_ALWAYS: did_vc electorate membership (config-gated; runs even if replay limit disabled)
+    if sign and anon_mode == "open":
+        try:
+            from coherenceledger.keystore import KeyStore  # type: ignore
+            from ucc.vc_verify import assert_subject_has_valid_vc_if_configured
+
+            ks = KeyStore(path=keystore_path)
+            did_obj, _kp = ks.load_keypair()
+            assert_subject_has_valid_vc_if_configured(subject_did=did_obj.did, manifest=manifest, repo_root=repo_root)
+        except ImportError:
+            pass
+
     if sign:
         _sign_ballot_inplace(ballot, keystore_path=keystore_path)
 

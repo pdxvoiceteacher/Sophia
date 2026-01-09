@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
@@ -176,7 +176,7 @@ def tally_ballots(
                 signer_did = _verify_signed_payload(b)
 
                 # TALLY_VC_ENFORCE: did_vc electorate membership (config-gated)
-                assert_subject_has_valid_vc_if_configured(subject_did=signer_did, manifest=manifest, repo_root=repo_root)
+                assert_subject_has_valid_vc_if_configured(subject_did=signer_did, manifest=manifest, repo_root=Path(__file__).resolve().parents[3])
 
             bt = (b.get("ballot") or {}).get("type")
             sel = (b.get("ballot") or {}).get("selection")
@@ -394,7 +394,7 @@ def write_tally(
             manifest_id=manifest["manifest_id"],
             ledger_path=ledger_path,
             keystore_path=keystore_path,
-            repo_root=repo_root,
+            repo_root=Path(__file__).resolve().parents[3],
             purpose=ledger_purpose,
         )
 
@@ -422,7 +422,7 @@ def write_tally_env(*, outdir: Path, manifest_path: Path, verify_ballot_signatur
         strict=strict,
         sign=enable,
         anchor=enable,
-        repo_root=repo_root,
+        repo_root=Path(__file__).resolve().parents[3],
         keystore_path=keystore,
         ledger_path=ledger,
         ledger_purpose=purpose,
