@@ -9,6 +9,8 @@ import hashlib
 import json
 import os
 
+from ucc.vc_verify import assert_subject_has_valid_vc_if_configured
+
 
 TALLY_SCHEMA_ID = "ucc.vote_tally.v1"
 
@@ -172,6 +174,9 @@ def tally_ballots(
                 if anon_mode != "open" and strict:
                     raise ValueError(f"manifest anonymity '{anon_mode}' forbids DID ballot signatures in strict mode")
                 signer_did = _verify_signed_payload(b)
+
+                # TALLY_VC_ENFORCE: did_vc electorate membership (config-gated)
+                assert_subject_has_valid_vc_if_configured(subject_did=signer_did, manifest=manifest, repo_root=repo_root)
 
             bt = (b.get("ballot") or {}).get("type")
             sel = (b.get("ballot") or {}).get("selection")

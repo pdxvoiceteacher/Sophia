@@ -239,6 +239,14 @@ def write_ballot(
             did_obj, _kp = ks.load_keypair()
             enforce_max_ballots_per_did(outdir / "ballots", did_obj.did, max_per_did)
 
+            # VOTE_VC_ENFORCE: did_vc electorate membership (if configured with issuer DID + vc_type)
+            try:
+                from ucc.vc_verify import assert_subject_has_valid_vc_if_configured
+                assert_subject_has_valid_vc_if_configured(subject_did=did_obj.did, manifest=manifest, repo_root=repo_root)
+            except ImportError:
+                pass
+
+
     if sign:
         _sign_ballot_inplace(ballot, keystore_path=keystore_path)
 
