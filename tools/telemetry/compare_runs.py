@@ -1,38 +1,62 @@
 ﻿#!/usr/bin/env python3
 from __future__ import annotations
-import argparse, json
-from pathlib import Path
 
-def load(p: Path):
-    # utf-8-sig strips BOM if present
+import argparse
+import json
+from pathlib import Path
+from typing import Dict, Any
+
+def load(p: Path) -> dict:
     return json.loads(p.read_text(encoding="utf-8-sig"))
+
+def get_metrics(doc: dict) -> Dict[str, float]:
+    # telemetry.json uses {"metrics": {...}}
+    if isinstance(doc.get("metrics"), dict):
+        m = doc["metrics"]
+    else:
+        m = doc
+    out: Dict[str, float] = {}
+    for k, v in (m or {}).items():
+        try:
+            out[k] = float(v)
+        except Exception:
+            continue
+    return out
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("baseline")
     ap.add_argument("candidate")
-    ap.add_argument("--tol", type=float, default=0.02, help="Tolerance for metric diffs")
+    ap.add_argument("--rel", type=float, default=0.02, help="Relative tolerance (default 0.02)")
+    ap.add_argument("--abs-floor", type=float, default=0.01, help="Denominator floor for near-zero baselines (default 0.01)")
+    ap.add_argument("--keys", default="", help="Comma-separated keys to compare (default: all common metric keys)")
     args = ap.parse_args()
 
-    base = load(Path(args.baseline))
-    cand = load(Path(args.candidate))
+    bdoc = load(Path(args.baseline))
+    cdoc = load(Path(args.candidate))
+    b = get_metrics(bdoc)
+    c = get_metrics(cdoc)
 
-    keys = ["E", "T", "Psi", "DeltaS", "Lambda", "Es"]
+    if args.keys.strip():
+        keys = [k.strip() for k in args.keys.split(",") if k.strip()]
+    else:
+        keys = sorted(set(b.keys()) & set(c.keys()))
+
+    if not keys:
+        print("[compare_runs] FAIL no common metric keys found")
+        return 2
+
     failed = False
-
     for k in keys:
-        b = float(base["metrics"][k])
-        c = float(cand["metrics"][k])
-        if k == "DeltaS":
-            if abs(c - b) > args.tol:
-                print(f"[compare_runs] FAIL {k}: baseline={b} candidate={c} (abs>{args.tol})")
-                failed = True
-        else:
-            denom = max(1e-9, abs(b))
-            rel = abs(c - b) / denom
-            if rel > args.tol:
-                print(f"[compare_runs] FAIL {k}: baseline={b} candidate={c} (rel={rel:.3f} > {args.tol})")
-                failed = True
+        bv = float(b[k])
+        cv = float(c[k])
+        diff = abs(cv - bv)
+        denom = max(abs(bv), float(args.abs_floor))
+        rel = diff / denom
+
+        if rel > float(args.rel):
+            print(f"[compare_runs] FAIL {k}: baseline={bv} candidate={cv} (rel={rel:.3f} > {args.rel})")
+            failed = True
 
     if failed:
         return 2
