@@ -63,15 +63,6 @@ jobs:
       - name: KONOMI smoke run (quick)
         run: .venv/bin/python python/experiments/konomi_smoke/run_smoke.py --quick --outdir python/experiments/konomi_smoke/out
 
-      - name: Enforce policy gate (Es->Lambda->T)
-        run: .venv/bin/python tools/telemetry/enforce_policy_gate.py --decision out/telemetry_smoke/control_decision.json --allow-slow
-
-      - name: Emit change proposal (proposal-only)
-        run: .venv/bin/python tools/telemetry/propose_change.py --run-dir out/telemetry_smoke --telemetry out/telemetry_smoke/telemetry.json --state out/telemetry_smoke/state_estimate.json --decision out/telemetry_smoke/control_decision.json --out out/telemetry_smoke/change_proposal.json
-
-      - name: Validate change proposal schema
-        run: .venv/bin/python tools/telemetry/validate_proposal.py out/telemetry_smoke/change_proposal.json
-
       - name: UCC coverage for KONOMI smoke summary
         run: .venv/bin/python -m ucc.cli run ucc/modules/konomi_smoke_coverage.yml --input python/experiments/konomi_smoke/out/konomi_smoke_summary.json --outdir ucc/out/ci_konomi_smoke
 
