@@ -58,6 +58,7 @@ def _inject_tel_summary_schema_inplace(schema_obj: dict) -> None:
 
 def _maybe_inject_tel_summary(ns: dict) -> None:
     """
+    _inject_tel_summary_schema_inplace(...)
     Heuristic injection right before Draft202012Validator(...) is constructed.
     Avoids depending on the schema variable name.
     """
