@@ -109,7 +109,7 @@ $origin = (git remote get-url origin) 2>$null
 $repoUrl = Normalize-GitHubUrl $origin
 
 if ($repoUrl) {
-  $prUrl = "$repoUrl/compare/$BaseBranch...$branch?expand=1"
+  $prUrl = "$repoUrl/compare/$BaseBranch...${branch}?expand=1"
   Write-Host "`nPR URL (auto-generated):" -ForegroundColor Green
   Write-Host "  $prUrl" -ForegroundColor Green
   if (-not $NoOpenBrowser) {
@@ -122,3 +122,4 @@ if ($repoUrl) {
 
 Write-Host "`nDONE." -ForegroundColor Green
 Write-Host "Reminder: after major changes, run scripts/make_uvlm_bundle.ps1 and upload zip to GPT project folder." -ForegroundColor Yellow
+
