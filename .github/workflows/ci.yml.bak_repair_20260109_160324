@@ -36,7 +36,7 @@ jobs:
         run: .venv/bin/python -m pytest -q ucc/tests
 
       - name: Telemetry smoke (wrapper, ΔS/Λ perturbations)
-        run: .venv/bin/python tools/telemetry/run_wrapper.py --out out/telemetry_smoke --quick --perturbations 3
+        run: .venv/bin/python $13
 
       - name: Validate telemetry (quality gates incl ΔS/Λ)
         run: .venv/bin/python tools/telemetry/validate_run.py out/telemetry_smoke/telemetry.json --min-psi 0.80 --min-t 0.80 --min-es 0.80 --max-lambda 0.01 --max-deltas 0.01
@@ -54,11 +54,46 @@ jobs:
 
       - name: Validate control decision schema
         run: .venv/bin/python tools/telemetry/validate_decision.py out/telemetry_smoke/control_decision.json
+      - name: Proposal approval gate (requires approved proposal for protected changes)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=50
+          .venv/bin/python tools/telemetry/check_proposal_gate.py --base origin/${{ github.base_ref }} --head HEAD
       - name: Proposal approval gate v2.1 (approved proposal must match decision+state digests)
         if: github.event_name == 'pull_request'
         run: |
           git fetch origin ${{ github.base_ref }} --depth=50
           .venv/bin/python tools/telemetry/check_proposal_gate.py --base origin/${{ github.base_ref }} --head HEAD --state out/telemetry_smoke/state_estimate.json --decision out/telemetry_smoke/control_decision.json
+      - name: Implementation receipt gate (requires receipt+rollback for protected changes)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin --depth=50
+          python - <<'PY'
+          import glob, subprocess, sys
+          protected = ("ucc/src/","tools/telemetry/","schema/telemetry/",".github/workflows/")
+          out = subprocess.check_output(["git","diff","--name-only","HEAD~1...HEAD"], text=True)
+          files = [x.strip() for x in out.splitlines() if x.strip()]
+          prot = any(any(f.startswith(p) for p in protected) for f in files)
+          if not prot:
+              print("[impl_gate] OK: no protected changes detected in last commit range")
+              sys.exit(0)
+          receipts = glob.glob("governance/implementation/receipts/*.json")
+          rollbacks = glob.glob("governance/implementation/rollback/*.json")
+          if not receipts or not rollbacks:
+              print("[impl_gate] FAIL: protected changes require receipt+rollback")
+              print("receipts:", receipts)
+              print("rollbacks:", rollbacks)
+              sys.exit(2)
+          print("[impl_gate] OK: receipt+rollback present")
+          PY
+
+      - name: Validate receipt schema
+        if: github.event_name == 'pull_request'
+        run: .venv/bin/python tools/telemetry/validate_receipt.py governance/implementation/receipts/*.json
+
+      - name: Validate rollback schema
+        if: github.event_name == 'pull_request'
+        run: .venv/bin/python tools/telemetry/validate_rollback.py governance/implementation/rollback/*.json
       - name: Implementation receipt gate v3 (receipt+rollback required for protected changes)
         if: github.event_name == 'pull_request'
         run: |
@@ -102,7 +137,6 @@ jobs:
 
       - name: Registry walker (all packs + enforced mappings)
         run: .venv/bin/python ucc/tools/run_registry_walker.py
-
 
 
 
