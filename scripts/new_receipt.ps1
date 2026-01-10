@@ -118,3 +118,4 @@ $filesJson = ($files | ConvertTo-Json)
 Write-Host "Created receipt: $receipt" -ForegroundColor Green
 Write-Host "Created rollback: $rollback" -ForegroundColor Green
 Write-Host "Next: validate and commit these files with your PR." -ForegroundColor Yellow
+
