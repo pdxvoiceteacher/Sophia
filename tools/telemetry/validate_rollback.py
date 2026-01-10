@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env python3
 from __future__ import annotations
-import argparse, json
+import argparse, json, glob
 from pathlib import Path
 from jsonschema import Draft202012Validator
 
@@ -10,17 +10,36 @@ SCHEMA = REPO / "schema" / "telemetry" / "rollback_plan.schema.json"
 def load(p: Path):
     return json.loads(p.read_text(encoding="utf-8-sig"))
 
+def expand_args(args):
+    out = []
+    for a in args:
+        if any(ch in a for ch in ["*", "?", "["]):
+            matches = sorted(glob.glob(a))
+            out.extend(matches)
+        else:
+            out.append(a)
+    return out
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("rollback_json", nargs="+")
-    args = ap.parse_args()
+    ns = ap.parse_args()
 
     schema = load(SCHEMA)
     v = Draft202012Validator(schema)
 
+    paths = expand_args(ns.rollback_json)
+    if not paths:
+        print("[validate_rollback] FAIL: no files matched")
+        return 2
+
     failed = False
-    for path_str in args.rollback_json:
-        p = Path(path_str)
+    for pstr in paths:
+        p = Path(pstr)
+        if not p.exists():
+            print(f"[validate_rollback] FAIL missing: {p}")
+            failed = True
+            continue
         inst = load(p)
         errs = sorted(v.iter_errors(inst), key=lambda e: e.path)
         if errs:
