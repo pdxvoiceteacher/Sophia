@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -74,13 +76,15 @@ jobs:
       - name: Proposal approval gate v2.1 (approved proposal must match decision+state digests)
         if: github.event_name == 'pull_request'
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=50
-          .venv/bin/python tools/telemetry/check_proposal_gate.py --base origin/${{ github.base_ref }} --head HEAD --state out/telemetry_smoke/state_estimate.json --decision out/telemetry_smoke/control_decision.json
+          git fetch origin "$BASE_REF" --prune --no-tags
+          BASE_REF="${{ github.base_ref }}"
+          if [ -z "$BASE_REF" ]; then BASE_REF="master"; fi
+          .venv/bin/python tools/telemetry/check_proposal_gate.py --base "origin/$BASE_REF" --head HEAD --state out/telemetry_smoke/state_estimate.json --decision out/telemetry_smoke/control_decision.json
 
       - name: Implementation receipt gate v3 (receipt+rollback required for protected changes)
         if: github.event_name == 'pull_request'
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=50
+          git fetch origin "$BASE_REF" --prune --no-tags
           .venv/bin/python tools/telemetry/check_impl_gate.py --base origin/${{ github.base_ref }} --head HEAD
 
       - name: Validate receipt schema
