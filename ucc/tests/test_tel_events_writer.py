@@ -1,6 +1,5 @@
 import json
 import os
-
 from ucc.tel_events import emit_tel_event, reset_seq_for_tests
 
 def test_emit_tel_event_writes_jsonl(tmp_path):
