@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-def test_reflect_and_propose_emits_action_v2(tmp_path: Path):
+def test_reflect_and_propose_emits_multiple_safe_action_v2_knobs(tmp_path: Path):
     run_dir = tmp_path / "run"
     run_dir.mkdir()
 
@@ -16,9 +16,9 @@ def test_reflect_and_propose_emits_action_v2(tmp_path: Path):
     (run_dir / "tel_events.jsonl").write_text('{"seq":1,"kind":"tel","data":{}}\n', encoding="utf-8", newline="\n")
     (run_dir / "ucc_tel_events.jsonl").write_text('{"seq":1,"kind":"ucc_step_error","data":{"error":"x"}}\n', encoding="utf-8", newline="\n")
 
-    # tuning config
     tuning = tmp_path / "tuning.json"
-    tuning.write_text(json.dumps({"min_psi_threshold": 0.90}, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    tuning.write_text(json.dumps({"min_psi_threshold": 0.90, "max_proposals_per_run": 3, "max_sandbox_attempts": 2}, indent=2, sort_keys=True) + "\n",
+                      encoding="utf-8", newline="\n")
 
     out_props = tmp_path / "props"
     out_props.mkdir()
@@ -39,4 +39,9 @@ def test_reflect_and_propose_emits_action_v2(tmp_path: Path):
     out_path = Path(r.stdout.strip())
     doc = json.loads(out_path.read_text(encoding="utf-8"))
     recs = doc.get("recommendations", [])
-    assert any(isinstance(r, dict) and isinstance(r.get("action_v2"), dict) for r in recs)
+
+    # collect action_v2 json_set targets
+    actions = [rr.get("action_v2") for rr in recs if isinstance(rr, dict) and isinstance(rr.get("action_v2"), dict)]
+    assert any(a.get("json_path") == "min_psi_threshold" and a.get("value") == 0.89 for a in actions)
+    assert any(a.get("json_path") == "max_proposals_per_run" and a.get("value") == 1 for a in actions)
+    assert any(a.get("json_path") == "max_sandbox_attempts" and a.get("value") == 1 for a in actions)

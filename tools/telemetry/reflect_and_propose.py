@@ -66,17 +66,24 @@ def _metric_float(metrics: Dict[str, Any], k: str) -> Optional[float]:
         return None
 
 
+def _safe_num(x: Any) -> Optional[float]:
+    try:
+        return float(x)
+    except Exception:
+        return None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--run-dir", required=True, help="Run output directory containing telemetry.json")
-    ap.add_argument("--out-proposals-dir", required=True, help="Directory to write proposals")
-    ap.add_argument("--proposal-id", default="", help="Override proposal id for deterministic runs (e.g. CI)")
-    ap.add_argument("--created-at-utc", default="", help="Override created_at_utc (e.g. CI)")
-    ap.add_argument("--force-proposal", action="store_true", help="Always emit a proposal (for CI / pipeline checks)")
-    ap.add_argument("--min-psi", type=float, default=0.90, help="Trigger if Psi is below this threshold")
-    ap.add_argument("--emit-reflection", action="store_true", help="Also write reflection_summary.json into run dir")
-    ap.add_argument("--tuning-config", default="config/plasticity/tuning.json", help="Path to tuning config (for action_v2 computation)")
-    ap.add_argument("--tune-step", type=float, default=0.01, help="Thermo-safe decrement step for threshold tuning (only decreases)")
+    ap.add_argument("--run-dir", required=True)
+    ap.add_argument("--out-proposals-dir", required=True)
+    ap.add_argument("--proposal-id", default="")
+    ap.add_argument("--created-at-utc", default="")
+    ap.add_argument("--force-proposal", action="store_true")
+    ap.add_argument("--min-psi", type=float, default=0.90)
+    ap.add_argument("--emit-reflection", action="store_true")
+    ap.add_argument("--tuning-config", default="config/plasticity/tuning.json")
+    ap.add_argument("--tune-step", type=float, default=0.01, help="Thermo-safe decrement step (only decreases)")
     args = ap.parse_args()
 
     run_dir = Path(args.run_dir)
@@ -92,10 +99,8 @@ def main() -> int:
 
     tel_events_path = run_dir / "tel_events.jsonl"
     ucc_events_path = run_dir / "ucc_tel_events.jsonl"
-
     tel_events = _load_jsonl(tel_events_path)
     ucc_events = _load_jsonl(ucc_events_path)
-
     ucc_errors = [e for e in ucc_events if isinstance(e, dict) and str(e.get("kind", "")).endswith("_error")]
 
     triggers: Dict[str, Any] = {
@@ -107,23 +112,26 @@ def main() -> int:
         "tune_step": float(args.tune_step),
     }
 
+    # Load tuning config values (thermo-safe knobs live here)
+    cfg_path = Path(args.tuning_config)
+    cfg = {}
+    if cfg_path.exists():
+        try:
+            cfg = _load_json(cfg_path)
+        except Exception:
+            cfg = {}
+
+    cfg_min = _safe_num(cfg.get("min_psi_threshold")) or float(args.min_psi)
+    cfg_max_props = _safe_num(cfg.get("max_proposals_per_run"))
+    cfg_max_sandbox = _safe_num(cfg.get("max_sandbox_attempts"))
+
+    step = max(0.0, float(args.tune_step))
+
     recommendations: List[Dict[str, Any]] = []
 
-    # Structured v2 action: thermo-safe reduction of min_psi_threshold (reduces frequency of triggers, never increases compute)
+    # 1) Thermo-safe: relax min_psi_threshold (decrease only)
     if triggers["psi_below_threshold"]:
-        cfg_path = Path(args.tuning_config)
-        cfg_min = float(args.min_psi)
-        if cfg_path.exists():
-            try:
-                cfg = _load_json(cfg_path)
-                if isinstance(cfg.get("min_psi_threshold"), (int, float)):
-                    cfg_min = float(cfg["min_psi_threshold"])
-            except Exception:
-                pass
-
-        step = max(0.0, float(args.tune_step))
         new_min = max(0.0, cfg_min - step)
-
         action_v2 = None
         if new_min < cfg_min:
             action_v2 = {
@@ -132,17 +140,51 @@ def main() -> int:
                 "json_path": "min_psi_threshold",
                 "value": new_min,
             }
-
         recommendations.append({
             "id": "thermo_safe_relax_min_psi",
             "kind": "config_tune",
             "target": "config/plasticity/tuning.json:min_psi_threshold",
             "suggestion": f"Thermo-safe: lower min_psi_threshold by {step:.3f} (from {cfg_min:.3f} to {new_min:.3f}) to reduce repeated tuning triggers.",
-            "rationale": "Lowering this threshold reduces how often the system enters tuning loops; it does not increase compute budgets.",
+            "rationale": "Reduces frequency of tuning loops; does not increase compute budgets.",
             "evidence": {"psi": psi, "configured_min_psi_threshold": cfg_min, "proposed_min_psi_threshold": new_min, "step": step},
-            "action_v2": action_v2
+            "action_v2": action_v2,
         })
 
+    # 2) Thermo-safe: cap max_proposals_per_run to 1 IF it is currently > 1 (never increases)
+    if cfg_max_props is not None and cfg_max_props > 1:
+        recommendations.append({
+            "id": "thermo_safe_cap_max_proposals_per_run",
+            "kind": "budget_cap",
+            "target": "config/plasticity/tuning.json:max_proposals_per_run",
+            "suggestion": f"Thermo-safe: cap max_proposals_per_run to 1 (from {int(cfg_max_props)}) to prevent runaway proposal generation.",
+            "rationale": "Hard cap reduces risk of runaway compute / repeated attempts.",
+            "evidence": {"current": int(cfg_max_props), "proposed": 1},
+            "action_v2": {
+                "op": "json_set",
+                "path": "config/plasticity/tuning.json",
+                "json_path": "max_proposals_per_run",
+                "value": 1,
+            },
+        })
+
+    # 3) Thermo-safe: cap max_sandbox_attempts to 1 IF it is currently > 1 (never increases)
+    if cfg_max_sandbox is not None and cfg_max_sandbox > 1:
+        recommendations.append({
+            "id": "thermo_safe_cap_max_sandbox_attempts",
+            "kind": "budget_cap",
+            "target": "config/plasticity/tuning.json:max_sandbox_attempts",
+            "suggestion": f"Thermo-safe: cap max_sandbox_attempts to 1 (from {int(cfg_max_sandbox)}) to avoid repeated sandbox runs.",
+            "rationale": "Prevents repeated sandbox cycles and thermodynamic runaway.",
+            "evidence": {"current": int(cfg_max_sandbox), "proposed": 1},
+            "action_v2": {
+                "op": "json_set",
+                "path": "config/plasticity/tuning.json",
+                "json_path": "max_sandbox_attempts",
+                "value": 1,
+            },
+        })
+
+    # UCC errors: human review (no auto action)
     if triggers["ucc_errors_present"]:
         recommendations.append({
             "id": "ucc_errors_review",
@@ -151,22 +193,17 @@ def main() -> int:
             "suggestion": "Review UCC *_error events and recent changes; fix root cause before enabling broader plasticity ops.",
             "rationale": "UCC emitted one or more *_error events during run.",
             "evidence": {"ucc_errors_total": len(ucc_errors)},
-            "action_v2": None
+            "action_v2": None,
         })
 
     no_action = (not args.force_proposal) and (len(recommendations) == 0)
-
     created_at = args.created_at_utc.strip() or _now_utc_iso()
 
     base_for_id = {
         "telemetry_path": str(telemetry_path).replace("\\", "/"),
         "metrics": metrics,
         "tel_summary": tel_summary,
-        "counts": {
-            "tel_events_total": len(tel_events),
-            "ucc_events_total": len(ucc_events),
-            "ucc_errors_total": len(ucc_errors),
-        },
+        "counts": {"tel_events_total": len(tel_events), "ucc_events_total": len(ucc_events), "ucc_errors_total": len(ucc_errors)},
         "triggers": triggers,
         "recommendations": recommendations,
     }
@@ -185,11 +222,7 @@ def main() -> int:
         },
         "measures": {
             "coherence_metrics": metrics,
-            "event_counts": {
-                "tel_events_total": len(tel_events),
-                "ucc_events_total": len(ucc_events),
-                "ucc_errors_total": len(ucc_errors),
-            },
+            "event_counts": {"tel_events_total": len(tel_events), "ucc_events_total": len(ucc_events), "ucc_errors_total": len(ucc_errors)},
             "tel_summary": tel_summary,
         },
         "triggers": triggers,
@@ -200,8 +233,7 @@ def main() -> int:
     out_dir = Path(args.out_proposals_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"tuning_proposal_{pid}.json"
-    out_path.write_text(json.dumps(proposal, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
-                        encoding="utf-8", newline="\n")
+    out_path.write_text(json.dumps(proposal, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     if args.emit_reflection:
         (run_dir / "reflection_summary.json").write_text(
