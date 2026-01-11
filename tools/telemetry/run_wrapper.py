@@ -289,7 +289,6 @@ if __name__ == "__main__":
 
             return None
 
-    
 
         try:
 
@@ -301,7 +300,6 @@ if __name__ == "__main__":
 
             from konomi.tel.recorder import TelRecorder
 
-    
 
             _out = _tel_out_dir(sys.argv)
 
@@ -309,7 +307,6 @@ if __name__ == "__main__":
 
                 raise RuntimeError("TEL requested but --out was not found in argv")
 
-    
 
             _out_dir = Path(_out)
 
@@ -319,11 +316,9 @@ if __name__ == "__main__":
 
                 raise FileNotFoundError(f"telemetry.json not found at {_telemetry_path}")
 
-    
 
             _telemetry_data = _json.loads(_telemetry_path.read_text(encoding="utf-8"))
 
-    
 
             # Build TEL graph with explicit checkpoints (deterministic ordering)
 
@@ -331,35 +326,30 @@ if __name__ == "__main__":
 
             _rec = TelRecorder(_tel)
 
-    
 
             _rec.checkpoint("run:telemetry_loaded", meta={"telemetry_path": str(_telemetry_path)})
 
-    
 
-            # Step checkpoints: stage dirs in out/ (sorted) — captures per-step artifacts
+            # Step checkpoints: stage dirs in out/ (sorted)
 
             stage_dirs = []
 
-            for p in sorted(_out_dir.iterdir(), key=lambda x: x.name):
+            for sp in sorted(_out_dir.iterdir(), key=lambda x: x.name):
 
-                if not p.is_dir():
+                if not sp.is_dir():
 
                     continue
 
-                name = p.name
+                name = sp.name
 
                 if name.startswith("konomi_smoke_") or name.startswith("ucc_cov_"):
 
-                    stage_dirs.append(p)
+                    stage_dirs.append(sp)
 
-    
 
             for stage in stage_dirs:
 
                 cp = _rec.checkpoint(f"step:{stage.name}", meta={"dir": stage.name})
-
-    
 
                 # Attach key artifacts (sorted for determinism)
 
@@ -371,21 +361,18 @@ if __name__ == "__main__":
 
                     _rec.attach_file(cp, f, root=_out_dir, kind="audit_bundle")
 
-    
 
-            # Shallow telemetry tree (kept small) for connectivity
+            # Shallow telemetry tree for connectivity
 
             _tel.ingest_json_tree(_telemetry_data, root_id="telemetry", max_depth=2)
 
             _rec.checkpoint("run:tel_built")
 
-    
 
             # Persist full TEL graph
 
             _tel.write_json(_out_dir / "tel.json")
 
-    
 
             # Embed lean summary into telemetry.json
 
@@ -405,9 +392,8 @@ if __name__ == "__main__":
 
             print("[tel] updated telemetry.json with tel_summary")
 
-            print(f"[tel] wrote: {_out_dir / 'tel.json'}")
+            print(f"[tel] wrote: {_out_dir / "tel.json"}")
 
-    
 
         except Exception as _e:
 
