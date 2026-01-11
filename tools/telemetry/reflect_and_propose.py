@@ -73,6 +73,64 @@ def _safe_num(x: Any) -> Optional[float]:
         return None
 
 
+
+# --- recommendation dedupe (deterministic, thermo-safe) ---
+def _action_key(act):
+    # Dedupe by actionable signature. Non-action recs dedupe by id.
+    if not isinstance(act, dict):
+        return None
+    op = act.get("op")
+    path = act.get("path")
+    if op == "json_set":
+        jp = act.get("json_path")
+        # value is encoded canonically to avoid float repr drift
+        try:
+            v = json.dumps(act.get("value"), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        except Exception:
+            v = repr(act.get("value"))
+        return ("json_set", str(path), str(jp), v)
+    if op == "text_replace":
+        pat = act.get("pattern")
+        rep = act.get("replacement")
+        mr = act.get("max_replacements")
+        return ("text_replace", str(path), str(pat), str(rep), str(mr))
+    return ("op", str(op), str(path))
+
+def _pref_score(rec):
+    rid = str(rec.get("id","")).lower()
+    # Prefer UCC-error variants if duplicates target the same action
+    if "ucc" in rid and "error" in rid:
+        return 3
+    if "ucc" in rid:
+        return 2
+    if "psi" in rid:
+        return 1
+    return 0
+
+def _dedupe_recommendations(recs):
+    # Choose the best recommendation per action signature.
+    best = {}
+    for rec in recs:
+        act = rec.get("action_v2") if isinstance(rec, dict) else None
+        key = _action_key(act) if isinstance(act, dict) else ("id", str(rec.get("id")) if isinstance(rec, dict) else repr(rec))
+        score = _pref_score(rec) if isinstance(rec, dict) else 0
+        if key not in best or score > best[key][0]:
+            best[key] = (score, rec)
+
+    out = []
+    seen = set()
+    # Preserve stable order: only emit the chosen item when we encounter it.
+    for rec in recs:
+        act = rec.get("action_v2") if isinstance(rec, dict) else None
+        key = _action_key(act) if isinstance(act, dict) else ("id", str(rec.get("id")) if isinstance(rec, dict) else repr(rec))
+        if key in seen:
+            continue
+        if best[key][1] is rec:
+            out.append(rec)
+            seen.add(key)
+    return out
+# --- /recommendation dedupe ---
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-dir", required=True)
@@ -225,6 +283,7 @@ def main() -> int:
             "evidence": {"ucc_errors_total": len(ucc_errors)},
             "action_v2": None,
         })
+recommendations = _dedupe_recommendations(recommendations)
 
     no_action = (not args.force_proposal) and (len(recommendations) == 0)
     created_at = args.created_at_utc.strip() or _now_utc_iso()
