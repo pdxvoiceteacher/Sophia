@@ -384,8 +384,7 @@ if __name__ == "__main__":
 
                 encoding="utf-8",
 
-                newline="
-",
+                newline="\n",
 
             )
 
