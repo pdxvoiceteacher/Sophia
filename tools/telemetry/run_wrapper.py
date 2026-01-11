@@ -380,8 +380,7 @@ if __name__ == "__main__":
 
             (_out_dir / "telemetry.json").write_text(
 
-                _json.dumps(_telemetry_data, ensure_ascii=False, sort_keys=True, indent=2) + "
-",
+                _json.dumps(_telemetry_data, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
 
                 encoding="utf-8",
 
