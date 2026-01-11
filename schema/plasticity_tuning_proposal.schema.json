@@ -68,7 +68,24 @@
           "target": { "type": ["string","null"] },
           "suggestion": { "type": "string" },
           "rationale": { "type": "string" },
-          "evidence": { "type": ["object","null"] }
+          "evidence": { "type": ["object","null"] },
+
+          "action_v2": {
+            "type": ["object","null"],
+            "required": ["op","path"],
+            "properties": {
+              "op": { "type": "string", "enum": ["json_set","text_replace"] },
+              "path": { "type": "string" },
+
+              "json_path": { "type": ["string","null"] },
+              "value": {},
+
+              "pattern": { "type": ["string","null"] },
+              "replacement": { "type": ["string","null"] },
+              "max_replacements": { "type": ["integer","null"], "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
         },
         "additionalProperties": false
       }

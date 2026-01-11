@@ -33,13 +33,12 @@ def _load_jsonl(p: Path) -> List[Dict[str, Any]]:
 
 
 def _find_metrics(telemetry: Dict[str, Any]) -> Dict[str, Any]:
-    # Prefer coherence_metrics if present; else fall back to a shallow scan.
     cm = telemetry.get("coherence_metrics")
     if isinstance(cm, dict):
         return cm
 
-    # Shallow scan for a dict containing likely keys
     keys = {"Psi", "E", "T", "Es", "DeltaS", "Lambda"}
+
     def scan(x: Any) -> Optional[Dict[str, Any]]:
         if isinstance(x, dict):
             if keys.intersection(x.keys()):
@@ -76,6 +75,8 @@ def main() -> int:
     ap.add_argument("--force-proposal", action="store_true", help="Always emit a proposal (for CI / pipeline checks)")
     ap.add_argument("--min-psi", type=float, default=0.90, help="Trigger if Psi is below this threshold")
     ap.add_argument("--emit-reflection", action="store_true", help="Also write reflection_summary.json into run dir")
+    ap.add_argument("--tuning-config", default="config/plasticity/tuning.json", help="Path to tuning config (for action_v2 computation)")
+    ap.add_argument("--tune-step", type=float, default=0.01, help="Thermo-safe decrement step for threshold tuning (only decreases)")
     args = ap.parse_args()
 
     run_dir = Path(args.run_dir)
@@ -95,40 +96,68 @@ def main() -> int:
     tel_events = _load_jsonl(tel_events_path)
     ucc_events = _load_jsonl(ucc_events_path)
 
-    ucc_errors = [e for e in ucc_events if isinstance(e, dict) and str(e.get("kind","")).endswith("_error")]
+    ucc_errors = [e for e in ucc_events if isinstance(e, dict) and str(e.get("kind", "")).endswith("_error")]
+
     triggers: Dict[str, Any] = {
         "force_proposal": bool(args.force_proposal),
         "ucc_errors_present": len(ucc_errors) > 0,
         "psi_below_threshold": (psi is not None and psi < float(args.min_psi)),
         "min_psi_threshold": float(args.min_psi),
         "psi_observed": psi,
+        "tune_step": float(args.tune_step),
     }
 
     recommendations: List[Dict[str, Any]] = []
+
+    # Structured v2 action: thermo-safe reduction of min_psi_threshold (reduces frequency of triggers, never increases compute)
+    if triggers["psi_below_threshold"]:
+        cfg_path = Path(args.tuning_config)
+        cfg_min = float(args.min_psi)
+        if cfg_path.exists():
+            try:
+                cfg = _load_json(cfg_path)
+                if isinstance(cfg.get("min_psi_threshold"), (int, float)):
+                    cfg_min = float(cfg["min_psi_threshold"])
+            except Exception:
+                pass
+
+        step = max(0.0, float(args.tune_step))
+        new_min = max(0.0, cfg_min - step)
+
+        action_v2 = None
+        if new_min < cfg_min:
+            action_v2 = {
+                "op": "json_set",
+                "path": "config/plasticity/tuning.json",
+                "json_path": "min_psi_threshold",
+                "value": new_min,
+            }
+
+        recommendations.append({
+            "id": "thermo_safe_relax_min_psi",
+            "kind": "config_tune",
+            "target": "config/plasticity/tuning.json:min_psi_threshold",
+            "suggestion": f"Thermo-safe: lower min_psi_threshold by {step:.3f} (from {cfg_min:.3f} to {new_min:.3f}) to reduce repeated tuning triggers.",
+            "rationale": "Lowering this threshold reduces how often the system enters tuning loops; it does not increase compute budgets.",
+            "evidence": {"psi": psi, "configured_min_psi_threshold": cfg_min, "proposed_min_psi_threshold": new_min, "step": step},
+            "action_v2": action_v2
+        })
+
     if triggers["ucc_errors_present"]:
         recommendations.append({
             "id": "ucc_errors_review",
             "kind": "human_review",
             "target": "ucc",
-            "suggestion": "Review UCC step errors and adjust module configuration or governance rules if needed.",
+            "suggestion": "Review UCC *_error events and recent changes; fix root cause before enabling broader plasticity ops.",
             "rationale": "UCC emitted one or more *_error events during run.",
             "evidence": {"ucc_errors_total": len(ucc_errors)},
-        })
-    if triggers["psi_below_threshold"]:
-        recommendations.append({
-            "id": "psi_low_investigate",
-            "kind": "diagnostic",
-            "target": "telemetry.coherence_metrics.Psi",
-            "suggestion": "Investigate low Psi; consider increasing perturbations/samples and reviewing recent changes.",
-            "rationale": "Psi fell below configured threshold for tuning triggers.",
-            "evidence": {"psi": psi, "min_psi": float(args.min_psi)},
+            "action_v2": None
         })
 
     no_action = (not args.force_proposal) and (len(recommendations) == 0)
 
     created_at = args.created_at_utc.strip() or _now_utc_iso()
 
-    # Deterministic-ish proposal_id if not provided
     base_for_id = {
         "telemetry_path": str(telemetry_path).replace("\\", "/"),
         "metrics": metrics,
@@ -139,6 +168,7 @@ def main() -> int:
             "ucc_errors_total": len(ucc_errors),
         },
         "triggers": triggers,
+        "recommendations": recommendations,
     }
     pid = args.proposal_id.strip() or hashlib.sha256(_canonical(base_for_id).encode("utf-8")).hexdigest()[:12]
 

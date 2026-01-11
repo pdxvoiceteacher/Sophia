@@ -24,6 +24,44 @@ BUDGET_KEYS = [
 ]
 
 
+def _ops_from_action_v2(proposal: Dict[str, Any]) -> List[Dict[str, Any]]:
+    ops: List[Dict[str, Any]] = []
+    recs = proposal.get("recommendations") or []
+    if not isinstance(recs, list):
+        return ops
+
+    for rec in recs:
+        if not isinstance(rec, dict):
+            continue
+        act = rec.get("action_v2")
+        if not isinstance(act, dict):
+            continue
+        op = act.get("op")
+        path = act.get("path")
+        if op not in ("json_set", "text_replace") or not isinstance(path, str):
+            continue
+
+        if op == "json_set":
+            ops.append({
+                "op": "json_set",
+                "path": path,
+                "json_path": act.get("json_path"),
+                "value": act.get("value"),
+                "note": rec.get("id") or rec.get("suggestion"),
+            })
+        elif op == "text_replace":
+            ops.append({
+                "op": "text_replace",
+                "path": path,
+                "pattern": act.get("pattern"),
+                "replacement": act.get("replacement"),
+                "max_replacements": act.get("max_replacements"),
+                "note": rec.get("id") or rec.get("suggestion"),
+            })
+
+    return ops
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--proposal", required=True)
@@ -35,19 +73,7 @@ def main() -> int:
     pid = proposal.get("proposal_id") or hashlib.sha256(_canonical(proposal).encode("utf-8")).hexdigest()[:12]
     created_at = args.created_at_utc.strip() or _now_utc_iso()
 
-    # Minimal v2 safe op: if psi_below_threshold -> LOWER min_psi_threshold by 0.01 (thermo-safe: fewer triggers)
-    triggers = proposal.get("triggers") or {}
-    psi_low = bool(triggers.get("psi_below_threshold"))
-
-    ops: List[Dict[str, Any]] = []
-    if psi_low:
-        ops.append({
-            "op": "json_set",
-            "path": "config/plasticity/tuning.json",
-            "json_path": "min_psi_threshold",
-            "value": 0.89,
-            "note": "Thermo-safe: relax threshold slightly to reduce repeated triggers."
-        })
+    ops = _ops_from_action_v2(proposal)
 
     plan = {
         "schema": "plasticity_patch_plan_v2",
@@ -64,7 +90,7 @@ def main() -> int:
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(plan, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8", newline="\n")
-    print(str(out_path).replace("\\","/"))
+    print(str(out_path).replace("\\", "/"))
     return 0
 
 
