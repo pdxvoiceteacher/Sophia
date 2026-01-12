@@ -1,0 +1,16 @@
+﻿name: branch-guard
+
+on:
+  pull_request:
+
+jobs:
+  ensure_master_base:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if PR base is not master
+        run: |
+          echo "PR base ref: ${{ github.base_ref }}"
+          if [ "${{ github.base_ref }}" != "master" ]; then
+            echo "ERROR: PRs must target master for phase-lock continuity."
+            exit 2
+          fi
