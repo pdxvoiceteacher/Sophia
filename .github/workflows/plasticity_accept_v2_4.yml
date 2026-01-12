@@ -1,4 +1,4 @@
-name: plasticity-accept-v2-4
+﻿name: plasticity-accept-v2-4
 
 on:
   pull_request:
@@ -124,3 +124,10 @@ jobs:
         run: |
           git worktree remove out/candidate_worktree_ci --force || true
           git branch -D plasticity_candidate_ci || true
+
+      - name: Verify artifacts (A representative run)
+        run: |
+
+      - name: Verify artifacts (B representative run)
+        run: |
+          .venv/bin/python tools/telemetry/verify_artifacts.py out/B_v24_ci/run_05/telemetry.json --repo-root .          .venv/bin/python tools/telemetry/verify_artifacts.py out/A_v24_ci/run_05/telemetry.json --repo-root .
