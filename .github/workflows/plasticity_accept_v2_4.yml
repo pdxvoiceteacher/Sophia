@@ -34,7 +34,7 @@ jobs:
             .venv/bin/python tools/telemetry/run_wrapper.py --out out/A_v24_ci/run_$i --quick --perturbations 1 --emit-tel --emit-tel-events
           done
 
-      - name: Reflect & propose (min-psi forced to ensure non-empty proposal during CI)
+      - name: Reflect & propose (real triggers)
         run: |
           mkdir -p out/A_v24_ci/proposals
           OUT=$(.venv/bin/python tools/telemetry/reflect_and_propose.py --run-dir out/A_v24_ci/run_05 --out-proposals-dir out/A_v24_ci/proposals --proposal-id ci --created-at-utc 2026-01-01T00:00:00Z)
@@ -187,3 +187,4 @@ jobs:
       - name: Verify artifacts (B representative run)
         run: |
           .venv/bin/python tools/telemetry/verify_artifacts.py out/B_v24_ci/run_05/telemetry.json --repo-root .          .venv/bin/python tools/telemetry/verify_artifacts.py out/A_v24_ci/run_05/telemetry.json --repo-root .
+
