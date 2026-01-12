@@ -18,39 +18,56 @@ def sha256_file(p: Path) -> str:
 
 def resolve_artifact(raw: str, run_dir: Path, repo_root: Path) -> Optional[Path]:
     """
-    Resolve artifacts robustly across environments.
+    Cross-platform resolver.
 
-    Supported forms:
-      1) absolute paths
-      2) repo-root relative paths (e.g., out/.../run_x/file.json)
-      3) run-dir relative paths (e.g., konomi_smoke_base/file.json)
-      4) repo-root relative paths that include the run_dir prefix; we strip it and retry
+    Artifacts may be:
+      - absolute
+      - repo-root relative (preferred)
+      - run-dir relative
+      - repo-root relative but redundantly prefixed by run_dir path
     """
-    raw_norm = raw.replace("/", "\\")
-    p = Path(raw_norm)
+    raw = str(raw)
 
-    # Absolute
-    if p.is_absolute() and p.exists():
-        return p
+    # Candidate raw spellings to try (keep POSIX slashes on Linux/macOS)
+    cands = []
+    cands.append(raw)
+    cands.append(raw.replace("\\", "/"))
 
-    # 2) Repo-root relative
-    cand_repo = repo_root / p
-    if cand_repo.exists():
-        return cand_repo
-
-    # 3) Run-dir relative
-    cand_run = run_dir / p
-    if cand_run.exists():
-        return cand_run
-
-    # 4) If raw includes the run_dir prefix, strip it and try again
+    # On Windows, also try backslash form
     try:
-        run_rel = run_dir.relative_to(repo_root).as_posix().replace("/", "\\")
-        if raw_norm.startswith(run_rel + "\\"):
-            tail = raw_norm[len(run_rel) + 1 :]
-            cand_strip = run_dir / tail
-            if cand_strip.exists():
-                return cand_strip
+        import os
+        if os.name == "nt":
+            cands.append(raw.replace("/", "\\"))
+    except Exception:
+        pass
+
+    def try_path(p: Path) -> Optional[Path]:
+        if p.is_absolute() and p.exists():
+            return p
+        rp = repo_root / p
+        if rp.exists():
+            return rp
+        rr = run_dir / p
+        if rr.exists():
+            return rr
+        return None
+
+    for s in cands:
+        p = Path(s)
+        hit = try_path(p)
+        if hit:
+            return hit
+
+    # If raw includes run_dir prefix, strip it and try again
+    try:
+        run_rel = run_dir.relative_to(repo_root).as_posix()
+        for s in cands:
+            s2 = s.replace("\\", "/")
+            if s2.startswith(run_rel + "/"):
+                tail = s2[len(run_rel) + 1 :]
+                hit = try_path(Path(tail))
+                if hit:
+                    return hit
     except Exception:
         pass
 
@@ -118,4 +135,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
