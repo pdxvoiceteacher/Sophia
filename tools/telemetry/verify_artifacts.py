@@ -17,21 +17,42 @@ def sha256_file(p: Path) -> str:
 
 
 def resolve_artifact(raw: str, run_dir: Path, repo_root: Path) -> Optional[Path]:
-    # Normalize slashes for cross-platform comparisons
+    """
+    Resolve artifacts robustly across environments.
+
+    Supported forms:
+      1) absolute paths
+      2) repo-root relative paths (e.g., out/.../run_x/file.json)
+      3) run-dir relative paths (e.g., konomi_smoke_base/file.json)
+      4) repo-root relative paths that include the run_dir prefix; we strip it and retry
+    """
     raw_norm = raw.replace("/", "\\")
     p = Path(raw_norm)
 
-    # Absolute?
+    # Absolute
     if p.is_absolute() and p.exists():
         return p
 
-    cand1 = repo_root / p
-    if cand1.exists():
-        return cand1
+    # 2) Repo-root relative
+    cand_repo = repo_root / p
+    if cand_repo.exists():
+        return cand_repo
 
-    cand2 = run_dir / p
-    if cand2.exists():
-        return cand2
+    # 3) Run-dir relative
+    cand_run = run_dir / p
+    if cand_run.exists():
+        return cand_run
+
+    # 4) If raw includes the run_dir prefix, strip it and try again
+    try:
+        run_rel = run_dir.relative_to(repo_root).as_posix().replace("/", "\\")
+        if raw_norm.startswith(run_rel + "\\"):
+            tail = raw_norm[len(run_rel) + 1 :]
+            cand_strip = run_dir / tail
+            if cand_strip.exists():
+                return cand_strip
+    except Exception:
+        pass
 
     return None
 
@@ -97,3 +118,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
