@@ -106,6 +106,13 @@ jobs:
             --nonincreasing Lambda,DeltaS \
             --eps 1e-4
 
+      - name: Debug list A run_03 outputs
+        if: always()
+        run: |
+          echo '=== ls -R out/A_plumbing_ci/run_03 ==='
+          ls -R out/A_plumbing_ci/run_03 || true
+          echo '=== telemetry.json artifacts ==='
+          cat out/A_plumbing_ci/run_03/telemetry.json | python -c "import json,sys; d=json.load(sys.stdin); print(json.dumps(d.get('artifacts',[]), indent=2))"
       - name: Verify artifacts (A representative run)
         run: |
           .venv/bin/python tools/telemetry/verify_artifacts.py out/A_plumbing_ci/run_03/telemetry.json --repo-root .
