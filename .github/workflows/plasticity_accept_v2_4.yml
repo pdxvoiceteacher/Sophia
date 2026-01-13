@@ -175,6 +175,14 @@ jobs:
           else
             echo '**Decision: ACCEPT**' >> $GITHUB_STEP_SUMMARY
           fi
+      - name: Validate Claims (A/B)
+        if: always()
+        run: |
+          for f in out/A_v24_ci/run_05/telemetry.json out/B_v24_ci/run_05/telemetry.json out/A_plumbing_ci/run_03/telemetry.json out/B_plumbing_ci/run_03/telemetry.json; do
+            if [ -f "$f" ]; then
+              .venv/bin/python tools/telemetry/validate_claims.py "$f" --repo-root .
+            fi
+          done
       - name: Validate TEL JSONL
         if: always()
         run: |
