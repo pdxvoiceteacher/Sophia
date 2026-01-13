@@ -1,0 +1,42 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:submission:v1",
+  "title": "CoherenceLattice Submission v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "title", "runs"],
+  "properties": {
+    "schema": { "type": "string", "const": "coherencelattice_submission_v1" },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "submitter": { "type": "string" },
+    "domain_tags": { "type": "array", "items": { "type": "string" }, "default": [] },
+
+    "guidance": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "guided_label": { "type": "string" },
+        "unguided_label": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+
+    "runs": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-zA-Z0-9_\\-]+$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path"],
+          "properties": {
+            "path": { "type": "string", "minLength": 1 },
+            "notes": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
