@@ -70,7 +70,13 @@ def main() -> int:
         except Exception as e:
             results.append({"label": label, "path": str(run_path), "status": "fail", "error": repr(e)})
 
-    report = {
+        # Generate a submission receipt (canonical manifest SHA256) for reviewer trust
+    try:
+        run_py(py, ["tools/telemetry/make_submission_receipt.py", "--submission-dir", str(subdir)], cwd=repo)
+    except Exception as e:
+        # Receipt generation should not hide failures; record it in results instead
+        results.append({"label": "_receipt", "path": str(subdir), "status": "fail", "error": "receipt_generation_failed: " + repr(e)})
+report = \{
         "schema": "ingest_report_v1",
         "submission": str(sub_json).replace("\\", "/"),
         "title": doc.get("title"),
@@ -86,3 +92,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
