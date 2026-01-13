@@ -1,0 +1,37 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:claims:v1",
+  "title": "CoherenceLattice Claims v1",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "type", "statement", "confidence"],
+    "properties": {
+      "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "type": {
+        "type": "string",
+        "enum": ["causal", "descriptive", "predictive", "normative", "method"]
+      },
+      "statement": { "type": "string", "minLength": 1 },
+      "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+
+      "evidence": {
+        "type": "array",
+        "items": { "type": "string" },
+        "default": []
+      },
+      "counterevidence": {
+        "type": "array",
+        "items": { "type": "string" },
+        "default": []
+      },
+      "assumptions": {
+        "type": "array",
+        "items": { "type": "string" },
+        "default": []
+      },
+      "notes": { "type": "string" }
+    }
+  }
+}
