@@ -97,7 +97,7 @@ def main() -> int:
 
     outp = Path(args.out) if args.out else (subdir / "ingest_report.json")
     outp.write_text(
-        json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2) + "\\n",
+        json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
         encoding="utf-8",
         newline="\n",
     )
