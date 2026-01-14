@@ -81,3 +81,21 @@ out\
 out/_tmp/
 
 .venv/
+
+# --- Python caches / test caches ---
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Virtual environments ---
+venv/
+
+# --- Build outputs ---
+dist/
+build/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
