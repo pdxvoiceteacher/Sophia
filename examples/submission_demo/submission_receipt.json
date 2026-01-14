@@ -1,0 +1,260 @@
+{
+  "created_at": "2026-01-13T22:34:15.783747+00:00",
+  "file_count": 63,
+  "manifest": [
+    {
+      "path": "runs/guided/epistemic_graph.json",
+      "sha256": "9a4489c44144d910dbc821c8caacaeccbe0e7c72a1b7875a98369bd7368c62b6"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_base/blockarray/blockarray_results.csv",
+      "sha256": "860d42e30331cea23c1d7940a47f58d162df16cd52e3e7c36d153c50b084495d"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_base/blockarray/blockarray_summary.json",
+      "sha256": "3f48b1f50c45a445d4d57c88db84c033deba1bc26f29fc4a5e13e3a294e72880"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_base/cube/cube_results.csv",
+      "sha256": "05bbf985fb60cd46155df08f846ae6720a3fe4392c2d8ae9e7ad2e7e2aa74cb3"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_base/cube/cube_summary.json",
+      "sha256": "e9e4c0c1f11f286cff21635889b693eb275268a829ec27b968434afb4c149243"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_base/evgpu/evgpu_matmul_results.csv",
+      "sha256": "40cd5fa61104b1f6c6d08282ba89046fd369cffcdd05eb97be29f0b941124ce9"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_base/evgpu/evgpu_matmul_summary.json",
+      "sha256": "66fa0fcc76d5947fea3af7957cb3dec0e8e12300e6f83c0dc97e13ccdd1b2e35"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_base/femto/femto_async_results.csv",
+      "sha256": "beb165a41b0840b124dec94d3c2899430ee93c71c6f084e3dc5efe8e10eabfed"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_base/femto/femto_async_summary.json",
+      "sha256": "176f9088ba893cf82285a6ef64a4e3b37855f8d642221ad5c158ff1b2bb30176"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_base/konomi_smoke_summary.json",
+      "sha256": "336b4549831acee39054942f469ac63d530e7a3e964af6b62947ef5bc8645ea6"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_perturb_1/blockarray/blockarray_results.csv",
+      "sha256": "88789da009586f2f7fd551a796e8a347da6df5d30ed5126951795a086db0c409"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_perturb_1/blockarray/blockarray_summary.json",
+      "sha256": "912422412d7aafa93d799f76c2448110bdac26dfb92626e4e584668edd03c844"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_perturb_1/cube/cube_results.csv",
+      "sha256": "9df30409be3402361ad74ca2061b1a1c3d12a7b358e96aabc34fc5e42c19de26"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_perturb_1/cube/cube_summary.json",
+      "sha256": "1a5bbdbb888b14ca9c093f5e3eaa02dc4579270f08a40457c65a219e5b7eb8e5"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_perturb_1/evgpu/evgpu_matmul_results.csv",
+      "sha256": "d4b4c8c2f696d621dbef884324cf7ec8d58d405bdb9d42a96dc3a6647d5a4fa6"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_perturb_1/evgpu/evgpu_matmul_summary.json",
+      "sha256": "9e6c6f77091f2f97a17b38baf81789a6392e8a8c8e6b6d278016c40d6bf5524f"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_perturb_1/femto/femto_async_results.csv",
+      "sha256": "635074c3228403503b3aaa26b6dc113901e59d3ffca65e7702df49447f87ddad"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_perturb_1/femto/femto_async_summary.json",
+      "sha256": "b03becd7f90c4a9bfcff5356924f33ae6e19f3658f9ceaaafc046374eb506942"
+    },
+    {
+      "path": "runs/guided/konomi_smoke_perturb_1/konomi_smoke_summary.json",
+      "sha256": "26e9b20b55e4b882ac26032fc94b1c3fa9d67177b7db15c56a0c65f7b08305cd"
+    },
+    {
+      "path": "runs/guided/perturbations.json",
+      "sha256": "2722f530239f60e9e59c4b64f4a32454a68a30d1be373c9a7180fa1b459f1bf4"
+    },
+    {
+      "path": "runs/guided/sophia_audit.json",
+      "sha256": "1093ae6a080ed5f2075d9c74ffdb9a20e4594405d7029ecc182ffe3276382f3f"
+    },
+    {
+      "path": "runs/guided/tel.json",
+      "sha256": "b0f70b74cfba111dc948351606d3bbc85644f63887298e686a82e5323ef330b8"
+    },
+    {
+      "path": "runs/guided/tel_events.jsonl",
+      "sha256": "657651a9abe35674bafcc1b32d4703733eb63866451aff340c8b1806b30896f8"
+    },
+    {
+      "path": "runs/guided/telemetry.json",
+      "sha256": "1f5b8f3592f20ebf83341059bec97c7e353f296cbea857aa58eff21e0ee4fbef"
+    },
+    {
+      "path": "runs/guided/ucc_cov_out/audit_bundle.json",
+      "sha256": "d75bd35ffb27b3f9d925b3d83d993470829ba9c4c492feaa8fefca20d767d8af"
+    },
+    {
+      "path": "runs/guided/ucc_cov_out/konomi_smoke_checklist.md",
+      "sha256": "0f7152a4e3aa14f1b4c005c16756e628f8a107369fdcdd2f91f9af59e4604a35"
+    },
+    {
+      "path": "runs/guided/ucc_cov_out/report.json",
+      "sha256": "4da7102db61415cc6ea0a27fddbad3cb1525983bb15e5675422696362578981b"
+    },
+    {
+      "path": "runs/guided/ucc_cov_perturb_1/audit_bundle.json",
+      "sha256": "08361a6843e27d7dbd5606270a150bd3dd453d2aa91c2368088a53cecdb9426a"
+    },
+    {
+      "path": "runs/guided/ucc_cov_perturb_1/konomi_smoke_checklist.md",
+      "sha256": "0f7152a4e3aa14f1b4c005c16756e628f8a107369fdcdd2f91f9af59e4604a35"
+    },
+    {
+      "path": "runs/guided/ucc_cov_perturb_1/report.json",
+      "sha256": "586be639167547d8a7ef90d5b9106cef4599d6f0b61b7b1bdbcb3767c0ebf637"
+    },
+    {
+      "path": "runs/guided/ucc_tel_events.jsonl",
+      "sha256": "9e869585fc3a581e1c3d2985ef1820dd0adadb1f9759a5354f3646c8dc9f27c8"
+    },
+    {
+      "path": "runs/unguided/epistemic_graph.json",
+      "sha256": "bbeb936ede1d4cad0ebe9f3f44886f531316451f5fe301306cf8e37e4f3f761e"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_base/blockarray/blockarray_results.csv",
+      "sha256": "a3ee0380cb5987c9d211281525f9b55297c5dec11ba0849721301d6e5481ee1a"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_base/blockarray/blockarray_summary.json",
+      "sha256": "a35a04bdafa804683008bef30300d1f27d8fff6fa032caf407407ff74d3a57af"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_base/cube/cube_results.csv",
+      "sha256": "f3d2c615810f9632eb481e7bbf76069cb861122ee203fed73dbac9fd714adf05"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_base/cube/cube_summary.json",
+      "sha256": "ad38389c430e544e9fe233ef1052f66ca584bd8c02656c91b85a199a960ee5e9"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_base/evgpu/evgpu_matmul_results.csv",
+      "sha256": "846886ba10a75f2c85535ea63d3dfc3426a0bc09d3fea1e2229d96bf11040202"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_base/evgpu/evgpu_matmul_summary.json",
+      "sha256": "10c4a618eee38448b9a58b545a4fbaa95edcd5c9acc1af1fabe80a663bf81f9f"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_base/femto/femto_async_results.csv",
+      "sha256": "a60e0c2bdafe21470257902632bff5788730e9897aef012e0d5f4e49d27f2dfe"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_base/femto/femto_async_summary.json",
+      "sha256": "b96a45c5c62381c5d51a43aefcefa3f2a25a2fd6277206d514f9b4a8987a7498"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_base/konomi_smoke_summary.json",
+      "sha256": "28cac24f5c11310e7a2ec42a4f80a57f1f6508fdd11241d6e5885aac1056829a"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_perturb_1/blockarray/blockarray_results.csv",
+      "sha256": "597ca1fa6bc113f3154471ef512a314eaecaa57815fe44abe732bc204aad4435"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_perturb_1/blockarray/blockarray_summary.json",
+      "sha256": "b368df05b283fd86b416f9e546f5bb5149ac4fd4a39b3a9dce19cb25edaab726"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_perturb_1/cube/cube_results.csv",
+      "sha256": "e6b83ca72934c8145cebdaddb06079948cdb12f4b56cb45a593dcb0b026b804c"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_perturb_1/cube/cube_summary.json",
+      "sha256": "76194920a7d5d6bb49412e17e461d51c4a93653ea24884f9ed6d231f9ac2ad94"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_perturb_1/evgpu/evgpu_matmul_results.csv",
+      "sha256": "ed6ca37692a68c68c1c0bf70a1bd9ef2771dd7f03a331a4910e497b947385a59"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_perturb_1/evgpu/evgpu_matmul_summary.json",
+      "sha256": "83487f4c407405d295f4b7c1b7ce1bae50bafe5d820944b523769f3b79c1846c"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_perturb_1/femto/femto_async_results.csv",
+      "sha256": "85cee721b595b31a22b7c2efe077ccc7df341b9c9470b6b87386e39fbd9ab616"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_perturb_1/femto/femto_async_summary.json",
+      "sha256": "1355019b7c13b9b86c0da0a1ad71f3a9438f114561938ee1f820eb1875f5c2d8"
+    },
+    {
+      "path": "runs/unguided/konomi_smoke_perturb_1/konomi_smoke_summary.json",
+      "sha256": "f3768175b665c2b259ec499607f8496dcf498d28f027e5afd6131f50471aa110"
+    },
+    {
+      "path": "runs/unguided/perturbations.json",
+      "sha256": "28edc1b32325392054c0124436f042c627cf8f99203d37f439fc1fc34f4a5f29"
+    },
+    {
+      "path": "runs/unguided/sophia_audit.json",
+      "sha256": "c8763f3316815a5876659e9af7c0e4e78fa60589e5e059e350f83cec2b6465ec"
+    },
+    {
+      "path": "runs/unguided/tel.json",
+      "sha256": "6d1243a5b2008c548ecad6697f7b12d7c200e19425c6ecce07740bf5c2f77dc6"
+    },
+    {
+      "path": "runs/unguided/tel_events.jsonl",
+      "sha256": "77cfa8d1f529adbd849a10b8d66272c0a416dba73a3851dc950c43def90d06e9"
+    },
+    {
+      "path": "runs/unguided/telemetry.json",
+      "sha256": "2e0f23ad857dc960514ad9820b15e9aada6627098a34bdde81c234ea41b9230d"
+    },
+    {
+      "path": "runs/unguided/ucc_cov_out/audit_bundle.json",
+      "sha256": "64d0563c16ef098702149ad7c6f6dc294fb93ec0fdbb3651a1180f7160d41a5d"
+    },
+    {
+      "path": "runs/unguided/ucc_cov_out/konomi_smoke_checklist.md",
+      "sha256": "0f7152a4e3aa14f1b4c005c16756e628f8a107369fdcdd2f91f9af59e4604a35"
+    },
+    {
+      "path": "runs/unguided/ucc_cov_out/report.json",
+      "sha256": "3b3e99ee24178ba2d7239f53ca885b0f9a8d205d2baac303a3d39e8fef5e90de"
+    },
+    {
+      "path": "runs/unguided/ucc_cov_perturb_1/audit_bundle.json",
+      "sha256": "7ceb21474f7e9dc598e6d8f619fb74a66a1206c0f6499a39e9d0aa675763e4dc"
+    },
+    {
+      "path": "runs/unguided/ucc_cov_perturb_1/konomi_smoke_checklist.md",
+      "sha256": "0f7152a4e3aa14f1b4c005c16756e628f8a107369fdcdd2f91f9af59e4604a35"
+    },
+    {
+      "path": "runs/unguided/ucc_cov_perturb_1/report.json",
+      "sha256": "9c8db9941c1e5d688b186b03f2c95e6ddcde802f50b10121d19818b2047dbe81"
+    },
+    {
+      "path": "runs/unguided/ucc_tel_events.jsonl",
+      "sha256": "9e869585fc3a581e1c3d2985ef1820dd0adadb1f9759a5354f3646c8dc9f27c8"
+    },
+    {
+      "path": "submission.json",
+      "sha256": "a11ca7eaae590ad87d117ae910fdb51276b95b9ca6745f2409848f1ac3f2968c"
+    }
+  ],
+  "schema": "submission_receipt_v1",
+  "submission_sha256": "e3f24467b9785390345873e5a485a9201c9617b0e0ca04bea906f0788a327955"
+}

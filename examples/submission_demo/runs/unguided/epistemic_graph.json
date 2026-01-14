@@ -80,7 +80,7 @@
     },
     {
       "data": null,
-      "dst": "artifact:out/tel_events_enriched_verify/perturbations.json",
+      "dst": "artifact:perturbations.json",
       "kind": "evidenced_by",
       "src": "claim:claim_demo_method_perturbations_v1"
     },
@@ -135,7 +135,7 @@
         ],
         "confidence": 0.95,
         "evidence": [
-          "out/tel_events_enriched_verify/perturbations.json"
+          "perturbations.json"
         ],
         "id": "claim_demo_method_perturbations_v1",
         "notes": "Demo claim: provenance-only (does not assert scientific truth, only derivation lineage).",
