@@ -79,3 +79,5 @@ out\
 \.hypothesis/
 \.hypothesis\
 out/_tmp/
+
+.venv/
