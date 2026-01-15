@@ -50,30 +50,6 @@
     },
     {
       "data": null,
-      "dst": "event:ucc:0",
-      "kind": "emitted",
-      "src": "run:tel_events_steps_verify2"
-    },
-    {
-      "data": null,
-      "dst": "event:ucc:1",
-      "kind": "emitted",
-      "src": "run:tel_events_steps_verify2"
-    },
-    {
-      "data": null,
-      "dst": "event:ucc:2",
-      "kind": "emitted",
-      "src": "run:tel_events_steps_verify2"
-    },
-    {
-      "data": null,
-      "dst": "event:ucc:3",
-      "kind": "emitted",
-      "src": "run:tel_events_steps_verify2"
-    },
-    {
-      "data": null,
       "dst": "artifact:konomi_smoke_base/konomi_smoke_summary.json",
       "kind": "produced",
       "src": "run:tel_events_steps_verify2"
@@ -210,52 +186,6 @@
       },
       "id": "event:tel:7",
       "kind": "tel_event"
-    },
-    {
-      "data": {
-        "data": {
-          "name": null
-        },
-        "kind": "ucc_run_module_start",
-        "seq": 1
-      },
-      "id": "event:ucc:0",
-      "kind": "ucc_event"
-    },
-    {
-      "data": {
-        "data": {
-          "name": null,
-          "ok": true
-        },
-        "kind": "ucc_run_module_end",
-        "seq": 2
-      },
-      "id": "event:ucc:1",
-      "kind": "ucc_event"
-    },
-    {
-      "data": {
-        "data": {
-          "name": null
-        },
-        "kind": "ucc_run_module_start",
-        "seq": 1
-      },
-      "id": "event:ucc:2",
-      "kind": "ucc_event"
-    },
-    {
-      "data": {
-        "data": {
-          "name": null,
-          "ok": true
-        },
-        "kind": "ucc_run_module_end",
-        "seq": 2
-      },
-      "id": "event:ucc:3",
-      "kind": "ucc_event"
     }
   ],
   "run_id": "tel_events_steps_verify2",

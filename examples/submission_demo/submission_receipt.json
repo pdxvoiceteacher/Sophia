@@ -1,10 +1,10 @@
 {
-  "created_at": "2026-01-13T22:34:15.783747+00:00",
-  "file_count": 63,
+  "created_at": "2026-01-15T03:09:06.285288+00:00",
+  "file_count": 62,
   "manifest": [
     {
       "path": "runs/guided/epistemic_graph.json",
-      "sha256": "9a4489c44144d910dbc821c8caacaeccbe0e7c72a1b7875a98369bd7368c62b6"
+      "sha256": "d57f3d146d653dd864bdab42d2e41de75c4dd8c178490464c8d8202f6d092feb"
     },
     {
       "path": "runs/guided/konomi_smoke_base/blockarray/blockarray_results.csv",
@@ -121,10 +121,6 @@
     {
       "path": "runs/guided/ucc_cov_perturb_1/report.json",
       "sha256": "586be639167547d8a7ef90d5b9106cef4599d6f0b61b7b1bdbcb3767c0ebf637"
-    },
-    {
-      "path": "runs/guided/ucc_tel_events.jsonl",
-      "sha256": "9e869585fc3a581e1c3d2985ef1820dd0adadb1f9759a5354f3646c8dc9f27c8"
     },
     {
       "path": "runs/unguided/epistemic_graph.json",
@@ -256,5 +252,5 @@
     }
   ],
   "schema": "submission_receipt_v1",
-  "submission_sha256": "e3f24467b9785390345873e5a485a9201c9617b0e0ca04bea906f0788a327955"
+  "submission_sha256": "5faebdd01c3db4b3a2826a0fe6545a9f7b9e544548f7d32a3e73c0d46e015f1c"
 }
