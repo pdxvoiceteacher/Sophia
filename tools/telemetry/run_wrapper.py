@@ -57,6 +57,7 @@ if "--emit-tel-events" in sys.argv:
         # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty)
         _Path(_out).mkdir(parents=True, exist_ok=True)
         (_Path(_out) / "tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
+        (_Path(_out) / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
 # --- /TEL events flag pre-parse ---
 
 
