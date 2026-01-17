@@ -1,0 +1,5 @@
+{"data":{"name":null},"kind":"ucc_run_module_start","seq":1}
+{"data":{"error":"UCC module schema validation failed:\n- []: 'ucc_version' is a required property\n- ['module']: 'id' is a required property\n- ['module']: 'title' is a required property\n- ['module']: 'intent' is a required property\n- ['module', 'version']: 1 is not of type 'string'\n- ['steps', 0]: 'id' is a required property\n- ['steps', 1]: 'id' is a required property\n- ['steps', 2]: 'id' is a required property","name":null},"kind":"ucc_run_module_error","seq":2}
+{"data":{"name":null,"ok":false},"kind":"ucc_run_module_end","seq":3}
+{"data":{"name":null},"kind":"ucc_run_module_start","seq":1}
+{"data":{"name":null,"ok":true},"kind":"ucc_run_module_end","seq":2}

@@ -1,16 +1,20 @@
 ﻿from __future__ import annotations
-import json, os, threading
+
+import json
+import os
+import threading
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 _lock = threading.Lock()
 _seq = 0
-def emit_tel_event(kind: str, data: Dict[str, Any]) -> None:
+
 
 def reset_seq_for_tests() -> None:
     global _seq
     with _lock:
         _seq = 0
+
 
 def _next_seq() -> int:
     global _seq
@@ -18,8 +22,10 @@ def _next_seq() -> int:
         _seq += 1
         return _seq
 
+
 def _canonical_line(obj: Any) -> str:
     return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+
 
 def _out_path() -> Optional[Path]:
     v = os.environ.get("UCC_TEL_EVENTS_OUT", "").strip()
@@ -27,19 +33,15 @@ def _out_path() -> Optional[Path]:
         return None
     return Path(v)
 
+
 def emit_tel_event(kind: str, data: Dict[str, Any]) -> None:
     out = _out_path()
-        # DEBUG (temporary): prove emit_tel_event is being called
-    if os.environ.get("UCC_TEL_DEBUG", "").strip() == "1":
-        print("[UCC TEL DEBUG] emit_tel_event called:", kind)
-
     if out is None:
         return
 
     # --- Lambda Gate annotation (safe additive metadata) ---
     try:
-        # Candidate locations for metrics:
-        cm = None
+        cm: Any = None
         if isinstance(data.get("coherence_metrics"), dict):
             cm = data["coherence_metrics"]
         elif isinstance(data.get("metrics"), dict):
@@ -47,7 +49,6 @@ def emit_tel_event(kind: str, data: Dict[str, Any]) -> None:
         else:
             cm = data
 
-        # Recognize all lambda key variants used in this repo:
         lam = None
         if isinstance(cm, dict):
             lam = cm.get("Λ", cm.get("lambda", cm.get("Lambda", cm.get("Lambda_T"))))

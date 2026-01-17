@@ -1,20 +1,29 @@
+ucc_version: "0.1"
+
 module:
-  name: lambda_spike_experiment
-  version: 1
-  description: "Experiment 2A: inject Lambda_T from synthetic artifact to trigger lambda_gate."
+  id: lambda_spike_experiment
+  version: "0.1"
+  title: "Experiment 2A: Synthetic Lambda Spike"
+  intent: "Deterministically inject Lambda_T from a small JSON artifact to trigger lambda_gate under governance."
+
+  authors:
+    - name: "Thomas Prislac"
 
 steps:
-  - type: extract_json_fields
+  - id: ingest_input
+    type: ingest_json
+
+  - id: extract_lambda_expected
+    type: extract_json_fields
     params:
-      # Read the artifact JSON path from the input JSON
       path: input.artifact_path
-      # Map the lambda_expected field into UCC metrics as Lambda_T
       fields:
         lambda_expected: metrics.Lambda_T
 
-  - type: threshold_flags
-    params: {}
+  - id: apply_threshold_flags
+    type: threshold_flags
 
-  - type: emit_report
+  - id: write_report
+    type: emit_report
     params:
-      name_json: "ucc_report.json"
+      report_name: "ucc_report.json"
