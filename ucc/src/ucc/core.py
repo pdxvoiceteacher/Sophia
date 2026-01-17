@@ -715,6 +715,8 @@ def run_module(module_path: Path, input_path: Path, outdir: Path, schema_path: P
             elif stype == "coherence_audit":
                 if context["input"] is None or not isinstance(context["input"], dict):
                     raise ValueError("coherence_audit requires ingest_json of a dict")
+                params = params or {}
+                params.setdefault("sections_key", "sections")
                 m, fl, outs = coherence_audit_task(context["input"], outdir, thresholds, **params)
                 context["metrics"].update(m)
                 context["flags"].update(fl)
