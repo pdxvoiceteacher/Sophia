@@ -16,7 +16,7 @@ steps:
   - id: extract_lambda_expected
     type: extract_json_fields
     params:
-      path: input.artifact_path
+      path: input.json_extract.source_json
       fields:
         lambda_expected: metrics.Lambda_T
 

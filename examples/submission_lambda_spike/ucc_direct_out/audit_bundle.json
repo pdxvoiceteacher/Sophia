@@ -1,7 +1,7 @@
 {
   "bundle_version": "0.1",
   "environment": {
-    "git_commit": "f5d5671ad44aaef4797abea04a33412f219ccd9b",
+    "git_commit": "28772261fb5f76f631c3556c84b7e9c2f84d9efb",
     "platform": "Windows-11-10.0.26100-SP0",
     "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]"
   },
@@ -12,15 +12,15 @@
   },
   "input": {
     "path": "examples\\submission_lambda_spike\\ucc_input.json",
-    "sha256": "c918fdf0d7ab5c3ebbb4694af88bd7414668bce6b9198ee9d82c52c7bd262756"
+    "sha256": "a1a811bc3dc8b136e0f5cacbd20d1b8acb0fba8e2685c1bd88930d5a8c43514e"
   },
   "metrics": {
-    "json_extract_error": "missing or non-dict section 'json_extract'"
+    "json_extract_error": "source_json missing/invalid"
   },
   "module": {
     "id": "lambda_spike_experiment",
     "path": "ucc\\modules\\experiments\\lambda_spike.yml",
-    "sha256": "fba8b3d3b0d30734ca9540a301c171e48f08f64eaf17132ea174c1c2350579f1",
+    "sha256": "c165c83c9b9cb8eb3a83b4170f47013bd18ff957ca149cab4d1a36b007468cf8",
     "version": "0.1"
   },
   "notes": {
@@ -28,7 +28,7 @@
     "schema": "ucc\\schema\\ucc_module.schema.json"
   },
   "outputs": {
-    "ucc_report.json": "662d8bfe281229a9f9c5a4ef842e1996b13141ec6bed6b60c716b372dd9e9514"
+    "ucc_report.json": "fb7542229a69f89df3ddaf3b4c8b77a7d119bd93565a70091d72c600cc6594a5"
   },
-  "timestamp_utc": "2026-01-17T03:19:33.236764+00:00"
+  "timestamp_utc": "2026-01-17T04:17:05.115756+00:00"
 }
