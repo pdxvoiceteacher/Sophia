@@ -29,7 +29,7 @@ def main() -> int:
     ap.add_argument("--run-dir", required=True, help="Run directory containing telemetry.json and epistemic_graph.json")
     ap.add_argument("--repo-root", default=".")
     ap.add_argument("--diff-report", default="", help="Optional guidance_diff report.json")
-    ap.add_argument("--schema", default="schema/sophia_audit_v3.schema.json")
+    ap.add_argument("--schema", default="schema/sophia_audit.schema.json")
     ap.add_argument(
         "--audit-sophia",
         action="store_true",
@@ -93,7 +93,15 @@ def main() -> int:
 
     audit_config_path = Path(args.audit_config).resolve() if args.audit_config else None
 
-    if run_audit_v3 is not None:
+    schema_name = Path(args.schema).name
+    if "v3" in schema_name:
+        schema_id = "sophia_audit_v3"
+    elif "v2" in schema_name:
+        schema_id = "sophia_audit_v2"
+    else:
+        schema_id = "sophia_audit_v1"
+
+    if run_audit_v3 is not None and schema_id == "sophia_audit_v3":
         audit = run_audit_v3(
             tele,
             graph,
@@ -145,7 +153,7 @@ def main() -> int:
         ethical_symmetry = audit.ethical_symmetry
         memory_kernel = audit.memory_kernel
         memory_drift_flag = audit.memory_drift_flag
-    elif run_audit_v2 is not None:
+    elif run_audit_v2 is not None and schema_id == "sophia_audit_v2":
         audit = run_audit_v2(
             tele,
             graph,
@@ -282,14 +290,6 @@ def main() -> int:
         decision = "fail"
     elif any(f["severity"] == "warn" for f in findings):
         decision = "warn"
-
-    schema_name = Path(args.schema).name
-    if "v3" in schema_name:
-        schema_id = "sophia_audit_v3"
-    elif "v2" in schema_name:
-        schema_id = "sophia_audit_v2"
-    else:
-        schema_id = "sophia_audit_v1"
 
     report = {
         "schema": schema_id,
