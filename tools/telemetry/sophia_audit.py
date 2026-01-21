@@ -275,6 +275,18 @@ def build_plan(
     }
 
 
+def load_anchor_report(repo: Path):
+    anchor_path = repo / "tools" / "telemetry" / "blockchain_anchor.py"
+    spec = importlib.util.spec_from_file_location("sophia_blockchain_anchor", anchor_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load blockchain anchor module from {anchor_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if not hasattr(module, "anchor_report"):
+        raise AttributeError("anchor_report not found in blockchain_anchor module")
+    return module.anchor_report
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-dir", required=True, help="Run directory containing telemetry.json and epistemic_graph.json")
@@ -668,8 +680,7 @@ def main() -> int:
 
     outp = Path(args.out) if args.out else (run_dir / "sophia_audit.json")
     if args.blockchain_commit and schema_id == "sophia_audit_v3":
-        from tools.telemetry.blockchain_anchor import anchor_report
-
+        anchor_report = load_anchor_report(repo)
         ledger_path = repo / "runs" / "history" / "blockchain_anchors.jsonl"
         blockchain_anchor_hash = anchor_report(report, ledger_path)
         report["blockchain_anchor_hash"] = blockchain_anchor_hash
