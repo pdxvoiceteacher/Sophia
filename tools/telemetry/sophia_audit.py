@@ -26,6 +26,266 @@ def load_json(p: Path) -> dict:
     return json.loads(p.read_text(encoding="utf-8-sig"))
 
 
+def save_json(p: Path, payload: dict) -> None:
+    p.write_text(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def load_repair_targets(repo: Path) -> dict:
+    targets_path = repo / "sophia-core" / "config" / "repair_targets.json"
+    if not targets_path.exists():
+        return {}
+    return load_json(targets_path)
+
+
+def map_repair_target(finding_type: str, repair_targets: dict) -> dict:
+    target = repair_targets.get(finding_type, {})
+    if target:
+        return {
+            "target_module": target.get("target_module", "unmapped"),
+            "target_file": target.get("target_file", "unmapped"),
+            "suggested_knob": target.get("suggested_knob"),
+            "action": target.get("action"),
+        }
+    return {
+        "target_module": "unmapped",
+        "target_file": "unmapped",
+        "suggested_knob": None,
+        "action": None,
+    }
+
+
+def build_contradiction_clusters(claims: list[dict]) -> list[dict]:
+    clusters: list[dict] = []
+    numeric_pattern = re.compile(r"(?P<key>[A-Za-z0-9_.-]+)\s*[:=]\s*(?P<value>-?\d+(?:\.\d+)?)")
+    year_pattern = re.compile(r"\b(19\d{2}|20\d{2})\b")
+    causal_pattern = re.compile(r"(?P<cause>[A-Za-z0-9_.\\-/ ]+?)\s+(causes|leads to|drives)\s+(?P<effect>[A-Za-z0-9_.\\-/ ]+)")
+
+    numeric_values: dict[str, dict[str, list[str]]] = {}
+    temporal_values: dict[str, dict[str, list[str]]] = {}
+    causal_edges: dict[tuple[str, str], list[str]] = {}
+
+    for claim in claims:
+        claim_id = str(claim.get("id", "unknown"))
+        statement = str(claim.get("statement", "")) or str(claim.get("notes", ""))
+        statement_lc = statement.lower()
+
+        for match in numeric_pattern.finditer(statement):
+            key = match.group("key").lower()
+            value = match.group("value")
+            numeric_values.setdefault(key, {}).setdefault(value, []).append(claim_id)
+
+        years = year_pattern.findall(statement)
+        if years:
+            time_key = str(claim.get("key") or claim.get("id") or statement[:32]).lower()
+            for year in years:
+                temporal_values.setdefault(time_key, {}).setdefault(year, []).append(claim_id)
+
+        if claim.get("type") == "causal" or "causes" in statement_lc or "leads to" in statement_lc:
+            confidence = float(claim.get("confidence", 0.0))
+            if confidence >= 0.7:
+                causal_match = causal_pattern.search(statement_lc)
+                if causal_match:
+                    cause = causal_match.group("cause").strip()
+                    effect = causal_match.group("effect").strip()
+                    causal_edges.setdefault((cause, effect), []).append(claim_id)
+
+    for key, value_map in numeric_values.items():
+        if len(value_map) > 1:
+            claims_involved = sorted({cid for ids in value_map.values() for cid in ids})
+            clusters.append(
+                {
+                    "type": "numeric",
+                    "key": key,
+                    "claims_involved": claims_involved,
+                    "why": f"Conflicting numeric values for {key}: {sorted(value_map.keys())}.",
+                }
+            )
+
+    for key, year_map in temporal_values.items():
+        if len(year_map) > 1:
+            claims_involved = sorted({cid for ids in year_map.values() for cid in ids})
+            clusters.append(
+                {
+                    "type": "temporal",
+                    "key": key,
+                    "claims_involved": claims_involved,
+                    "why": f"Multiple timestamps for {key}: {sorted(year_map.keys())}.",
+                }
+            )
+
+    for (cause, effect), claim_ids in causal_edges.items():
+        reversed_ids = causal_edges.get((effect, cause))
+        if reversed_ids:
+            clusters.append(
+                {
+                    "type": "causal",
+                    "key": f"{cause}↔{effect}",
+                    "claims_involved": sorted(set(claim_ids + reversed_ids)),
+                    "why": f"Conflicting causal direction between '{cause}' and '{effect}'.",
+                }
+            )
+
+    return clusters
+
+
+def apply_noise_suppression(findings: list[dict], history_path: Path, threshold: float = 0.6) -> list[dict]:
+    stats = {"total_runs": 0, "findings": {}}
+    if history_path.exists():
+        stats = load_json(history_path)
+
+    total_runs = int(stats.get("total_runs", 0))
+    type_counts = stats.get("findings", {})
+    unique_types = {f["type"] for f in findings}
+    noise_adjustments: list[dict] = []
+    corroborated = len(unique_types) > 1
+
+    for finding in findings:
+        if finding["severity"] != "warn":
+            continue
+        ftype = finding["type"]
+        rate = 0.0
+        if total_runs > 0:
+            rate = float(type_counts.get(ftype, 0)) / float(total_runs)
+        if rate > threshold and not corroborated:
+            finding["severity"] = "info"
+            noise_adjustments.append(
+                {
+                    "finding_type": ftype,
+                    "prior_rate": round(rate, 3),
+                    "action": "downgraded_to_info",
+                    "reason": "detector_fires_frequently_without_corroboration",
+                }
+            )
+
+    updated_types = {f["type"] for f in findings}
+    stats["total_runs"] = total_runs + 1
+    stats.setdefault("findings", {})
+    for ftype in updated_types:
+        stats["findings"][ftype] = int(stats["findings"].get(ftype, 0)) + 1
+
+    history_path.parent.mkdir(parents=True, exist_ok=True)
+    save_json(history_path, stats)
+    return noise_adjustments
+
+
+def compute_risk_score(
+    findings: list[dict],
+    contradiction_clusters: list[dict],
+    ethical_symmetry: Any,
+    memory_drift_flag: bool,
+) -> tuple[int, dict]:
+    counts = {
+        "missing_evidence": sum(1 for f in findings if f["type"] == "missing_evidence"),
+        "missing_counterevidence": sum(1 for f in findings if f["type"] == "missing_counterevidence"),
+        "coherence_regression": sum(
+            1
+            for f in findings
+            if f["type"] in ("telemetry_regression_risk", "coherence_regression", "coherence_drift")
+        ),
+        "contradictions": len(contradiction_clusters),
+    }
+    ethics_breach = ethical_symmetry is not None and isinstance(ethical_symmetry, (int, float)) and ethical_symmetry < 0.5
+
+    evidence_integrity = min(40, counts["missing_evidence"] * 20 + counts["missing_counterevidence"] * 10)
+    coherence_drift = min(25, counts["coherence_regression"] * 12 + (15 if memory_drift_flag else 0))
+    contradiction_risk = min(20, counts["contradictions"] * 10)
+    ethics_risk = 15 if ethics_breach else 0
+
+    risk_score = min(100, evidence_integrity + coherence_drift + contradiction_risk + ethics_risk)
+    components = {
+        "evidence_integrity": evidence_integrity,
+        "coherence_drift": coherence_drift,
+        "contradiction_risk": contradiction_risk,
+        "ethics_symmetry": ethics_risk,
+        "counts": counts,
+        "memory_drift": bool(memory_drift_flag),
+        "ethical_symmetry_breach": bool(ethics_breach),
+    }
+    return risk_score, components
+
+
+def build_plan(
+    run_id: str,
+    decision: str,
+    findings: list[dict],
+    risk_score: int,
+    repair_targets: dict,
+) -> dict:
+    severity_rank = {"fail": 2, "warn": 1, "info": 0}
+    sorted_findings = sorted(
+        findings,
+        key=lambda f: (severity_rank.get(f["severity"], 0), f["type"]),
+        reverse=True,
+    )
+    top_risks = [
+        {
+            "id": f["id"],
+            "type": f["type"],
+            "severity": f["severity"],
+            "summary": f["message"],
+        }
+        for f in sorted_findings[:3]
+    ]
+
+    recommended_actions = []
+    for finding in sorted_findings[:5]:
+        target = map_repair_target(finding["type"], repair_targets)
+        priority = "low"
+        if finding["severity"] == "warn":
+            priority = "medium"
+        if finding["severity"] == "fail":
+            priority = "high"
+        action_text = target.get("action") or f"Address {finding['type']} finding."
+        target_label = target.get("target_file") if target.get("target_file") != "unmapped" else target.get("target_module")
+        recommended_actions.append(
+            {
+                "action": action_text,
+                "target": target_label,
+                "priority": priority,
+                "proof": {
+                    "finding_id": finding["id"],
+                    "finding_type": finding["type"],
+                },
+            }
+        )
+
+    next_experiments = []
+    if decision in ("warn", "fail"):
+        next_experiments.append(
+            {
+                "id": "exp_review_findings",
+                "why": "Investigate high-risk findings and validate remediation impacts.",
+                "expected_signal": "Lower risk_score and reduced finding count on rerun.",
+            }
+        )
+
+    return {
+        "schema": "sophia_plan_v1",
+        "run_id": run_id,
+        "decision": decision,
+        "risk_score": risk_score,
+        "top_risks": top_risks,
+        "recommended_actions": recommended_actions,
+        "next_experiments": next_experiments,
+    }
+
+
+def load_anchor_report(repo: Path):
+    anchor_path = repo / "tools" / "telemetry" / "blockchain_anchor.py"
+    spec = importlib.util.spec_from_file_location("sophia_blockchain_anchor", anchor_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to load blockchain anchor module from {anchor_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if not hasattr(module, "anchor_report"):
+        raise AttributeError("anchor_report not found in blockchain_anchor module")
+    return module.anchor_report
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-dir", required=True, help="Run directory containing telemetry.json and epistemic_graph.json")
@@ -42,6 +302,12 @@ def main() -> int:
     ap.add_argument("--calibrate-trajectories", action="store_true", help="Enable trajectory phase checks.")
     ap.add_argument("--ethics-check", action="store_true", help="Enable ethical symmetry checks.")
     ap.add_argument("--memory-aware", action="store_true", help="Enable causal memory drift checks.")
+    ap.add_argument(
+        "--mode",
+        default="ci",
+        choices=["ci", "research"],
+        help="Audit mode: ci (minimal, deterministic) or research (expanded checks).",
+    )
     ap.add_argument("--out", default="", help="Output path (default: <run-dir>/sophia_audit.json)")
     args = ap.parse_args()
 
@@ -50,6 +316,7 @@ def main() -> int:
     run_basic_audit = _run_basic_audit
     run_audit_v2 = _run_audit_v2
     run_audit_v3 = _run_audit_v3
+    repair_targets = load_repair_targets(repo)
 
     if run_basic_audit is None:
         sophia_src = repo / "sophia-core" / "src"
@@ -277,6 +544,26 @@ def main() -> int:
                         "details": {"claim_id": cid}
                     })
 
+    contradiction_clusters = build_contradiction_clusters(tele.get("claims", []))
+    if schema_id in ("sophia_audit_v2", "sophia_audit_v3") and contradiction_clusters:
+        for idx, cluster in enumerate(contradiction_clusters, start=1):
+            findings.append(
+                {
+                    "id": f"finding_contradiction_{idx}",
+                    "severity": "warn",
+                    "type": "contradiction",
+                    "message": cluster["why"],
+                    "data": cluster,
+                }
+            )
+            contradictions.append(
+                {
+                    "statements": cluster["claims_involved"],
+                    "kind": cluster["type"],
+                    "key": cluster.get("key", ""),
+                }
+            )
+
     # 3) Optional guidance diff tradeoff warning
     if args.diff_report:
         dr = load_json(Path(args.diff_report))
@@ -299,6 +586,14 @@ def main() -> int:
                 "details": None
             })
 
+    noise_adjustments = apply_noise_suppression(
+        findings, repo / "runs" / "history" / "finding_stats.json"
+    )
+
+    if noise_adjustments:
+        trend_summary.setdefault("noise_adjustments", [])
+        trend_summary["noise_adjustments"].extend(noise_adjustments)
+
     # Decision
     decision = "pass"
     if any(f["severity"] == "fail" for f in findings):
@@ -315,12 +610,18 @@ def main() -> int:
         "repairs": repairs,
     }
 
+    if schema_id == "sophia_audit_v1":
+        report["metrics_snapshot"] = metrics_snapshot
+        if trend_summary:
+            report["trend_summary"] = trend_summary
+
     if schema_id == "sophia_audit_v2":
         report.update(
             {
                 "trend_summary": trend_summary,
                 "contradictions": contradictions,
                 "repair_suggestions": repair_suggestions,
+                "metrics_snapshot": metrics_snapshot,
             }
         )
     if schema_id == "sophia_audit_v3":
@@ -330,6 +631,7 @@ def main() -> int:
                 "trend_summary": trend_summary,
                 "contradictions": contradictions,
                 "repair_suggestions": repair_suggestions,
+                "contradiction_clusters": contradiction_clusters,
                 "trajectory_phase": trajectory_phase,
                 "ethical_symmetry": ethical_symmetry,
                 "memory_kernel": memory_kernel,
@@ -337,20 +639,27 @@ def main() -> int:
                 "blockchain_anchor_hash": blockchain_anchor_hash,
             }
         )
+    if schema_id == "sophia_audit_v2":
+        report["contradiction_clusters"] = contradiction_clusters
 
     outp = Path(args.out) if args.out else (run_dir / "sophia_audit.json")
     if args.blockchain_commit and schema_id == "sophia_audit_v3":
-        from tools.telemetry.blockchain_anchor import anchor_report
-
+        anchor_report = load_anchor_report(repo)
         ledger_path = repo / "runs" / "history" / "blockchain_anchors.jsonl"
         blockchain_anchor_hash = anchor_report(report, ledger_path)
         report["blockchain_anchor_hash"] = blockchain_anchor_hash
 
-    outp.write_text(json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8", newline="\n")
+    save_json(outp, report)
+
+    plan = build_plan(report["run_id"], decision, findings, risk_score, repair_targets)
+    plan_path = run_dir / "sophia_plan.json"
+    save_json(plan_path, plan)
 
     # Validate schema
     schema = load_json(repo / args.schema)
     Draft202012Validator(schema).validate(report)
+    plan_schema = load_json(repo / "schema" / "sophia_plan_v1.schema.json")
+    Draft202012Validator(plan_schema).validate(plan)
 
     print(f"[sophia_audit] OK wrote {outp} decision={decision}")
     return 0
