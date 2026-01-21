@@ -50,6 +50,7 @@ python -m ucc.cli run experiments/exp1_lambda_from_series/module.yml --input exp
 ```
 
 Expected outputs: `ucc_report.json`, `audit_bundle.json`, plus `ScratchLeanSymbols.lean` and `lean_check.log`.
+If lake is not on PATH, the Lean check returns skip (not failure). Install Lean toolchain / lake to enable strict validation.
 
 ### Linux/macOS
 
