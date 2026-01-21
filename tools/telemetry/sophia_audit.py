@@ -6,6 +6,8 @@ import importlib
 import importlib.util
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -66,7 +68,20 @@ def main() -> int:
                 run_basic_audit = None
 
     tele = load_json(run_dir / "telemetry.json")
-    graph = load_json(run_dir / "epistemic_graph.json")
+    graph_path = run_dir / "epistemic_graph.json"
+    if not graph_path.exists():
+        subprocess.run(
+            [
+                sys.executable,
+                str(repo / "tools" / "telemetry" / "build_epistemic_graph.py"),
+                "--run-dir",
+                str(run_dir),
+                "--repo-root",
+                str(repo),
+            ],
+            check=True,
+        )
+    graph = load_json(graph_path)
 
     if args.audit_sophia:
         os.environ.setdefault("UCC_TEL_EVENTS_OUT", str(run_dir / "ucc_tel_events.jsonl"))
