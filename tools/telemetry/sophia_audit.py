@@ -6,7 +6,6 @@ import importlib
 import importlib.util
 import json
 import os
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -384,11 +383,6 @@ def main() -> int:
     else:
         schema_id = "sophia_audit_v1"
 
-    if args.mode == "ci" and args.blockchain_commit:
-        args.blockchain_commit = False
-        trend_summary.setdefault("mode_guardrails", {})
-        trend_summary["mode_guardrails"]["blockchain_commit_disabled"] = True
-
     if run_audit_v3 is not None and schema_id == "sophia_audit_v3":
         audit = run_audit_v3(
             tele,
@@ -606,36 +600,6 @@ def main() -> int:
         decision = "fail"
     elif any(f["severity"] == "warn" for f in findings):
         decision = "warn"
-
-    for suggestion in repair_suggestions:
-        target_module = suggestion.get("target_module")
-        target_file = suggestion.get("target_file")
-        if target_module in ("", "unknown", None) or target_file in ("", "unknown", None):
-            inferred_type = None
-            suggestion_text = f"{suggestion.get('suggestion', '')} {suggestion.get('reason', '')}".lower()
-            for key in repair_targets.keys():
-                if key in suggestion_text:
-                    inferred_type = key
-                    break
-            if inferred_type:
-                target = map_repair_target(inferred_type, repair_targets)
-                suggestion["target_module"] = target["target_module"]
-                suggestion["target_file"] = target["target_file"]
-                suggestion["justification"] = suggestion.get("justification") or "Mapped via repair_targets.json."
-            else:
-                suggestion["target_module"] = "unmapped"
-                suggestion["target_file"] = "unmapped"
-                suggestion["justification"] = suggestion.get("justification") or "No repair target mapping found."
-
-    risk_score, risk_components = compute_risk_score(
-        findings,
-        contradiction_clusters,
-        ethical_symmetry,
-        memory_drift_flag,
-    )
-    metrics_snapshot = metrics_snapshot or {}
-    metrics_snapshot["risk_score"] = risk_score
-    metrics_snapshot["risk_components"] = risk_components
 
     report = {
         "schema": schema_id,

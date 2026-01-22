@@ -12,7 +12,6 @@ Set-Location $repoRoot
 Write-Host "Updating repo"
 git fetch origin
 git pull --ff-only
-git --no-pager log -1 --oneline
 
 Write-Host "Bootstrapping venv"
 & (Join-Path $repoRoot "scripts/windows/bootstrap_venv.ps1")
