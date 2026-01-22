@@ -26,7 +26,7 @@ __all__ = [
     "emit_hook_event",
     "emit_sophia_event",
     "run_basic_audit",
-    "__version__",
-]
     "run_audit_v2",
     "run_audit_v3",
+    "__version__",
+]
