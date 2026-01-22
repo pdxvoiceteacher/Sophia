@@ -10,6 +10,14 @@
     "run_id": { "type": "string" },
     "decision": { "type": "string", "enum": ["pass", "warn", "fail"] },
     "summary": { "type": "string" },
+    "metrics_snapshot": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "trend_summary": {
+      "type": "object",
+      "additionalProperties": true
+    },
     "findings": {
       "type": "array",
       "items": {
