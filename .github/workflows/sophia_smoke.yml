@@ -1,0 +1,37 @@
+name: sophia-smoke
+
+on:
+  pull_request:
+  push:
+    branches: [ master ]
+
+jobs:
+  sophia_smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup venv + install
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -e ./ucc
+          pip install -e ./sophia-core
+          pip install -e ./python
+
+      - name: Run Sophia pipeline smoke
+        run: |
+          rm -rf out/smoke
+          .venv/bin/python tools/telemetry/run_wrapper.py --out out/smoke --quick --emit-tel --emit-tel-events
+          .venv/bin/python tools/telemetry/sophia_audit.py --run-dir out/smoke --repo-root . --schema schema/sophia_audit_v3.schema.json --calibrate-trajectories --ethics-check --memory-aware --audit-sophia
+          test -f out/smoke/telemetry.json
+          test -f out/smoke/epistemic_graph.json
+          test -f out/smoke/sophia_audit.json
+          test -f out/smoke/sophia_plan.json
