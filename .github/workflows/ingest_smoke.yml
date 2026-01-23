@@ -20,11 +20,13 @@ jobs:
       - name: Setup venv + install
         run: |
           python -m venv .venv
-          .venv/bin/python -m pip install --upgrade pip
-          .venv/bin/python -m pip install -e ./ucc[dev]
-          .venv/bin/python -m pip install -e ./python[dev]
-          .venv/bin/python -m pip install -e ./tools/coherenceledger_bootstrap
-          .venv/bin/python -m pip install numpy fastapi httpx cryptography jsonschema pytest
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -e ./sophia-core
+          pip install -e ./ucc[dev]
+          pip install -e ./python[dev]
+          pip install -e ./tools/coherenceledger_bootstrap
+          pip install numpy fastapi httpx cryptography jsonschema pytest
 
       - name: Ingest example submission
         run: |
@@ -50,4 +52,3 @@ jobs:
           name: ingest_report_example
           path: examples/submission_demo/ingest_report.json
           if-no-files-found: error
-
