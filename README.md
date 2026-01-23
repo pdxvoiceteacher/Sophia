@@ -31,6 +31,28 @@ Python coherence simulations / music experiments / supporting utilities.
 paper/
 Manuscript support files and exported CSV artifacts (paper/out/*.csv).
 
+## How to run Sophia audit + plan locally
+
+From the repo root, run the audit in CI mode (default, deterministic, no external dependencies):
+
+```bash
+python tools/telemetry/sophia_audit.py \
+  --run-dir examples/submission_demo/runs/unguided \
+  --repo-root .
+```
+
+Research mode enables expanded checks (v3 schema + optional blockchain anchoring):
+
+```bash
+python tools/telemetry/sophia_audit.py \
+  --run-dir examples/submission_demo/runs/unguided \
+  --repo-root . \
+  --mode research \
+  --schema schema/sophia_audit_v3.schema.json
+```
+
+Audit history used for noise suppression is stored under `runs/history/`.
+
 Lean: Core Coherence Lattice (formal)
 Coherence state + invariants
 

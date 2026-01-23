@@ -1,0 +1,74 @@
+{
+  "missing_evidence": {
+    "target_module": "tools.telemetry",
+    "target_file": "tools/telemetry/build_epistemic_graph.py",
+    "suggested_knob": "telemetry.artifacts",
+    "action": "Ensure evidence artifacts are declared in telemetry and included in the epistemic graph."
+  },
+  "missing_counterevidence": {
+    "target_module": "tools.telemetry",
+    "target_file": "tools/telemetry/validate_claims.py",
+    "suggested_knob": "claims.counterevidence",
+    "action": "Add counterevidence paths or lower claim confidence."
+  },
+  "confidence_miscalibration": {
+    "target_module": "tools.telemetry",
+    "target_file": "tools/telemetry/validate_claims.py",
+    "suggested_knob": "claims.confidence",
+    "action": "Recalibrate claim confidence values against evidence strength."
+  },
+  "telemetry_regression_risk": {
+    "target_module": "tools.telemetry",
+    "target_file": "tools/telemetry/run_wrapper.py",
+    "suggested_knob": "guidance knobs / perturbations",
+    "action": "Adjust guidance knobs or perturbation limits to reduce regression risk."
+  },
+  "schema_gap": {
+    "target_module": "tools.telemetry",
+    "target_file": "schema/telemetry",
+    "suggested_knob": "schema coverage",
+    "action": "Update telemetry schema or emit missing fields."
+  },
+  "event_stream_gap": {
+    "target_module": "tools.telemetry",
+    "target_file": "tools/telemetry/run_wrapper.py",
+    "suggested_knob": "emit-tel-events",
+    "action": "Emit missing TEL events or update event stream configuration."
+  },
+  "artifact_receipt_gap": {
+    "target_module": "tools.telemetry",
+    "target_file": "tools/telemetry/validate_receipt.py",
+    "suggested_knob": "receipt policy",
+    "action": "Ensure artifact receipts are generated and validated."
+  },
+  "coherence_regression": {
+    "target_module": "tools.telemetry",
+    "target_file": "tools/telemetry/guidance_diff.py",
+    "suggested_knob": "regression thresholds",
+    "action": "Review guidance diff thresholds to mitigate coherence regression."
+  },
+  "coherence_drift": {
+    "target_module": "tools.telemetry",
+    "target_file": "tools/telemetry/run_wrapper.py",
+    "suggested_knob": "perturbation caps",
+    "action": "Reduce perturbation caps to limit coherence drift."
+  },
+  "contradiction": {
+    "target_module": "tools.telemetry",
+    "target_file": "tools/telemetry/validate_claims.py",
+    "suggested_knob": "claims statements",
+    "action": "Resolve contradictory claims and clarify statement ownership."
+  },
+  "ethical_symmetry_violation": {
+    "target_module": "sophia-core",
+    "target_file": "sophia-core/config/audit_config.json",
+    "suggested_knob": "ethics thresholds",
+    "action": "Update ethical symmetry thresholds or provide additional context."
+  },
+  "memory_deviation": {
+    "target_module": "sophia-core",
+    "target_file": "sophia-core/config/trajectories",
+    "suggested_knob": "memory drift tolerances",
+    "action": "Adjust memory drift tolerances or recalibrate memory kernel inputs."
+  }
+}

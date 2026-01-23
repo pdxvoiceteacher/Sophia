@@ -10,6 +10,10 @@
     "run_id": { "type": "string" },
     "decision": { "type": "string", "enum": ["pass", "warn", "fail"] },
     "summary": { "type": "string" },
+    "metrics_snapshot": {
+      "type": "object",
+      "additionalProperties": true
+    },
     "trend_summary": {
       "type": "object",
       "additionalProperties": true
@@ -41,6 +45,20 @@
           "target_module": { "type": "string" },
           "target_file": { "type": "string" },
           "justification": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "contradiction_clusters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "claims_involved", "why"],
+        "properties": {
+          "type": { "type": "string" },
+          "key": { "type": "string" },
+          "claims_involved": { "type": "array", "items": { "type": "string" } },
+          "why": { "type": "string" }
         }
       }
     },
