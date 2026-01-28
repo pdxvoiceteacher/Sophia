@@ -187,6 +187,27 @@ function render() {
   }
 }
 
+function updateGovernanceVisibility() {
+  if (!state.normalized) return;
+  const hasGovernance =
+    state.normalized.election ||
+    state.normalized.tally ||
+    state.normalized.decision ||
+    state.normalized.warrant ||
+    state.normalized.policyResolution ||
+    state.normalized.executionReceipt;
+  const governanceTabs = ["election", "warrant", "execution"];
+  governanceTabs.forEach((view) => {
+    const tab = document.querySelector(`.tab[data-view="${view}"]`);
+    const panel = document.getElementById(`view-${view}`);
+    if (tab) tab.classList.toggle("hidden", !hasGovernance);
+    if (panel) panel.classList.toggle("hidden", !hasGovernance);
+  });
+  if (elements.governanceOverview) {
+    elements.governanceOverview.closest(".card")?.classList.toggle("hidden", !hasGovernance);
+  }
+}
+
 async function loadRunFromZip(file) {
   const result = await loadZipFile(file);
   state.runs = result.runs;
@@ -308,5 +329,6 @@ function attachListeners() {
 }
 
 setDensity(state.density);
+document.body.classList.toggle("plain", state.plainMode);
 attachListeners();
 render();
