@@ -153,6 +153,10 @@ h3 {
   display: block;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -229,6 +233,19 @@ pre {
   border-left: 4px solid var(--accent);
   padding: 8px;
   margin-top: 8px;
+}
+
+.plain-only {
+  display: none;
+  margin: 8px 0;
+  padding: 8px;
+  background: #eef2ff;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.plain .plain-only {
+  display: block;
 }
 
 @media (max-width: 960px) {

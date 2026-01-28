@@ -34,6 +34,30 @@ def save_json(p: Path, payload: dict) -> None:
     )
 
 
+def validate_instance(schema_path: Path, instance: dict) -> list[str]:
+    schema = load_json(schema_path)
+    validator = Draft202012Validator(schema)
+    return [f"{list(err.path)} {err.message}" for err in validator.iter_errors(instance)]
+
+
+def extract_governance_summary(election: dict | None, tally: dict | None, decision: dict | None) -> dict:
+    summary = {
+        "election_present": bool(election),
+        "tally_present": bool(tally),
+        "decision_present": bool(decision),
+    }
+    if election:
+        summary["stakeholder_scope"] = election.get("stakeholder_scope")
+        summary["mvss_policy_ref"] = election.get("mvss_policy_ref")
+    if tally:
+        summary["quorum_threshold"] = tally.get("quorum_threshold")
+        summary["pass_threshold"] = tally.get("pass_threshold")
+        summary["policy_resolution_ref"] = tally.get("policy_resolution_ref")
+    if decision:
+        summary["decision"] = decision.get("decision")
+    return summary
+
+
 def load_repair_targets(repo: Path) -> dict:
     targets_path = repo / "sophia-core" / "config" / "repair_targets.json"
     if not targets_path.exists():
@@ -585,6 +609,90 @@ def main() -> int:
                 "action": "Review guidance knobs; prefer changes that do not increase DeltaS/Lambda unless Psi gain justifies tradeoff.",
                 "details": None
             })
+
+    governance_paths = {
+        "election": run_dir / "election.json",
+        "tally": run_dir / "tally.json",
+        "decision": run_dir / "decision.json",
+        "warrant": run_dir / "warrant.json",
+    }
+    governance = {
+        name: load_json(path) if path.exists() else None
+        for name, path in governance_paths.items()
+    }
+    if any(governance.values()):
+        schema_dir = repo / "schema" / "governance"
+        schema_map = {
+            "election": schema_dir / "election.schema.json",
+            "tally": schema_dir / "tally.schema.json",
+            "decision": schema_dir / "decision.schema.json",
+            "warrant": schema_dir / "warrant.schema.json",
+        }
+        for key, instance in governance.items():
+            if instance:
+                errors = validate_instance(schema_map[key], instance)
+                for idx, error in enumerate(errors[:5], start=1):
+                    findings.append(
+                        {
+                            "id": f"finding_governance_schema_{key}_{idx}",
+                            "severity": "warn",
+                            "type": "governance_schema_invalid",
+                            "message": f"{key} schema validation issue: {error}",
+                            "data": {"artifact": key, "error": error},
+                        }
+                    )
+        election = governance["election"]
+        tally = governance["tally"]
+        decision_doc = governance["decision"]
+        warrant = governance["warrant"]
+        if election:
+            for idx, ballot in enumerate(election.get("ballots", []), start=1):
+                translations = (ballot.get("ballot_text") or {}).get("translations") or {}
+                if not translations:
+                    findings.append(
+                        {
+                            "id": f"finding_governance_missing_translations_{idx}",
+                            "severity": "warn",
+                            "type": "governance_missing_translations",
+                            "message": "Ballot text is missing translations for language justice requirements.",
+                            "data": {"ballot_id": ballot.get("ballot_id")},
+                        }
+                    )
+        if tally and not tally.get("policy_resolution_ref"):
+            findings.append(
+                {
+                    "id": "finding_governance_missing_policy_resolution",
+                    "severity": "warn",
+                    "type": "governance_missing_policy_resolution",
+                    "message": "Tally is missing policy_resolution_ref linking to the MVSS thresholds artifact.",
+                    "data": None,
+                }
+            )
+        if decision_doc and not warrant:
+            findings.append(
+                {
+                    "id": "finding_governance_missing_warrant",
+                    "severity": "warn",
+                    "type": "governance_missing_warrant",
+                    "message": "Decision exists without a warrant artifact.",
+                    "data": None,
+                }
+            )
+        if decision_doc and warrant:
+            actions = warrant.get("authorized_actions", []) or []
+            if actions and decision_doc.get("decision") != "pass":
+                findings.append(
+                    {
+                        "id": "finding_governance_warrant_without_pass",
+                        "severity": "warn",
+                        "type": "governance_warrant_requires_pass",
+                        "message": "Warrant authorizes actions even though the decision is not pass.",
+                        "data": {"decision": decision_doc.get("decision")},
+                    }
+                )
+        trend_summary.setdefault("governance_summary", {}).update(
+            extract_governance_summary(election, tally, decision_doc)
+        )
 
     noise_adjustments = apply_noise_suppression(
         findings, repo / "runs" / "history" / "finding_stats.json"
