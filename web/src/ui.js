@@ -140,26 +140,6 @@ function renderKeyValueLines(pairs) {
     .join("");
 }
 
-export function renderGovernanceOverview(container, data) {
-  if (!data) {
-    container.innerHTML = "<p class='muted'>No run loaded.</p>";
-    return;
-  }
-  const election = data.election || {};
-  const tally = data.tally || {};
-  const decision = data.decision || {};
-  const policyResolution = data.policyResolution || {};
-  const thresholds = policyResolution.thresholds || {};
-  const summaryLines = renderKeyValueLines([
-    { label: "Stakeholder scope", value: election.stakeholder_scope || decision.stakeholder_scope },
-    { label: "MVSS policy", value: election.mvss_policy_ref || decision.mvss_policy_ref },
-    { label: "Quorum threshold", value: tally.quorum_threshold ?? thresholds.quorum_weight },
-    { label: "Pass threshold", value: tally.pass_threshold ?? thresholds.pass_weight },
-    { label: "Decision", value: decision.decision },
-  ]);
-  container.innerHTML = summaryLines || "<p class='muted'>No governance artifacts found.</p>";
-}
-
 export function renderElection(container, data) {
   if (!data) {
     container.innerHTML = "<p class='muted'>No run loaded.</p>";
@@ -175,31 +155,7 @@ export function renderElection(container, data) {
     { label: "Ballots", value: election.ballots?.length || election.ballot_count },
     { label: "Tally hash", value: tally.hash || tally.tally_hash },
   ]);
-  const ballots = election.ballots || [];
-  const ballotBlocks = ballots
-    .map((ballot) => {
-      const ballotText = ballot.ballot_text || {};
-      const translations = ballotText.translations || {};
-      const translationLines = Object.entries(translations)
-        .map(([lang, text]) => `<div class="detail muted">${lang}: ${text}</div>`)
-        .join("");
-      return `
-        <div class="summary-line">
-          <strong>${ballot.ballot_id || "Ballot"}</strong>
-          <div class="detail muted">Primary: ${ballotText.primary || "n/a"}</div>
-          ${translationLines || `<div class="detail muted">Translations: none</div>`}
-        </div>
-      `;
-    })
-    .join("");
-  const plainSummary = decision.decision
-    ? `Plain summary: Decision ${decision.decision.toUpperCase()} for ${election.stakeholder_scope || "stakeholders"}.`
-    : "Plain summary: Election prepared for stakeholder review.";
-  container.innerHTML = `
-    ${summaryLines || "<p class='muted'>No election metadata found.</p>"}
-    <div class="plain-only">${plainSummary}</div>
-    ${ballotBlocks || "<p class='muted'>No ballots found.</p>"}
-  `;
+  container.innerHTML = summaryLines || "<p class='muted'>No election metadata found.</p>";
 }
 
 export function renderDecisionProof(container, data) {
