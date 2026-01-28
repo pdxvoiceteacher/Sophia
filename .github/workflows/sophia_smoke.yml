@@ -30,8 +30,27 @@ jobs:
         run: |
           rm -rf out/smoke
           .venv/bin/python tools/telemetry/run_wrapper.py --out out/smoke --quick --emit-tel --emit-tel-events
+          .venv/bin/python tools/sophia/resolve_mvss_policy.py \
+            --registry governance/identity/registry_snapshots/demo_registry_snapshot.json \
+            --policy governance/policies/demo_mvss_policy.json \
+            --stakeholder-scope global \
+            --out out/smoke/policy_resolution.json
+          .venv/bin/python tools/sophia/mint_governance_bundle.py \
+            --registry governance/identity/registry_snapshots/demo_registry_snapshot.json \
+            --policy governance/policies/demo_mvss_policy.json \
+            --stakeholder-scope global \
+            --ballot-text-primary "Approve governance bundle?" \
+            --ballot-text-translation es="¿Aprobar paquete de gobernanza?" \
+            --ballot-text-translation fr="Approuver le lot de gouvernance ?" \
+            --choices yes no \
+            --out-dir out/smoke
           .venv/bin/python tools/telemetry/sophia_audit.py --run-dir out/smoke --repo-root . --schema schema/sophia_audit_v3.schema.json --calibrate-trajectories --ethics-check --memory-aware --audit-sophia
           test -f out/smoke/telemetry.json
           test -f out/smoke/epistemic_graph.json
           test -f out/smoke/sophia_audit.json
           test -f out/smoke/sophia_plan.json
+          test -f out/smoke/election.json
+          test -f out/smoke/tally.json
+          test -f out/smoke/decision.json
+          test -f out/smoke/warrant.json
+          test -f out/smoke/policy_resolution.json
