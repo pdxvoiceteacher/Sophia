@@ -115,7 +115,6 @@ def well_known() -> dict:
     return {
         "service": "sophia-standards",
         "version": "v1",
-        "api_base": "/sophia/api",
         "manifest_url": "/manifest.json",
         "schemas_url": "/schemas",
         "schema_url_template": "/schemas/{name}",

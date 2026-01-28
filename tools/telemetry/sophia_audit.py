@@ -630,19 +630,7 @@ def main() -> int:
         }
         for key, instance in governance.items():
             if instance:
-                schema_path = schema_map[key]
-                if not schema_path.exists():
-                    findings.append(
-                        {
-                            "id": f"finding_governance_schema_missing_{key}",
-                            "severity": "warn",
-                            "type": "governance_schema_missing",
-                            "message": f"Missing governance schema for {key}: {schema_path}",
-                            "data": {"artifact": key, "schema": str(schema_path)},
-                        }
-                    )
-                    continue
-                errors = validate_instance(schema_path, instance)
+                errors = validate_instance(schema_map[key], instance)
                 for idx, error in enumerate(errors[:5], start=1):
                     findings.append(
                         {

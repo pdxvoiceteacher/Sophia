@@ -71,7 +71,6 @@ jobs:
             --ballot-text-translation es="¿Aprobar paquete de gobernanza?" \
             --ballot-text-translation fr="Approuver le lot de gouvernance ?" \
             --choices yes no \
-            --decision-mode pass \
             --out-dir out/smoke
           .venv/bin/python tools/telemetry/sophia_audit.py --run-dir out/smoke --repo-root . --schema schema/sophia_audit_v3.schema.json --calibrate-trajectories --ethics-check --memory-aware --audit-sophia
           test -f out/smoke/telemetry.json

@@ -19,7 +19,7 @@ Base path suggestions (deployment):
 ### `GET /.well-known/sophia.json`
 
 Service discovery entry point, returns URLs for manifest, schemas, policies, registry snapshots, and
-changelog, plus an `api_base` hint for reverse-proxy deployments.
+changelog.
 
 ### `GET /manifest.json`
 
