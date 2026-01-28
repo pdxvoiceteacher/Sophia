@@ -25,6 +25,34 @@ jobs:
           pip install -e ./ucc
           pip install -e ./sophia-core
           pip install -e ./python
+          pip install fastapi uvicorn
+
+      - name: Standards changelog gate
+        env:
+          BASE_REF: ${{ github.base_ref || 'master' }}
+          SOPHIA_SKIP_CHANGELOG_CHECK: ${{ secrets.SOPHIA_SKIP_CHANGELOG_CHECK || '' }}
+        run: |
+          git fetch origin "$BASE_REF"
+          CHANGED=$(git diff --name-only "origin/$BASE_REF"...HEAD)
+          if [ -n "$SOPHIA_SKIP_CHANGELOG_CHECK" ]; then
+            echo "Skipping changelog check."
+            exit 0
+          fi
+          if echo "$CHANGED" | grep -Eq '^(schema/|tools/sophia/|web/|governance/)'; then
+            if ! echo "$CHANGED" | grep -Eq '^docs/standards_changelog.json$'; then
+              echo "Standards changelog missing. Update docs/standards_changelog.json or set SOPHIA_SKIP_CHANGELOG_CHECK=1."
+              exit 1
+            fi
+          fi
+
+      - name: Standards gateway smoke
+        run: |
+          . .venv/bin/activate
+          .venv/bin/python -m uvicorn tools.sophia.standards_api:app --port 8001 &
+          sleep 2
+          curl -fsS http://localhost:8001/.well-known/sophia.json
+          curl -fsS http://localhost:8001/manifest.json
+          curl -fsS http://localhost:8001/schemas
 
       - name: Run Sophia pipeline smoke
         run: |
