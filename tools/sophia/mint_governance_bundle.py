@@ -91,12 +91,6 @@ def main() -> int:
         default=["yes", "no"],
         help="Choices list for the election (space separated)",
     )
-    ap.add_argument(
-        "--decision-mode",
-        choices=["pass", "fail", "auto"],
-        default="pass",
-        help="Force a decision outcome or compute from weighted totals (auto).",
-    )
     ap.add_argument("--out-dir", required=True, help="Run directory to write artifacts")
     args = ap.parse_args()
 
@@ -193,10 +187,7 @@ def main() -> int:
     }
 
     yes_weight = totals.get("yes", {}).get("weight", 0)
-    if args.decision_mode == "auto":
-        decision_value = "pass" if yes_weight >= pass_threshold and total_weight >= quorum_threshold else "fail"
-    else:
-        decision_value = args.decision_mode
+    decision_value = "pass" if yes_weight >= pass_threshold and total_weight >= quorum_threshold else "fail"
 
     decision = {
         "schema": "decision_v1",
