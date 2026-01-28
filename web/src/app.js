@@ -8,7 +8,6 @@ import {
   renderClaims,
   renderContradictions,
   renderEvents,
-  renderGovernanceOverview,
   renderElection,
   renderDecisionProof,
   renderLedgerAnchor,
@@ -39,7 +38,6 @@ const elements = {
   claims: document.getElementById("claims"),
   contradictions: document.getElementById("contradictions"),
   events: document.getElementById("events"),
-  governanceOverview: document.getElementById("governance-overview"),
   electionSummary: document.getElementById("election-summary"),
   decisionProof: document.getElementById("decision-proof"),
   ledgerAnchor: document.getElementById("ledger-anchor"),
@@ -101,7 +99,6 @@ function buildNormalized(run) {
   const decisionPath = findFilePath(run, "decision.json");
   const warrantPath = findFilePath(run, "warrant.json");
   const receiptPath = findFilePath(run, "execution_receipt.json");
-  const policyResolutionPath = findFilePath(run, "policy_resolution.json");
 
   const telemetry = telemetryPath ? decodeJson(telemetryPath) : null;
   const sophiaAudit = auditPath ? decodeJson(auditPath) : null;
@@ -112,7 +109,6 @@ function buildNormalized(run) {
   const decision = decisionPath ? decodeJson(decisionPath) : null;
   const warrant = warrantPath ? decodeJson(warrantPath) : null;
   const executionReceipt = receiptPath ? decodeJson(receiptPath) : null;
-  const policyResolution = policyResolutionPath ? decodeJson(policyResolutionPath) : null;
 
   const filesIndex = run.files.map((path) => ({
     path,
@@ -146,7 +142,6 @@ function buildNormalized(run) {
     decision,
     warrant,
     executionReceipt,
-    policyResolution,
     filesIndex,
     derived,
   };
@@ -181,14 +176,12 @@ function render() {
   renderClaims(elements.claims, state.normalized);
   renderContradictions(elements.contradictions, state.normalized);
   renderEvents(elements.events, state.normalized);
-  renderGovernanceOverview(elements.governanceOverview, state.normalized);
   renderElection(elements.electionSummary, state.normalized);
   renderDecisionProof(elements.decisionProof, state.normalized);
   renderLedgerAnchor(elements.ledgerAnchor, state.normalized);
   renderWarrant(elements.warrant, state.normalized);
   renderExecution(elements.executionReceipt, state.normalized);
   renderExecutionDiffs(elements.executionDiffs, state.normalized);
-  updateGovernanceVisibility();
   if (state.normalized) {
     elements.jsonViewer.textContent = JSON.stringify(state.normalized.sophiaAudit || {}, null, 2);
   }
