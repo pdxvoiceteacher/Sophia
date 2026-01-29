@@ -104,6 +104,10 @@ h3 {
   padding: 0 32px 32px;
 }
 
+.legitimacy-strip {
+  margin-bottom: 16px;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -151,6 +155,10 @@ h3 {
 
 .view.active {
   display: block;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .grid {
@@ -229,6 +237,27 @@ pre {
   border-left: 4px solid var(--accent);
   padding: 8px;
   margin-top: 8px;
+}
+
+.plain-only {
+  display: none;
+  margin: 8px 0;
+  padding: 8px;
+  background: #eef2ff;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.plain .plain-only {
+  display: block;
+}
+
+details {
+  margin-top: 4px;
+}
+
+details > summary {
+  cursor: pointer;
 }
 
 @media (max-width: 960px) {

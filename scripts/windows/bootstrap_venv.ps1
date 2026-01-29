@@ -17,3 +17,6 @@ Write-Host "Installing editable packages"
 & $pythonExe -m pip install -e (Join-Path $repoRoot "ucc")
 & $pythonExe -m pip install -e (Join-Path $repoRoot "sophia-core")
 & $pythonExe -m pip install -e (Join-Path $repoRoot "python")
+
+Write-Host "Installing API runtime dependencies"
+& $pythonExe -m pip install fastapi uvicorn

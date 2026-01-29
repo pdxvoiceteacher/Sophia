@@ -77,14 +77,25 @@
       </aside>
 
       <section class="content">
+        <section class="card legitimacy-strip">
+          <h3>Legitimacy Strip</h3>
+          <div id="legitimacy-strip"></div>
+        </section>
         <nav class="tabs">
           <button class="tab active" data-view="dashboard">Dashboard</button>
           <button class="tab" data-view="evidence">Evidence</button>
+          <button class="tab" data-view="election">Election</button>
+          <button class="tab" data-view="warrant">Warrant</button>
+          <button class="tab" data-view="execution">Execution</button>
           <button class="tab" data-view="json">JSON Viewer</button>
         </nav>
 
         <section id="view-dashboard" class="view active">
           <div class="grid">
+            <section class="card">
+              <h3>Governance Overview</h3>
+              <div id="governance-overview"></div>
+            </section>
             <section class="card">
               <h3>Top Risks</h3>
               <div id="top-risks"></div>
@@ -117,6 +128,45 @@
           </div>
         </section>
 
+        <section id="view-election" class="view">
+          <div class="grid">
+            <section class="card">
+              <h3>Election Summary</h3>
+              <div id="election-summary"></div>
+            </section>
+            <section class="card">
+              <h3>Decision Proof</h3>
+              <div id="decision-proof"></div>
+            </section>
+            <section class="card">
+              <h3>Ledger Anchor</h3>
+              <div id="ledger-anchor"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-warrant" class="view">
+          <div class="grid">
+            <section class="card">
+              <h3>Authorized Actions</h3>
+              <div id="warrant"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-execution" class="view">
+          <div class="grid">
+            <section class="card">
+              <h3>Execution Receipt</h3>
+              <div id="execution-receipt"></div>
+            </section>
+            <section class="card">
+              <h3>Execution Diffs</h3>
+              <div id="execution-diffs"></div>
+            </section>
+          </div>
+        </section>
+
         <section id="view-json" class="view">
           <div class="card">
             <h3>JSON Viewer</h3>
@@ -124,6 +174,15 @@
               <button data-json="telemetry.json">telemetry.json</button>
               <button data-json="sophia_audit.json">sophia_audit.json</button>
               <button data-json="sophia_plan.json">sophia_plan.json</button>
+              <button data-json="policy_resolution.json">policy_resolution.json</button>
+              <button data-json="election.json">election.json</button>
+              <button data-json="tally.json">tally.json</button>
+              <button data-json="decision.json">decision.json</button>
+              <button data-json="warrant.json">warrant.json</button>
+              <button data-json="continuity_claim.json">continuity_claim.json</button>
+              <button data-json="continuity_warrant.json">continuity_warrant.json</button>
+              <button data-json="shutdown_warrant.json">shutdown_warrant.json</button>
+              <button data-json="execution_receipt.json">execution_receipt.json</button>
             </div>
             <pre id="json-viewer"></pre>
           </div>

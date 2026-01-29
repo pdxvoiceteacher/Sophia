@@ -34,6 +34,42 @@ def save_json(p: Path, payload: dict) -> None:
     )
 
 
+def validate_instance(schema_path: Path, instance: dict) -> list[str]:
+    schema = load_json(schema_path)
+    validator = Draft202012Validator(schema)
+    return [f"{list(err.path)} {err.message}" for err in validator.iter_errors(instance)]
+
+
+def extract_governance_summary(election: dict | None, tally: dict | None, decision: dict | None) -> dict:
+    summary = {
+        "election_present": bool(election),
+        "tally_present": bool(tally),
+        "decision_present": bool(decision),
+    }
+    if election:
+        summary["stakeholder_scope"] = election.get("stakeholder_scope")
+        summary["mvss_policy_ref"] = election.get("mvss_policy_ref")
+    if tally:
+        summary["quorum_threshold"] = tally.get("quorum_threshold")
+        summary["pass_threshold"] = tally.get("pass_threshold")
+        summary["policy_resolution_ref"] = tally.get("policy_resolution_ref")
+    if decision:
+        summary["decision"] = decision.get("decision")
+    return summary
+
+
+def load_action_registry(repo: Path) -> dict | None:
+    registry_path = repo / "governance" / "policies" / "action_registry_v1.json"
+    if registry_path.exists():
+        return load_json(registry_path)
+    return None
+
+
+def is_shutdown_like(action_name: str) -> bool:
+    lowered = action_name.lower()
+    return any(token in lowered for token in ("shutdown", "terminate", "decommission"))
+
+
 def load_repair_targets(repo: Path) -> dict:
     targets_path = repo / "sophia-core" / "config" / "repair_targets.json"
     if not targets_path.exists():
@@ -585,6 +621,175 @@ def main() -> int:
                 "action": "Review guidance knobs; prefer changes that do not increase DeltaS/Lambda unless Psi gain justifies tradeoff.",
                 "details": None
             })
+
+    governance_paths = {
+        "election": run_dir / "election.json",
+        "tally": run_dir / "tally.json",
+        "decision": run_dir / "decision.json",
+        "warrant": run_dir / "warrant.json",
+        "continuity_claim": run_dir / "continuity_claim.json",
+        "continuity_warrant": run_dir / "continuity_warrant.json",
+        "shutdown_warrant": run_dir / "shutdown_warrant.json",
+    }
+    governance = {
+        name: load_json(path) if path.exists() else None
+        for name, path in governance_paths.items()
+    }
+    if any(governance.values()):
+        schema_dir = repo / "schema" / "governance"
+        schema_map = {
+            "election": schema_dir / "election.schema.json",
+            "tally": schema_dir / "tally.schema.json",
+            "decision": schema_dir / "decision.schema.json",
+            "warrant": schema_dir / "warrant.schema.json",
+            "continuity_claim": schema_dir / "continuity_claim.schema.json",
+            "continuity_warrant": schema_dir / "continuity_warrant.schema.json",
+            "shutdown_warrant": schema_dir / "shutdown_warrant.schema.json",
+        }
+        for key, instance in governance.items():
+            if instance:
+                schema_path = schema_map[key]
+                if not schema_path.exists():
+                    findings.append(
+                        {
+                            "id": f"finding_governance_schema_missing_{key}",
+                            "severity": "warn",
+                            "type": "governance_schema_missing",
+                            "message": f"Missing governance schema for {key}: {schema_path}",
+                            "data": {"artifact": key, "schema": str(schema_path)},
+                        }
+                    )
+                    continue
+                errors = validate_instance(schema_path, instance)
+                for idx, error in enumerate(errors[:5], start=1):
+                    findings.append(
+                        {
+                            "id": f"finding_governance_schema_{key}_{idx}",
+                            "severity": "warn",
+                            "type": "governance_schema_invalid",
+                            "message": f"{key} schema validation issue: {error}",
+                            "data": {"artifact": key, "error": error},
+                        }
+                    )
+        election = governance["election"]
+        tally = governance["tally"]
+        decision_doc = governance["decision"]
+        warrant = governance["warrant"]
+        continuity_claim = governance["continuity_claim"]
+        continuity_warrant = governance["continuity_warrant"]
+        shutdown_warrant = governance["shutdown_warrant"]
+        if election:
+            for idx, ballot in enumerate(election.get("ballots", []), start=1):
+                translations = (ballot.get("ballot_text") or {}).get("translations") or {}
+                if not translations:
+                    findings.append(
+                        {
+                            "id": f"finding_governance_missing_translations_{idx}",
+                            "severity": "warn",
+                            "type": "governance_missing_translations",
+                            "message": "Ballot text is missing translations for language justice requirements.",
+                            "data": {"ballot_id": ballot.get("ballot_id")},
+                        }
+                    )
+        if tally and not tally.get("policy_resolution_ref"):
+            findings.append(
+                {
+                    "id": "finding_governance_missing_policy_resolution",
+                    "severity": "warn",
+                    "type": "governance_missing_policy_resolution",
+                    "message": "Tally is missing policy_resolution_ref linking to the MVSS thresholds artifact.",
+                    "data": None,
+                }
+            )
+        if decision_doc and not warrant:
+            findings.append(
+                {
+                    "id": "finding_governance_missing_warrant",
+                    "severity": "warn",
+                    "type": "governance_missing_warrant",
+                    "message": "Decision exists without a warrant artifact.",
+                    "data": None,
+                }
+            )
+        if decision_doc and warrant:
+            actions = warrant.get("authorized_actions", []) or []
+            if actions and decision_doc.get("decision") != "pass":
+                findings.append(
+                    {
+                        "id": "finding_governance_warrant_without_pass",
+                        "severity": "warn",
+                        "type": "governance_warrant_requires_pass",
+                        "message": "Warrant authorizes actions even though the decision is not pass.",
+                        "data": {"decision": decision_doc.get("decision")},
+                    }
+                )
+            action_registry = load_action_registry(repo)
+            if action_registry:
+                scope = decision_doc.get("stakeholder_scope") or "org"
+                allowed_actions = (action_registry.get("allowed_actions") or {}).get(scope, [])
+                forbidden_classes = set(action_registry.get("forbidden_classes") or [])
+                required_constraints = set(action_registry.get("required_constraints") or [])
+                for action in actions:
+                    action_name = action.get("action", "")
+                    action_class = action.get("class") or action.get("classification")
+                    if allowed_actions and action_name not in allowed_actions:
+                        findings.append(
+                            {
+                                "id": f"finding_governance_action_not_allowed_{action_name}",
+                                "severity": "warn",
+                                "type": "governance_action_not_allowed",
+                                "message": f"Action '{action_name}' is not allowed for scope.",
+                                "data": {"action": action_name},
+                            }
+                        )
+                    if action_class and action_class in forbidden_classes:
+                        findings.append(
+                            {
+                                "id": f"finding_governance_action_forbidden_{action_name}",
+                                "severity": "fail",
+                                "type": "governance_action_forbidden",
+                                "message": f"Action '{action_name}' uses forbidden class '{action_class}'.",
+                                "data": {"action": action_name, "classification": action_class},
+                            }
+                        )
+                    constraints = set(action.get("constraints") or [])
+                    missing_constraints = sorted(required_constraints - constraints)
+                    if missing_constraints:
+                        findings.append(
+                            {
+                                "id": f"finding_governance_action_missing_constraints_{action_name}",
+                                "severity": "warn",
+                                "type": "governance_action_missing_constraints",
+                                "message": f"Action '{action_name}' missing constraints: {', '.join(missing_constraints)}.",
+                                "data": {"action": action_name, "missing_constraints": missing_constraints},
+                            }
+                        )
+            shutdown_like = any(is_shutdown_like(action.get("action", "")) for action in actions)
+            if shutdown_like and not shutdown_warrant:
+                findings.append(
+                    {
+                        "id": "finding_shutdown_warrant_missing",
+                        "severity": "fail",
+                        "type": "governance_shutdown_warrant_missing",
+                        "message": "Shutdown-like action present without shutdown_warrant.json.",
+                        "data": None,
+                    }
+                )
+        if continuity_claim and not continuity_warrant:
+            findings.append(
+                {
+                    "id": "finding_continuity_warrant_missing",
+                    "severity": "warn",
+                    "type": "governance_continuity_warrant_missing",
+                    "message": "Continuity claim present without continuity_warrant.json.",
+                    "data": None,
+                }
+            )
+        governance_summary = extract_governance_summary(election, tally, decision_doc)
+        governance_summary["continuity_claim_present"] = bool(continuity_claim)
+        governance_summary["continuity_warrant_present"] = bool(continuity_warrant)
+        governance_summary["shutdown_warrant_present"] = bool(shutdown_warrant)
+        trend_summary.setdefault("governance_summary", {}).update(governance_summary)
 
     noise_adjustments = apply_noise_suppression(
         findings, repo / "runs" / "history" / "finding_stats.json"
