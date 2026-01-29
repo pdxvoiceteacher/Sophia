@@ -65,6 +65,53 @@ def load_action_registry(repo: Path) -> dict | None:
     return None
 
 
+def validate_actions(
+    findings: list[dict],
+    action_registry: dict,
+    actions: list[dict],
+    scope: str,
+    id_prefix: str,
+) -> None:
+    allowed_actions = (action_registry.get("allowed_actions") or {}).get(scope, [])
+    forbidden_classes = set(action_registry.get("forbidden_classes") or [])
+    required_constraints = set(action_registry.get("required_constraints") or [])
+    for action in actions:
+        action_name = action.get("action", "")
+        action_class = action.get("class") or action.get("classification")
+        if allowed_actions and action_name not in allowed_actions:
+            findings.append(
+                {
+                    "id": f"{id_prefix}_action_not_allowed_{action_name}",
+                    "severity": "warn",
+                    "type": "governance_action_not_allowed",
+                    "message": f"Action '{action_name}' is not allowed for scope.",
+                    "data": {"action": action_name, "scope": scope},
+                }
+            )
+        if action_class and action_class in forbidden_classes:
+            findings.append(
+                {
+                    "id": f"{id_prefix}_action_forbidden_{action_name}",
+                    "severity": "fail",
+                    "type": "governance_action_forbidden",
+                    "message": f"Action '{action_name}' uses forbidden class '{action_class}'.",
+                    "data": {"action": action_name, "classification": action_class},
+                }
+            )
+        constraints = set(action.get("constraints") or [])
+        missing_constraints = sorted(required_constraints - constraints)
+        if missing_constraints:
+            findings.append(
+                {
+                    "id": f"{id_prefix}_action_missing_constraints_{action_name}",
+                    "severity": "warn",
+                    "type": "governance_action_missing_constraints",
+                    "message": f"Action '{action_name}' missing constraints: {', '.join(missing_constraints)}.",
+                    "data": {"action": action_name, "missing_constraints": missing_constraints},
+                }
+            )
+
+
 def is_shutdown_like(action_name: str) -> bool:
     lowered = action_name.lower()
     return any(token in lowered for token in ("shutdown", "terminate", "decommission"))
@@ -726,44 +773,13 @@ def main() -> int:
             action_registry = load_action_registry(repo)
             if action_registry:
                 scope = decision_doc.get("stakeholder_scope") or "org"
-                allowed_actions = (action_registry.get("allowed_actions") or {}).get(scope, [])
-                forbidden_classes = set(action_registry.get("forbidden_classes") or [])
-                required_constraints = set(action_registry.get("required_constraints") or [])
-                for action in actions:
-                    action_name = action.get("action", "")
-                    action_class = action.get("class") or action.get("classification")
-                    if allowed_actions and action_name not in allowed_actions:
-                        findings.append(
-                            {
-                                "id": f"finding_governance_action_not_allowed_{action_name}",
-                                "severity": "warn",
-                                "type": "governance_action_not_allowed",
-                                "message": f"Action '{action_name}' is not allowed for scope.",
-                                "data": {"action": action_name},
-                            }
-                        )
-                    if action_class and action_class in forbidden_classes:
-                        findings.append(
-                            {
-                                "id": f"finding_governance_action_forbidden_{action_name}",
-                                "severity": "fail",
-                                "type": "governance_action_forbidden",
-                                "message": f"Action '{action_name}' uses forbidden class '{action_class}'.",
-                                "data": {"action": action_name, "classification": action_class},
-                            }
-                        )
-                    constraints = set(action.get("constraints") or [])
-                    missing_constraints = sorted(required_constraints - constraints)
-                    if missing_constraints:
-                        findings.append(
-                            {
-                                "id": f"finding_governance_action_missing_constraints_{action_name}",
-                                "severity": "warn",
-                                "type": "governance_action_missing_constraints",
-                                "message": f"Action '{action_name}' missing constraints: {', '.join(missing_constraints)}.",
-                                "data": {"action": action_name, "missing_constraints": missing_constraints},
-                            }
-                        )
+                validate_actions(
+                    findings,
+                    action_registry,
+                    actions,
+                    scope,
+                    "finding_governance_warrant",
+                )
             shutdown_like = any(is_shutdown_like(action.get("action", "")) for action in actions)
             if shutdown_like and not shutdown_warrant:
                 findings.append(
@@ -774,6 +790,18 @@ def main() -> int:
                         "message": "Shutdown-like action present without shutdown_warrant.json.",
                         "data": None,
                     }
+                )
+        if continuity_warrant:
+            continuity_actions = continuity_warrant.get("authorized_actions", []) or []
+            action_registry = load_action_registry(repo)
+            if action_registry:
+                scope = continuity_warrant.get("stakeholder_scope") or "org"
+                validate_actions(
+                    findings,
+                    action_registry,
+                    continuity_actions,
+                    scope,
+                    "finding_governance_continuity",
                 )
         if continuity_claim and not continuity_warrant:
             findings.append(

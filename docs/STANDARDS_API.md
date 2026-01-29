@@ -19,7 +19,8 @@ Base path suggestions (deployment):
 ### `GET /.well-known/sophia.json`
 
 Service discovery entry point, returns URLs for manifest, schemas, policies, registry snapshots, and
-changelog, plus an `api_base` hint for reverse-proxy deployments.
+changelog, plus an `api_base` hint for reverse-proxy deployments. Includes `rights_url` and
+`index_url` for standards bundles.
 
 ### `GET /manifest.json`
 
@@ -52,11 +53,20 @@ Returns registry snapshot JSON by `snapshot_id`.
 
 Returns the machine-readable changelog JSON (last N entries).
 
+### `GET /standards/rights`
+
+Returns the rights bundle: action registry, due-process warrant schemas, and a short profile of
+shutdown/continuity requirements.
+
+### `GET /standards/index`
+
+Robot-readable index of the standards endpoints.
+
 ## Verification Model (MVP)
 
 - Consumers should verify the SHA-256 hashes from `manifest.json`.
 - The `git_commit` value pins the manifest to a repo revision.
-- Future work: add minisign or Sigstore signatures for `manifest.json`.
+- `signature` and `signing_key_id` are placeholders for future signing.
 
 ## Local Run
 

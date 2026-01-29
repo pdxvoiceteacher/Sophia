@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:governance:action:v1",
+  "title": "Governance Action v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action", "class", "target", "constraints"],
+  "properties": {
+    "action": { "type": "string" },
+    "class": { "type": "string" },
+    "target": { "type": "string" },
+    "constraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

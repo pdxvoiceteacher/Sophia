@@ -23,6 +23,12 @@
       "date": "2026-01-28",
       "summary": "Add due process schemas, action registry checks, and rights standards endpoint.",
       "commit": "pending"
+    },
+    {
+      "version": "0.1.4",
+      "date": "2026-01-29",
+      "summary": "Unify action schema and harden standards gateway with index, cache headers, and rate limit.",
+      "commit": "pending"
     }
   ]
 }

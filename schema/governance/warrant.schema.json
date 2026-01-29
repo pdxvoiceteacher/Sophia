@@ -39,18 +39,7 @@
     "authorized_actions": {
       "type": "array",
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["action", "target"],
-        "properties": {
-          "action": { "type": "string" },
-          "target": { "type": "string" },
-          "scope": { "type": "string" },
-          "constraints": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
-        }
+        "$ref": "action.schema.json"
       }
     }
   }

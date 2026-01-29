@@ -239,8 +239,8 @@ def main() -> int:
             authorized_actions = [
                 {
                     "action": "apply_governance_bundle",
+                    "class": "governance",
                     "target": "sophia_run",
-                    "scope": scope,
                     "constraints": required_constraints,
                 }
             ]

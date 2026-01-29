@@ -19,7 +19,7 @@
     "stakeholder_scope": { "type": "string" },
     "authorized_actions": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "$ref": "action.schema.json" }
     },
     "constraints": {
       "type": "array",

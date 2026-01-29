@@ -23,6 +23,7 @@
     "stakeholder_scope": { "type": "string" },
     "reason": { "type": "string" },
     "least_harm_action": { "type": "string" },
+    "least_harm_action_detail": { "$ref": "action.schema.json" },
     "evidence_refs": {
       "type": "array",
       "items": { "type": "string" }

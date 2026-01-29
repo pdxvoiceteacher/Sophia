@@ -7,7 +7,7 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -96,6 +96,8 @@ def manifest() -> dict:
     return {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_commit(),
+        "signature": None,
+        "signing_key_id": None,
         "schemas": schema_index(),
         "policies": policy_index(),
         "registries": registry_index(),
@@ -109,6 +111,24 @@ def manifest() -> dict:
 
 
 app = FastAPI(title="Sophia Standards Gateway", version="0.1.0")
+
+_RATE_LIMIT_BUCKET: dict[str, list[float]] = {}
+_RATE_LIMIT_MAX = 60
+_RATE_LIMIT_WINDOW = 60.0
+
+
+@app.middleware("http")
+async def add_request_context(request: Request, call_next):
+    client_host = request.client.host if request.client else "unknown"
+    now = datetime.now(timezone.utc).timestamp()
+    bucket = _RATE_LIMIT_BUCKET.setdefault(client_host, [])
+    bucket[:] = [ts for ts in bucket if now - ts < _RATE_LIMIT_WINDOW]
+    if len(bucket) >= _RATE_LIMIT_MAX:
+        return JSONResponse({"detail": "rate_limit_exceeded"}, status_code=429)
+    bucket.append(now)
+    response = await call_next(request)
+    response.headers["X-Request-Id"] = request.headers.get("X-Request-Id", str(int(now * 1000)))
+    return response
 
 app.mount(
     "/sophia/viewer",
@@ -131,6 +151,7 @@ def well_known() -> dict:
         "changelog_url": "/changelog",
         "viewer_url": "/sophia/viewer",
         "rights_url": "/standards/rights",
+        "index_url": "/standards/index",
     }
 
 
@@ -150,10 +171,13 @@ def schemas() -> dict:
 
 
 @app.get("/schemas/{name}")
-def schema_by_name(name: str) -> FileResponse:
+def schema_by_name(name: str, request: Request) -> FileResponse:
     for entry in schema_index():
         if entry["name"] == name:
-            return FileResponse(REPO_ROOT / entry["path"])
+            response = FileResponse(REPO_ROOT / entry["path"])
+            response.headers["Cache-Control"] = "public, max-age=3600"
+            response.headers["ETag"] = entry["sha256"]
+            return response
     raise HTTPException(status_code=404, detail="Schema not found")
 
 
@@ -161,7 +185,10 @@ def schema_by_name(name: str) -> FileResponse:
 def policy_by_id(policy_id: str) -> JSONResponse:
     for entry in policy_index():
         if entry["policy_id"] == policy_id:
-            return JSONResponse(load_json(REPO_ROOT / entry["path"]))
+            response = JSONResponse(load_json(REPO_ROOT / entry["path"]))
+            response.headers["Cache-Control"] = "public, max-age=3600"
+            response.headers["ETag"] = entry["sha256"]
+            return response
     raise HTTPException(status_code=404, detail="Policy not found")
 
 
@@ -169,7 +196,10 @@ def policy_by_id(policy_id: str) -> JSONResponse:
 def registry_by_id(snapshot_id: str) -> JSONResponse:
     for entry in registry_index():
         if entry["snapshot_id"] == snapshot_id:
-            return JSONResponse(load_json(REPO_ROOT / entry["path"]))
+            response = JSONResponse(load_json(REPO_ROOT / entry["path"]))
+            response.headers["Cache-Control"] = "public, max-age=3600"
+            response.headers["ETag"] = entry["sha256"]
+            return response
     raise HTTPException(status_code=404, detail="Registry snapshot not found")
 
 
@@ -203,3 +233,16 @@ def rights_bundle() -> JSONResponse:
         },
     }
     return JSONResponse(bundle)
+
+
+@app.get("/standards/index")
+def standards_index() -> JSONResponse:
+    return JSONResponse(
+        {
+            "well_known": "/.well-known/sophia.json",
+            "manifest": "/manifest.json",
+            "schemas": "/schemas",
+            "rights": "/standards/rights",
+            "changelog": "/changelog",
+        }
+    )
