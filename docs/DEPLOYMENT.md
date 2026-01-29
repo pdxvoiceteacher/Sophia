@@ -14,7 +14,6 @@ Run Viewer.
 location /sophia/viewer/ {
   alias /var/www/sophia/web/;
   try_files $uri $uri/ /sophia/viewer/index.html;
-  add_header Cache-Control "public, max-age=3600";
 }
 
 location /sophia/api/ {

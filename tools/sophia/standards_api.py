@@ -9,7 +9,6 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -110,19 +109,12 @@ def manifest() -> dict:
 
 app = FastAPI(title="Sophia Standards Gateway", version="0.1.0")
 
-app.mount(
-    "/sophia/viewer",
-    StaticFiles(directory=REPO_ROOT / "web", html=True),
-    name="sophia-viewer",
-)
-
 
 @app.get("/.well-known/sophia.json")
 def well_known() -> dict:
     return {
         "service": "sophia-standards",
         "version": "v1",
-        "api_base": "/sophia/api",
         "manifest_url": "/manifest.json",
         "schemas_url": "/schemas",
         "schema_url_template": "/schemas/{name}",
@@ -131,11 +123,6 @@ def well_known() -> dict:
         "changelog_url": "/changelog",
         "viewer_url": "/sophia/viewer",
     }
-
-
-@app.get("/healthz")
-def healthz() -> dict:
-    return {"status": "ok"}
 
 
 @app.get("/manifest.json")
