@@ -1,0 +1,22 @@
+{
+  "entries": [
+    {
+      "version": "0.1.0",
+      "date": "2026-01-28",
+      "summary": "Initial governance schemas, MVSS policy resolver, and standards gateway manifest.",
+      "commit": "b286be8"
+    },
+    {
+      "version": "0.1.1",
+      "date": "2026-01-28",
+      "summary": "Standards gateway run scripts, changelog schema/automation, and pass-first smoke updates.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.2",
+      "date": "2026-01-28",
+      "summary": "Serve viewer from gateway, add health check, and standardize changelog gate behavior.",
+      "commit": "pending"
+    }
+  ]
+}
