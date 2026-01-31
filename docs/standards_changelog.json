@@ -29,6 +29,12 @@
       "date": "2026-01-29",
       "summary": "Unify action schema and harden standards gateway with index, cache headers, and rate limit.",
       "commit": "pending"
+    },
+    {
+      "version": "0.1.5",
+      "date": "2026-01-29",
+      "summary": "Add due-process bundle flags, shutdown smoke script, and standards gateway headers.",
+      "commit": "pending"
     }
   ]
 }

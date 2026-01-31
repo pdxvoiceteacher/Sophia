@@ -10,6 +10,7 @@ import {
   renderEvents,
   renderGovernanceOverview,
   renderLegitimacyStrip,
+  renderDueProcess,
   renderElection,
   renderDecisionProof,
   renderLedgerAnchor,
@@ -42,6 +43,8 @@ const elements = {
   events: document.getElementById("events"),
   governanceOverview: document.getElementById("governance-overview"),
   legitimacyStrip: document.getElementById("legitimacy-strip"),
+  continuityPanel: document.getElementById("continuity-panel"),
+  shutdownPanel: document.getElementById("shutdown-panel"),
   electionSummary: document.getElementById("election-summary"),
   decisionProof: document.getElementById("decision-proof"),
   ledgerAnchor: document.getElementById("ledger-anchor"),
@@ -104,6 +107,7 @@ function buildNormalized(run) {
   const warrantPath = findFilePath(run, "warrant.json");
   const continuityClaimPath = findFilePath(run, "continuity_claim.json");
   const continuityWarrantPath = findFilePath(run, "continuity_warrant.json");
+  const shutdownWarrantPath = findFilePath(run, "shutdown_warrant.json");
   const receiptPath = findFilePath(run, "execution_receipt.json");
   const policyResolutionPath = findFilePath(run, "policy_resolution.json");
 
@@ -117,6 +121,7 @@ function buildNormalized(run) {
   const warrant = warrantPath ? decodeJson(warrantPath) : null;
   const continuityClaim = continuityClaimPath ? decodeJson(continuityClaimPath) : null;
   const continuityWarrant = continuityWarrantPath ? decodeJson(continuityWarrantPath) : null;
+  const shutdownWarrant = shutdownWarrantPath ? decodeJson(shutdownWarrantPath) : null;
   const executionReceipt = receiptPath ? decodeJson(receiptPath) : null;
   const policyResolution = policyResolutionPath ? decodeJson(policyResolutionPath) : null;
 
@@ -153,6 +158,7 @@ function buildNormalized(run) {
     warrant,
     continuityClaim,
     continuityWarrant,
+    shutdownWarrant,
     executionReceipt,
     policyResolution,
     filesIndex,
@@ -191,6 +197,7 @@ function render() {
   renderEvents(elements.events, state.normalized);
   renderGovernanceOverview(elements.governanceOverview, state.normalized);
   renderLegitimacyStrip(elements.legitimacyStrip, state.normalized);
+  renderDueProcess(elements.continuityPanel, elements.shutdownPanel, state.normalized);
   renderElection(elements.electionSummary, state.normalized);
   renderDecisionProof(elements.decisionProof, state.normalized);
   renderLedgerAnchor(elements.ledgerAnchor, state.normalized);
@@ -212,6 +219,7 @@ function updateGovernanceVisibility() {
     state.normalized.warrant ||
     state.normalized.continuityClaim ||
     state.normalized.continuityWarrant ||
+    state.normalized.shutdownWarrant ||
     state.normalized.policyResolution ||
     state.normalized.executionReceipt;
   const governanceTabs = ["election", "warrant", "execution"];

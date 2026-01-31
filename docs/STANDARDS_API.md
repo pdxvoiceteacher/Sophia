@@ -67,6 +67,7 @@ Robot-readable index of the standards endpoints.
 - Consumers should verify the SHA-256 hashes from `manifest.json`.
 - The `git_commit` value pins the manifest to a repo revision.
 - `signature` and `signing_key_id` are placeholders for future signing.
+- Read-only endpoints return `Cache-Control` and `ETag` headers for caching.
 
 ## Local Run
 

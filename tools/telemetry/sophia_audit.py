@@ -20,6 +20,7 @@ if importlib.util.find_spec("sophia_core.audit") is not None:
     from sophia_core.audit import run_basic_audit as _run_basic_audit
 
 from jsonschema import Draft202012Validator
+from jsonschema.validators import RefResolver
 
 
 def load_json(p: Path) -> dict:
@@ -36,7 +37,10 @@ def save_json(p: Path, payload: dict) -> None:
 
 def validate_instance(schema_path: Path, instance: dict) -> list[str]:
     schema = load_json(schema_path)
-    validator = Draft202012Validator(schema)
+    action_schema_path = Path(__file__).resolve().parents[2] / "schema" / "governance" / "action.schema.json"
+    store = {"action.schema.json": load_json(action_schema_path)}
+    resolver = RefResolver.from_schema(schema, store=store)
+    validator = Draft202012Validator(schema, resolver=resolver)
     return [f"{list(err.path)} {err.message}" for err in validator.iter_errors(instance)]
 
 

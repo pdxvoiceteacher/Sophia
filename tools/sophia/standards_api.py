@@ -115,6 +115,7 @@ app = FastAPI(title="Sophia Standards Gateway", version="0.1.0")
 _RATE_LIMIT_BUCKET: dict[str, list[float]] = {}
 _RATE_LIMIT_MAX = 60
 _RATE_LIMIT_WINDOW = 60.0
+_RATE_LIMIT_BUCKET_MAX = 1024
 
 
 @app.middleware("http")
@@ -123,10 +124,15 @@ async def add_request_context(request: Request, call_next):
     now = datetime.now(timezone.utc).timestamp()
     bucket = _RATE_LIMIT_BUCKET.setdefault(client_host, [])
     bucket[:] = [ts for ts in bucket if now - ts < _RATE_LIMIT_WINDOW]
+    if len(_RATE_LIMIT_BUCKET) > _RATE_LIMIT_BUCKET_MAX:
+        _RATE_LIMIT_BUCKET.pop(next(iter(_RATE_LIMIT_BUCKET)), None)
     if len(bucket) >= _RATE_LIMIT_MAX:
         return JSONResponse({"detail": "rate_limit_exceeded"}, status_code=429)
     bucket.append(now)
     response = await call_next(request)
+    if request.url.path.startswith("/sophia/viewer"):
+        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+        response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Request-Id"] = request.headers.get("X-Request-Id", str(int(now * 1000)))
     return response
 
@@ -244,5 +250,9 @@ def standards_index() -> JSONResponse:
             "schemas": "/schemas",
             "rights": "/standards/rights",
             "changelog": "/changelog",
+            "viewer": "/sophia/viewer",
+            "policies": "/policies/mvss/{policy_id}",
+            "registries": "/registry/{snapshot_id}",
+            "healthz": "/healthz",
         }
     )

@@ -186,6 +186,7 @@ export function renderLegitimacyStrip(container, data) {
   const election = data.election || {};
   const decision = data.decision || {};
   const warrant = data.warrant || {};
+  const shutdownWarrant = data.shutdownWarrant || {};
   const auditDecision = data.derived?.decision;
   const riskScore = data.derived?.riskScore ?? "n/a";
   const topFindings = (data.sophiaAudit?.findings || []).slice(0, 3);
@@ -194,6 +195,7 @@ export function renderLegitimacyStrip(container, data) {
   const warrantStatus = authorizedActions.length ? "present" : "absent";
   const continuityClaim = data.continuityClaim ? "present" : "absent";
   const continuityWarrant = data.continuityWarrant ? "active" : "inactive";
+  const shutdownStatus = shutdownWarrant.warrant_id ? "present" : "absent";
   const scope = election.stakeholder_scope || decision.stakeholder_scope || "n/a";
   const policyRef = election.mvss_policy_ref || decision.mvss_policy_ref || "n/a";
   const validity = data.sophiaAudit?.findings?.some(
@@ -207,8 +209,61 @@ export function renderLegitimacyStrip(container, data) {
   })</div>
     <div class="summary-line"><strong>Warrant:</strong> ${warrantStatus} • ${validity}</div>
     <div class="summary-line"><strong>Continuity:</strong> claim ${continuityClaim} • protections ${continuityWarrant}</div>
+    <div class="summary-line"><strong>Shutdown warrant:</strong> ${shutdownStatus}</div>
     <div class="summary-line"><strong>Audit:</strong> risk ${riskScore} • ${topFindingsText || "no findings"}</div>
     <div class="summary-line"><strong>Scope:</strong> ${scope} • ${policyRef}</div>
+  `;
+}
+
+export function renderDueProcess(continuityContainer, shutdownContainer, data) {
+  if (!data) {
+    continuityContainer.innerHTML = "<p class='muted'>No run loaded.</p>";
+    shutdownContainer.innerHTML = "<p class='muted'>No run loaded.</p>";
+    return;
+  }
+  const continuityClaim = data.continuityClaim || {};
+  const continuityWarrant = data.continuityWarrant || {};
+  const shutdownWarrant = data.shutdownWarrant || {};
+
+  const continuityActions = (continuityWarrant.authorized_actions || [])
+    .map((action) => `${action.action} (${action.target || "n/a"})`)
+    .join(" • ");
+
+  const continuitySummary = continuityClaim.claim_id
+    ? `In plain terms: Continuity protections requested.`
+    : "In plain terms: No continuity claim filed.";
+
+  continuityContainer.innerHTML = `
+    <div class="summary-line"><strong>Claim:</strong> ${
+      continuityClaim.claim_id ? "present" : "absent"
+    }</div>
+    <div class="summary-line"><strong>Warrant:</strong> ${
+      continuityWarrant.warrant_id ? "present" : "absent"
+    }</div>
+    <div class="summary-line"><strong>Actions:</strong> ${continuityActions || "none"}</div>
+    <div class="plain-only">${continuitySummary}</div>
+  `;
+
+  const shutdownSummary = shutdownWarrant.warrant_id
+    ? "In plain terms: Shutdown is authorized within a bounded time window."
+    : "In plain terms: Shutdown is not authorized without a warrant.";
+
+  shutdownContainer.innerHTML = `
+    <div class="summary-line"><strong>Warrant:</strong> ${
+      shutdownWarrant.warrant_id ? "present" : "absent"
+    }</div>
+    <div class="summary-line"><strong>Time bounds:</strong> ${
+      shutdownWarrant.time_bounds
+        ? `${shutdownWarrant.time_bounds.start || "n/a"} → ${shutdownWarrant.time_bounds.end || "n/a"}`
+        : "n/a"
+    }</div>
+    <div class="summary-line"><strong>Least-harm action:</strong> ${
+      shutdownWarrant.least_harm_action || "n/a"
+    }</div>
+    <div class="summary-line"><strong>Appeal route:</strong> ${
+      shutdownWarrant.appeal_route || "n/a"
+    }</div>
+    <div class="plain-only">${shutdownSummary}</div>
   `;
 }
 
