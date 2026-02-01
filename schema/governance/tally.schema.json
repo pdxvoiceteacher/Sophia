@@ -12,7 +12,6 @@
     "mvss_policy_ref",
     "registry_snapshot_ref",
     "registry_federation",
-    "policy_resolution_ref",
     "totals"
   ],
   "properties": {
@@ -35,7 +34,6 @@
         }
       }
     },
-    "policy_resolution_ref": { "type": "string" },
     "totals": {
       "type": "object",
       "additionalProperties": true

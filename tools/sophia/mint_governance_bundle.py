@@ -8,12 +8,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
-from jsonschema.validators import RefResolver
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = REPO_ROOT / "schema" / "governance"
-ACTION_REGISTRY_PATH = REPO_ROOT / "governance" / "policies" / "action_registry_v1.json"
 
 
 def load_json(path: Path) -> dict:
@@ -24,26 +22,9 @@ def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-def build_schema_store(schema_dir: Path) -> dict:
-    action_schema_path = schema_dir / "action.schema.json"
-    if not action_schema_path.exists():
-        return {}
-    action_schema = load_json(action_schema_path)
-    store = {}
-    for key in {"action.schema.json", "./action.schema.json"}:
-        store[key] = action_schema
-    action_schema_id = action_schema.get("$id")
-    if action_schema_id:
-        store[action_schema_id] = action_schema
-    return store
-
-
 def validate(schema_path: Path, payload: dict) -> None:
     schema = load_json(schema_path)
-    store = build_schema_store(SCHEMA_DIR)
-    resolver = RefResolver.from_schema(schema, store=store)
-    # TODO: migrate to referencing.Registry for jsonschema >= 4.18 once supported in all environments.
-    validator = Draft202012Validator(schema, resolver=resolver)
+    validator = Draft202012Validator(schema)
     errors = sorted(validator.iter_errors(payload), key=lambda e: e.path)
     if errors:
         message = "; ".join(f"{list(err.path)} {err.message}" for err in errors[:10])
@@ -92,19 +73,6 @@ def parse_translations(items: list[str]) -> dict:
     return translations
 
 
-def load_action_registry() -> dict:
-    if ACTION_REGISTRY_PATH.exists():
-        return load_json(ACTION_REGISTRY_PATH)
-    return {}
-
-
-def allowed_actions_for_scope(registry: dict, scope: str) -> list[str]:
-    allowed = (registry.get("allowed_actions") or {}).get(scope)
-    if allowed:
-        return list(allowed)
-    return (registry.get("allowed_actions") or {}).get("org", [])
-
-
 def main() -> int:
     ap = argparse.ArgumentParser(description="Mint governance bundle artifacts for a run.")
     ap.add_argument("--registry", required=True, help="Registry snapshot JSON path")
@@ -122,20 +90,6 @@ def main() -> int:
         nargs="+",
         default=["yes", "no"],
         help="Choices list for the election (space separated)",
-    )
-    ap.add_argument(
-        "--decision-mode",
-        choices=["pass", "fail", "auto"],
-        default="pass",
-        help="Force a decision outcome or compute from weighted totals (auto).",
-    )
-    ap.add_argument("--emit-continuity-claim", action="store_true", help="Emit continuity_claim.json")
-    ap.add_argument("--emit-continuity-warrant", action="store_true", help="Emit continuity_warrant.json")
-    ap.add_argument("--emit-shutdown-warrant", action="store_true", help="Emit shutdown_warrant.json")
-    ap.add_argument(
-        "--shutdown-demo",
-        action="store_true",
-        help="Emit a shutdown-like action in the warrant (requires shutdown warrant).",
     )
     ap.add_argument("--out-dir", required=True, help="Run directory to write artifacts")
     args = ap.parse_args()
@@ -233,10 +187,7 @@ def main() -> int:
     }
 
     yes_weight = totals.get("yes", {}).get("weight", 0)
-    if args.decision_mode == "auto":
-        decision_value = "pass" if yes_weight >= pass_threshold and total_weight >= quorum_threshold else "fail"
-    else:
-        decision_value = args.decision_mode
+    decision_value = "pass" if yes_weight >= pass_threshold and total_weight >= quorum_threshold else "fail"
 
     decision = {
         "schema": "decision_v1",
@@ -258,28 +209,9 @@ def main() -> int:
 
     authorized_actions = []
     if decision_value == "pass":
-        registry = load_action_registry()
-        allowed_actions = allowed_actions_for_scope(registry, scope)
-        if "apply_governance_bundle" in allowed_actions:
-            required_constraints = registry.get("required_constraints") or []
-            authorized_actions = [
-                {
-                    "action": "apply_governance_bundle",
-                    "class": "governance",
-                    "target": "sophia_run",
-                    "constraints": required_constraints,
-                }
-            ]
-        if args.shutdown_demo:
-            required_constraints = registry.get("required_constraints") or []
-            authorized_actions.append(
-                {
-                    "action": "shutdown_system",
-                    "class": "shutdown",
-                    "target": "sophia_run",
-                    "constraints": required_constraints,
-                }
-            )
+        authorized_actions = [
+            {"action": "apply_governance_bundle", "target": "sophia_run", "scope": scope, "constraints": []}
+        ]
 
     warrant = {
         "schema": "warrant_v1",
@@ -293,101 +225,19 @@ def main() -> int:
         "authorized_actions": authorized_actions,
     }
 
-    continuity_claim = None
-    continuity_warrant = None
-    shutdown_warrant = None
-
-    if args.emit_continuity_claim:
-        continuity_claim = {
-            "schema": "continuity_claim_v1",
-            "claim_id": f"continuity_{election_id}",
-            "created_at_utc": datetime.now(timezone.utc).isoformat(),
-            "stakeholder_scope": scope,
-            "subject": {"id": "sophia_run", "type": "instance", "version": "v1"},
-            "continuity_interest": "Preserve state and evidence during governance review.",
-            "threat_model": [
-                {"threat": "accidental_shutdown", "severity": "high"},
-                {"threat": "data_loss", "severity": "medium"},
-            ],
-            "requested_protections": ["backup_state", "archive_evidence"],
-        }
-
-    if args.emit_continuity_warrant:
-        registry = load_action_registry()
-        required_constraints = registry.get("required_constraints") or []
-        continuity_actions = [
-            {
-                "action": "backup_state",
-                "class": "continuity",
-                "target": "sophia_run",
-                "constraints": required_constraints,
-            },
-            {
-                "action": "archive_evidence",
-                "class": "continuity",
-                "target": "sophia_run",
-                "constraints": required_constraints,
-            },
-        ]
-        continuity_warrant = {
-            "schema": "continuity_warrant_v1",
-            "warrant_id": f"continuity_warrant_{election_id}",
-            "created_at_utc": datetime.now(timezone.utc).isoformat(),
-            "stakeholder_scope": scope,
-            "authorized_actions": continuity_actions,
-            "constraints": required_constraints,
-        }
-
-    if args.emit_shutdown_warrant:
-        registry = load_action_registry()
-        required_constraints = registry.get("required_constraints") or []
-        shutdown_warrant = {
-            "schema": "shutdown_warrant_v1",
-            "warrant_id": f"shutdown_warrant_{election_id}",
-            "created_at_utc": datetime.now(timezone.utc).isoformat(),
-            "stakeholder_scope": scope,
-            "reason": "Demo shutdown warrant for due-process validation.",
-            "least_harm_action": "shutdown_system",
-            "least_harm_action_detail": {
-                "action": "shutdown_system",
-                "class": "shutdown",
-                "target": "sophia_run",
-                "constraints": required_constraints,
-            },
-            "evidence_refs": ["policy_resolution.json"],
-            "time_bounds": {
-                "start": datetime.now(timezone.utc).isoformat(),
-                "end": datetime.now(timezone.utc).isoformat(),
-            },
-            "quorum_proof": {"type": "demo"},
-            "appeal_route": "Submit appeal within 24h to governance channel.",
-        }
-
     validate(SCHEMA_DIR / "registry_snapshot.schema.json", registry)
     validate(SCHEMA_DIR / "mvss_policy.schema.json", policy)
     validate(SCHEMA_DIR / "election.schema.json", election)
     validate(SCHEMA_DIR / "tally.schema.json", tally)
     validate(SCHEMA_DIR / "decision.schema.json", decision)
     validate(SCHEMA_DIR / "warrant.schema.json", warrant)
-    if continuity_claim:
-        validate(SCHEMA_DIR / "continuity_claim.schema.json", continuity_claim)
-    if continuity_warrant:
-        validate(SCHEMA_DIR / "continuity_warrant.schema.json", continuity_warrant)
-    if shutdown_warrant:
-        validate(SCHEMA_DIR / "shutdown_warrant.schema.json", shutdown_warrant)
 
     write_json(out_dir / "election.json", election)
     write_json(out_dir / "tally.json", tally)
     write_json(out_dir / "decision.json", decision)
     write_json(out_dir / "warrant.json", warrant)
-    if continuity_claim:
-        write_json(out_dir / "continuity_claim.json", continuity_claim)
-    if continuity_warrant:
-        write_json(out_dir / "continuity_warrant.json", continuity_warrant)
-    if shutdown_warrant:
-        write_json(out_dir / "shutdown_warrant.json", shutdown_warrant)
 
-    print("[mint_governance_bundle] OK wrote governance bundle + policy_resolution.json")
+    print("[mint_governance_bundle] OK wrote election/tally/decision/warrant + policy_resolution.json")
     return 0
 
 
