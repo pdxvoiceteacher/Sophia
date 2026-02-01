@@ -84,7 +84,6 @@
         <nav class="tabs">
           <button class="tab active" data-view="dashboard">Dashboard</button>
           <button class="tab" data-view="evidence">Evidence</button>
-          <button class="tab" data-view="due-process">Due Process</button>
           <button class="tab" data-view="election">Election</button>
           <button class="tab" data-view="warrant">Warrant</button>
           <button class="tab" data-view="execution">Execution</button>
@@ -93,23 +92,11 @@
 
         <section id="view-dashboard" class="view active">
           <div class="grid">
-            <section id="dashboard-empty" class="card dashboard-empty">
-              <h3>How to load a run</h3>
-              <p class="muted">
-                Load a ZIP or folder that contains telemetry.json, sophia_audit.json, and sophia_plan.json.
-                You can also drag a ZIP into the drop zone above.
-              </p>
-              <button id="load-sample">Load sample (out/smoke)</button>
-            </section>
-            <section id="missing-files-panel" class="card dashboard-card hidden">
-              <h3>Missing files</h3>
-              <div id="missing-files"></div>
-            </section>
-            <section class="card dashboard-card">
+            <section class="card">
               <h3>Governance Overview</h3>
               <div id="governance-overview"></div>
             </section>
-            <section class="card dashboard-card">
+            <section class="card">
               <h3>Top Risks</h3>
               <div id="top-risks"></div>
             </section>
@@ -137,19 +124,6 @@
             <section class="card">
               <h3>Event Streams</h3>
               <div id="events"></div>
-            </section>
-          </div>
-        </section>
-
-        <section id="view-due-process" class="view">
-          <div class="grid">
-            <section class="card">
-              <h3>Continuity</h3>
-              <div id="continuity-panel"></div>
-            </section>
-            <section class="card">
-              <h3>Shutdown</h3>
-              <div id="shutdown-panel"></div>
             </section>
           </div>
         </section>
@@ -200,14 +174,10 @@
               <button data-json="telemetry.json">telemetry.json</button>
               <button data-json="sophia_audit.json">sophia_audit.json</button>
               <button data-json="sophia_plan.json">sophia_plan.json</button>
-              <button data-json="policy_resolution.json">policy_resolution.json</button>
               <button data-json="election.json">election.json</button>
               <button data-json="tally.json">tally.json</button>
               <button data-json="decision.json">decision.json</button>
               <button data-json="warrant.json">warrant.json</button>
-              <button data-json="continuity_claim.json">continuity_claim.json</button>
-              <button data-json="continuity_warrant.json">continuity_warrant.json</button>
-              <button data-json="shutdown_warrant.json">shutdown_warrant.json</button>
               <button data-json="execution_receipt.json">execution_receipt.json</button>
             </div>
             <pre id="json-viewer"></pre>
