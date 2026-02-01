@@ -104,6 +104,10 @@ h3 {
   padding: 0 32px 32px;
 }
 
+.legitimacy-strip {
+  margin-bottom: 16px;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;

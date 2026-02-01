@@ -20,6 +20,7 @@ if importlib.util.find_spec("sophia_core.audit") is not None:
     from sophia_core.audit import run_basic_audit as _run_basic_audit
 
 from jsonschema import Draft202012Validator
+from jsonschema.validators import RefResolver
 
 
 def load_json(p: Path) -> dict:
