@@ -36,7 +36,6 @@ Write-Host "Running governance smoke to $outDir"
   --ballot-text-translation "es=¿Aprobar paquete de gobernanza?" `
   --ballot-text-translation "fr=Approuver le lot de gouvernance ?" `
   --choices yes no `
-  --decision-mode pass `
   --out-dir $outDir
 
 & $pythonExe (Join-Path $repoRoot "tools/telemetry/sophia_audit.py") `
