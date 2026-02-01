@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:governance:continuity_warrant:v1",
+  "title": "Continuity Warrant v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "warrant_id",
+    "created_at_utc",
+    "stakeholder_scope",
+    "authorized_actions",
+    "constraints"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "continuity_warrant_v1" },
+    "warrant_id": { "type": "string" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "stakeholder_scope": { "type": "string" },
+    "authorized_actions": {
+      "type": "array",
+      "items": { "$ref": "action.schema.json" }
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

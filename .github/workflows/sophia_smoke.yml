@@ -25,13 +25,97 @@ jobs:
           pip install -e ./ucc
           pip install -e ./sophia-core
           pip install -e ./python
+          pip install fastapi uvicorn
+
+      - name: Standards changelog gate
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+          SOPHIA_SKIP_CHANGELOG_CHECK: ${{ secrets.SOPHIA_SKIP_CHANGELOG_CHECK || '' }}
+        run: |
+          git fetch origin "$BASE_REF"
+          CHANGED=$(git diff --name-only "origin/$BASE_REF"...HEAD)
+          if [ -n "$SOPHIA_SKIP_CHANGELOG_CHECK" ]; then
+            echo "Skipping changelog check."
+            exit 0
+          fi
+          if echo "$CHANGED" | grep -Eq '^(docs/|tests/)'; then
+            NON_DOC_TEST=$(echo "$CHANGED" | grep -Ev '^(docs/|tests/)' || true)
+            if [ -z "$NON_DOC_TEST" ]; then
+              echo "Only docs/tests changed. Skipping changelog requirement."
+              exit 0
+            fi
+          fi
+          if echo "$CHANGED" | grep -Eq '^(schema/|tools/sophia/|web/|governance/)'; then
+            if ! echo "$CHANGED" | grep -Eq '^docs/standards_changelog.json$'; then
+              echo "Standards changelog missing. Update docs/standards_changelog.json or set SOPHIA_SKIP_CHANGELOG_CHECK=1."
+              exit 1
+            fi
+          fi
+
+      - name: Run lightweight pytest smoke
+        run: |
+          . .venv/bin/activate
+          python -m pytest -q \
+            tests/test_schema_ref_resolution.py \
+            tests/test_web_viewer_smoke.py \
+            tests/test_sophia_pipeline_smoke.py \
+            tests/test_terminal_desktop_layout.py
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Tauri Linux deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pkg-config \
+            libglib2.0-dev \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Run desktop unit tests
+        run: |
+          cargo test --manifest-path desktop/src-tauri/Cargo.toml
+
+      - name: Standards gateway smoke
+        run: |
+          . .venv/bin/activate
+          .venv/bin/python -m uvicorn tools.sophia.standards_api:app --port 8001 &
+          sleep 2
+          curl -fsS http://localhost:8001/.well-known/sophia.json
+          curl -fsS http://localhost:8001/manifest.json
+          curl -fsS http://localhost:8001/schemas
+          curl -fsS http://localhost:8001/healthz
 
       - name: Run Sophia pipeline smoke
         run: |
           rm -rf out/smoke
           .venv/bin/python tools/telemetry/run_wrapper.py --out out/smoke --quick --emit-tel --emit-tel-events
+          .venv/bin/python tools/sophia/resolve_mvss_policy.py \
+            --registry governance/identity/registry_snapshots/demo_registry_snapshot.json \
+            --policy governance/policies/demo_mvss_policy.json \
+            --stakeholder-scope global \
+            --out out/smoke/policy_resolution.json
+          .venv/bin/python tools/sophia/mint_governance_bundle.py \
+            --registry governance/identity/registry_snapshots/demo_registry_snapshot.json \
+            --policy governance/policies/demo_mvss_policy.json \
+            --stakeholder-scope global \
+            --ballot-text-primary "Approve governance bundle?" \
+            --ballot-text-translation es="¿Aprobar paquete de gobernanza?" \
+            --ballot-text-translation fr="Approuver le lot de gouvernance ?" \
+            --choices yes no \
+            --decision-mode pass \
+            --out-dir out/smoke
           .venv/bin/python tools/telemetry/sophia_audit.py --run-dir out/smoke --repo-root . --schema schema/sophia_audit_v3.schema.json --calibrate-trajectories --ethics-check --memory-aware --audit-sophia
           test -f out/smoke/telemetry.json
           test -f out/smoke/epistemic_graph.json
           test -f out/smoke/sophia_audit.json
           test -f out/smoke/sophia_plan.json
+          test -f out/smoke/election.json
+          test -f out/smoke/tally.json
+          test -f out/smoke/decision.json
+          test -f out/smoke/warrant.json
+          test -f out/smoke/policy_resolution.json
