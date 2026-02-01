@@ -6,6 +6,7 @@ import importlib
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -87,7 +88,9 @@ def build_contradiction_clusters(claims: list[dict]) -> list[dict]:
     clusters: list[dict] = []
     numeric_pattern = re.compile(r"(?P<key>[A-Za-z0-9_.-]+)\s*[:=]\s*(?P<value>-?\d+(?:\.\d+)?)")
     year_pattern = re.compile(r"\b(19\d{2}|20\d{2})\b")
-    causal_pattern = re.compile(r"(?P<cause>[A-Za-z0-9_.\\-/ ]+?)\s+(causes|leads to|drives)\s+(?P<effect>[A-Za-z0-9_.\\-/ ]+)")
+    causal_pattern = re.compile(
+        r"(?P<cause>[A-Za-z0-9_./\\ -]+?)\s+(causes|leads to|drives)\s+(?P<effect>[A-Za-z0-9_./\\ -]+)"
+    )
 
     numeric_values: dict[str, dict[str, list[str]]] = {}
     temporal_values: dict[str, dict[str, list[str]]] = {}

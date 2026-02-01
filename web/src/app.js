@@ -35,6 +35,11 @@ const elements = {
   topRisks: document.getElementById("top-risks"),
   actions: document.getElementById("recommended-actions"),
   artifacts: document.getElementById("artifacts"),
+  missingFiles: document.getElementById("missing-files"),
+  missingFilesPanel: document.getElementById("missing-files-panel"),
+  dashboardEmpty: document.getElementById("dashboard-empty"),
+  dashboardCards: document.querySelectorAll(".dashboard-card"),
+  loadSample: document.getElementById("load-sample"),
   claims: document.getElementById("claims"),
   contradictions: document.getElementById("contradictions"),
   events: document.getElementById("events"),
@@ -90,6 +95,24 @@ function findFilePath(run, fileName) {
 }
 
 function buildNormalized(run) {
+  const expectedFiles = [
+    "telemetry.json",
+    "sophia_audit.json",
+    "sophia_plan.json",
+    "audit_bundle.json",
+    "election.json",
+    "tally.json",
+    "decision.json",
+    "warrant.json",
+    "continuity_claim.json",
+    "continuity_warrant.json",
+    "shutdown_warrant.json",
+    "execution_receipt.json",
+    "policy_resolution.json",
+    "tel.json",
+    "tel_events.jsonl",
+    "ucc_tel_events.jsonl",
+  ];
   const telemetryPath = findFilePath(run, "telemetry.json");
   const auditPath = findFilePath(run, "sophia_audit.json");
   const planPath = findFilePath(run, "sophia_plan.json");
@@ -114,6 +137,14 @@ function buildNormalized(run) {
     path,
     size: run.sizes[path] || state.files[path]?.byteLength || 0,
   }));
+
+  const root = run.rootPath === "(root)" ? "" : `${run.rootPath}/`;
+  const missingFiles = expectedFiles
+    .map((name) => {
+      const path = findFilePath(run, name);
+      return path ? null : { name, expectedPath: `${root}${name}` || name };
+    })
+    .filter(Boolean);
 
   const derived = {
     decision: sophiaAudit?.decision || sophiaPlan?.decision || "unknown",
@@ -143,6 +174,7 @@ function buildNormalized(run) {
     warrant,
     executionReceipt,
     filesIndex,
+    missingFiles,
     derived,
   };
 }
@@ -173,6 +205,7 @@ function render() {
   renderTopRisks(elements.topRisks, state.normalized);
   renderActions(elements.actions, state.normalized);
   renderArtifacts(elements.artifacts, state.normalized);
+  renderMissingFiles(elements.missingFiles, state.normalized);
   renderClaims(elements.claims, state.normalized);
   renderContradictions(elements.contradictions, state.normalized);
   renderEvents(elements.events, state.normalized);
@@ -220,6 +253,60 @@ async function loadRunFromFolder(files) {
   const result = await loadFolderFiles(files);
   state.runs = result.runs;
   state.files = result.files;
+  setRunOptions();
+  selectRun(state.runs[0]?.name);
+}
+
+async function loadSampleRun() {
+  const basePath = "/out/smoke";
+  const sampleFiles = [
+    "telemetry.json",
+    "sophia_audit.json",
+    "sophia_plan.json",
+    "audit_bundle.json",
+    "election.json",
+    "tally.json",
+    "decision.json",
+    "warrant.json",
+    "continuity_claim.json",
+    "continuity_warrant.json",
+    "shutdown_warrant.json",
+    "execution_receipt.json",
+    "policy_resolution.json",
+    "tel.json",
+    "tel_events.jsonl",
+    "ucc_tel_events.jsonl",
+  ];
+  const files = {};
+  const entries = [];
+  for (const filename of sampleFiles) {
+    const path = `${basePath}/${filename}`;
+    try {
+      const response = await fetch(path);
+      if (!response.ok) continue;
+      const buffer = await response.arrayBuffer();
+      files[path] = new Uint8Array(buffer);
+      entries.push({ path, size: buffer.byteLength });
+    } catch (error) {
+      continue;
+    }
+  }
+  if (!entries.length) {
+    alert("Sample run not found. Serve the repo root so /out/smoke is accessible.");
+    return;
+  }
+  state.files = files;
+  state.runs = [
+    {
+      name: "out/smoke",
+      rootPath: "out/smoke",
+      files: entries.map((entry) => entry.path),
+      sizes: entries.reduce((acc, entry) => {
+        acc[entry.path] = entry.size;
+        return acc;
+      }, {}),
+    },
+  ];
   setRunOptions();
   selectRun(state.runs[0]?.name);
 }
@@ -326,6 +413,11 @@ function attachListeners() {
   elements.copyCommand.addEventListener("click", () => copyText(getNextCommand()));
   elements.copyPr.addEventListener("click", () => copyText(getPrSnippet()));
   elements.copyBug.addEventListener("click", () => copyText(getBugTemplate()));
+  if (elements.loadSample) {
+    elements.loadSample.addEventListener("click", () => {
+      loadSampleRun();
+    });
+  }
 }
 
 setDensity(state.density);
