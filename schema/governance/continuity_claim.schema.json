@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:governance:continuity_claim:v1",
+  "title": "Continuity Claim v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "claim_id",
+    "created_at_utc",
+    "stakeholder_scope",
+    "subject",
+    "continuity_interest",
+    "threat_model",
+    "requested_protections"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "continuity_claim_v1" },
+    "claim_id": { "type": "string" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "stakeholder_scope": { "type": "string" },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "version"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "continuity_interest": { "type": "string" },
+    "threat_model": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["threat", "severity"],
+        "properties": {
+          "threat": { "type": "string" },
+          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] }
+        }
+      }
+    },
+    "requested_protections": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
