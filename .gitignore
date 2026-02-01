@@ -107,3 +107,8 @@ desktop/src-tauri/icons/*.ico
 desktop/src-tauri/icons/*.icns
 
 
+
+runs/
+
+# --- Python packaging noise ---
+*.egg-info/
