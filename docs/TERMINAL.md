@@ -14,9 +14,19 @@ Sophia Terminal is a Tauri desktop shell that starts the local Standards Gateway
    npm run tauri dev
    ```
 
+### Icon generation (non-binary)
+We keep a text-only SVG source at `desktop/src-tauri/icons/icon.svg`. PNG/ICO/ICNS files are generated at build time and ignored by git:
+```bash
+npm run icons
+```
+This runs the Tauri icon generator and writes files into `desktop/src-tauri/icons/` without committing binary assets.
+
 The app will automatically start the local Standards Gateway and open a window pointed at the embedded Run Viewer.
 
 Configuration is stored in `~/.sophia/config.json` (no secrets stored yet).
+
+## Repo policy (no binary assets)
+Binary assets (png/ico/icns/zip/exe/dll) are not tracked in this repo. Generated build outputs should stay in ignored folders or be stored as release artifacts instead of committed to git.
 
 ## Gateway startup
 On launch, the desktop shell finds a free port (starting at 8001) and runs:

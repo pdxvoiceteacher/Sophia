@@ -29,7 +29,12 @@
     },
     "bundle": {
       "active": true,
-      "identifier": "org.sophia.terminal"
+      "identifier": "org.sophia.terminal",
+      "icon": [
+        "icons/icon.png",
+        "icons/icon.ico",
+        "icons/icon.icns"
+      ]
     }
   }
 }
