@@ -11,4 +11,4 @@ if (-not (Test-Path $pythonExe)) {
   exit 1
 }
 
-& $pythonExe -c "import json; p=r'examples/submission_demo/ingest_report.json'; d=json.load(open(p,'r',encoding='utf-8')); bad=[r for r in d.get('results',[]) if r.get('status')!='ok']; print('INGEST OK' if not bad else 'INGEST FAIL'); print(bad)"
+& $pythonExe (Join-Path $repoRoot "scripts/check_no_binaries.py")
