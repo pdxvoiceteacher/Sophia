@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sophia Terminal</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Sophia Terminal</h1>
+        <p class="subtitle">Desktop shell for the Sophia viewer and standards gateway.</p>
+      </div>
+      <div class="status" id="gateway-status">Gateway: checking…</div>
+    </header>
+
+    <section class="connection-panel">
+      <div class="field">
+        <label for="central-standards">Central Standards URL</label>
+        <input id="central-standards" type="url" />
+      </div>
+      <div class="field">
+        <label for="local-llm">Local LLM URL</label>
+        <input id="local-llm" type="url" placeholder="http://localhost:11434" />
+      </div>
+      <div class="field">
+        <label for="gateway-port">Gateway Port</label>
+        <input id="gateway-port" type="text" readonly />
+      </div>
+      <div class="field actions">
+        <button id="save-config">Save</button>
+        <span id="save-status" class="muted"></span>
+      </div>
+    </section>
+
+    <main class="viewer-shell">
+      <iframe id="viewer-frame" title="Sophia Run Viewer"></iframe>
+    </main>
+
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

@@ -97,5 +97,13 @@ build/
 .DS_Store
 Thumbs.db
 
+# --- Desktop / Tauri build outputs ---
+desktop/node_modules/
+desktop/dist/
+desktop/src-tauri/target/
+desktop/src-tauri/bundle/
+desktop/src-tauri/icons/*.png
+desktop/src-tauri/icons/*.ico
+desktop/src-tauri/icons/*.icns
 
 
