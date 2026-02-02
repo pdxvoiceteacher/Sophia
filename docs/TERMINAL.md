@@ -19,7 +19,7 @@ We keep a text-only SVG source at `desktop/src-tauri/icons/icon.svg`. PNG/ICO/IC
 ```bash
 npm run icons
 ```
-This runs the Tauri icon generator and writes files into `desktop/src-tauri/icons/` without committing binary assets (`icon.png`, `icon.ico`, `icon.icns`).
+This runs the Tauri icon generator and writes files into `desktop/src-tauri/icons/` without committing binary assets.
 
 The app will automatically start the local Standards Gateway and open a window pointed at the embedded Run Viewer.
 
@@ -27,31 +27,6 @@ Configuration is stored in `~/.sophia/config.json` (no secrets stored yet).
 
 ## Repo policy (no binary assets)
 Binary assets (png/ico/icns/zip/exe/dll) are not tracked in this repo. Generated build outputs should stay in ignored folders or be stored as release artifacts instead of committed to git.
-If you must ship binaries, place them under `release_artifacts/` or attach them to GitHub Releases instead of committing them in-tree.
-
-### Binary preflight
-Run the binary guard before opening a PR:
-```powershell
-.\scripts\windows\check_no_binaries.ps1
-```
-
-You can also run the combined Windows preflight (sanitizes scripts and runs tests):
-```powershell
-.\scripts\windows\sanitize_repo.ps1
-```
-
-### Git hooks (optional)
-Install the pre-commit hook to block binary regressions locally:
-```bash
-python scripts/install_git_hooks.py
-```
-
-### Patch fallback workflow
-If PR tooling rejects a change set, you can fall back to patch transfer:
-```bash
-git format-patch origin/main..HEAD -o /tmp/sophia-patches
-git apply /tmp/sophia-patches/*.patch
-```
 
 ## Gateway startup
 On launch, the desktop shell finds a free port (starting at 8001) and runs:
