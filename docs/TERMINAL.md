@@ -68,6 +68,12 @@ git format-patch origin/main..HEAD -o /tmp/sophia-patches
 git apply /tmp/sophia-patches/*.patch
 ```
 
+### PR checklist (quick)
+- Run `.\scripts\windows\sanitize_repo.ps1`
+- Run `.\scripts\windows\preflight_pr.ps1`
+- Confirm `git diff --cached --numstat` has no `-	-` lines (binary patches)
+- Confirm no new files under `desktop/src-tauri/icons/*.png|*.ico|*.icns`
+
 ## Gateway startup
 On launch, the desktop shell finds a free port (starting at 8001) and runs:
 ```
