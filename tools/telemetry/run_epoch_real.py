@@ -19,14 +19,6 @@ except ModuleNotFoundError:
 REPO = Path(__file__).resolve().parents[2]
 
 
-def git_commit() -> str:
-    try:
-        result = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(REPO), check=True, capture_output=True, text=True)
-        return result.stdout.strip()
-    except Exception:
-        return "unknown"
-
-
 def stable_hash(payload: Any) -> str:
     encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
@@ -181,42 +173,12 @@ def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
         "epistemic_graph.json",
         "sophia_audit.json",
         "sophia_plan.json",
-        "retrospection.json",
     ]:
         p = out_dir / filename
         if p.exists():
             epoch_doc["outputs_manifest"][filename] = file_manifest(p)
 
     save_json(out_dir / "epoch.json", epoch_doc)
-
-    analysis = findings_doc.get("analysis", {}) if isinstance(findings_doc, dict) else {}
-    retrospection_doc = {
-        "schema": "retrospection_v1",
-        "scenario": {
-            "id": scenario_id,
-            "mode": mode,
-            "seed": args.seed,
-            "baseline_run_dir": args.baseline_run_dir or None,
-        },
-        "versions": {
-            "git_commit": git_commit(),
-            "runner": "tools/telemetry/run_epoch_real.py",
-        },
-        "artifacts": {
-            name: file_manifest(out_dir / name)
-            for name in epoch_doc["outputs_manifest"].keys()
-            if (out_dir / name).exists()
-        },
-        "delta_summary": {
-            "branch": analysis.get("branch"),
-            "branch_diff": analysis.get("branch_diff"),
-            "tel_hash": analysis.get("tel_hash"),
-            "tel_hash_diff": analysis.get("tel_hash_diff"),
-            "thresholds": metrics_doc.get("thresholds", {}),
-            "max_delta_psi": analysis.get("max_delta_psi"),
-        },
-    }
-    save_json(out_dir / "retrospection.json", retrospection_doc)
     return epoch_doc
 
 

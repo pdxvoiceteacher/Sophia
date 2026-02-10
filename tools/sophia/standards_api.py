@@ -20,9 +20,6 @@ POLICY_ROOT = REPO_ROOT / "governance" / "policies"
 REGISTRY_ROOT = REPO_ROOT / "governance" / "identity" / "registry_snapshots"
 CHANGELOG_PATH = REPO_ROOT / "docs" / "standards_changelog.json"
 API_BASE = os.environ.get("SOPHIA_API_BASE", "/sophia/api").strip()
-SOPHIA_HOME = Path.home() / ".sophia"
-LOCAL_EPOCHS_ROOT = SOPHIA_HOME / "epochs"
-
 CORS_ALLOWLIST = [
     origin.strip()
     for origin in os.environ.get("SOPHIA_CORS_ALLOWLIST", "").split(",")
@@ -162,33 +159,6 @@ app.mount(
 )
 
 
-
-
-ALLOWED_LOCAL_RUN_FILES = {
-    "epoch.json",
-    "epoch_metrics.json",
-    "epoch_findings.json",
-    "telemetry.json",
-    "epistemic_graph.json",
-    "sophia_audit.json",
-    "sophia_plan.json",
-    "tel.json",
-    "tel_events.jsonl",
-    "attestations.json",
-}
-
-
-def _safe_local_epoch_path(run_id: str, mode: str, filename: str) -> Path:
-    if mode not in {"baseline", "experimental"}:
-        raise HTTPException(status_code=400, detail="invalid_mode")
-    if filename not in ALLOWED_LOCAL_RUN_FILES:
-        raise HTTPException(status_code=400, detail="invalid_filename")
-    run_dir = LOCAL_EPOCHS_ROOT / run_id / mode
-    path = run_dir / filename
-    if not path.exists():
-        raise HTTPException(status_code=404, detail="file_not_found")
-    return path
-
 def prefixed(path: str) -> str:
     base = API_BASE.strip("/")
     if not base:
@@ -313,15 +283,6 @@ def ucc_policies() -> JSONResponse:
 def ucc_schemas() -> JSONResponse:
     return JSONResponse({"status": "ok", "items": schema_index()})
 
-
-
-@app.get("/sophia/local-runs/{run_id}/{mode}/{filename}")
-def local_run_file(run_id: str, mode: str, filename: str) -> FileResponse:
-    path = _safe_local_epoch_path(run_id, mode, filename)
-    response = FileResponse(path)
-    response.headers["Cache-Control"] = "no-store"
-    return response
-
 @app.get("/standards/index")
 def standards_index() -> JSONResponse:
     return JSONResponse(
@@ -338,6 +299,5 @@ def standards_index() -> JSONResponse:
             "ucc_index": "/ucc/index",
             "ucc_policies": "/ucc/policies",
             "ucc_schemas": "/ucc/schemas",
-            "local_run_file": "/sophia/local-runs/{run_id}/{mode}/{filename}",
         }
     )
