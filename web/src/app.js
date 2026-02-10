@@ -18,7 +18,6 @@ import {
   renderWarrant,
   renderExecution,
   renderExecutionDiffs,
-  renderEpochs,
 } from "./ui.js";
 
 const state = {
@@ -58,9 +57,6 @@ const elements = {
   warrant: document.getElementById("warrant"),
   executionReceipt: document.getElementById("execution-receipt"),
   executionDiffs: document.getElementById("execution-diffs"),
-  epochComparison: document.getElementById("epoch-comparison"),
-  epochFindings: document.getElementById("epoch-findings"),
-  epochFindingsLink: document.getElementById("epoch-findings-link"),
   jsonViewer: document.getElementById("json-viewer"),
   tabs: document.querySelectorAll(".tab"),
   views: document.querySelectorAll(".view"),
@@ -124,9 +120,6 @@ function buildNormalized(run) {
     "tel.json",
     "tel_events.jsonl",
     "ucc_tel_events.jsonl",
-    "epoch.json",
-    "epoch_metrics.json",
-    "epoch_findings.json",
   ];
   const telemetryPath = findFilePath(run, "telemetry.json");
   const auditPath = findFilePath(run, "sophia_audit.json");
@@ -141,9 +134,6 @@ function buildNormalized(run) {
   const shutdownWarrantPath = findFilePath(run, "shutdown_warrant.json");
   const receiptPath = findFilePath(run, "execution_receipt.json");
   const policyResolutionPath = findFilePath(run, "policy_resolution.json");
-  const epochPath = findFilePath(run, "epoch.json");
-  const epochMetricsPath = findFilePath(run, "epoch_metrics.json");
-  const epochFindingsPath = findFilePath(run, "epoch_findings.json");
 
   const telemetry = telemetryPath ? decodeJson(telemetryPath) : null;
   const sophiaAudit = auditPath ? decodeJson(auditPath) : null;
@@ -158,9 +148,6 @@ function buildNormalized(run) {
   const shutdownWarrant = shutdownWarrantPath ? decodeJson(shutdownWarrantPath) : null;
   const executionReceipt = receiptPath ? decodeJson(receiptPath) : null;
   const policyResolution = policyResolutionPath ? decodeJson(policyResolutionPath) : null;
-  const epoch = epochPath ? decodeJson(epochPath) : null;
-  const epochMetrics = epochMetricsPath ? decodeJson(epochMetricsPath) : null;
-  const epochFindings = epochFindingsPath ? decodeJson(epochFindingsPath) : null;
 
   const filesIndex = run.files.map((path) => ({
     path,
@@ -206,10 +193,6 @@ function buildNormalized(run) {
     shutdownWarrant,
     executionReceipt,
     policyResolution,
-    epoch,
-    epochMetrics,
-    epochFindings,
-    epochFindingsPath,
     filesIndex,
     missingFiles,
     derived,
@@ -255,7 +238,6 @@ function render() {
   renderWarrant(elements.warrant, state.normalized);
   renderExecution(elements.executionReceipt, state.normalized);
   renderExecutionDiffs(elements.executionDiffs, state.normalized);
-  renderEpochs(elements.epochComparison, elements.epochFindings, elements.epochFindingsLink, state.normalized);
   updateDashboardVisibility();
   updateGovernanceVisibility();
   if (state.normalized) {
@@ -336,9 +318,6 @@ async function loadSampleRun() {
     "tel.json",
     "tel_events.jsonl",
     "ucc_tel_events.jsonl",
-    "epoch.json",
-    "epoch_metrics.json",
-    "epoch_findings.json",
   ];
   const files = {};
   const entries = [];

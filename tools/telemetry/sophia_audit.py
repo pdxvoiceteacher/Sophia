@@ -779,16 +779,11 @@ def main() -> int:
                 "details": None
             })
 
-    epoch_summary = load_epoch_summary(run_dir)
-    if epoch_summary:
-        trend_summary.setdefault("epoch_summary", {}).update(epoch_summary)
-
     risk_score, risk_components = compute_risk_score(
         findings,
         contradiction_clusters,
         ethical_symmetry,
         memory_drift_flag,
-        epoch_summary=epoch_summary or None,
     )
     metrics_snapshot.setdefault("risk_score", risk_score)
     metrics_snapshot.setdefault("risk_components", risk_components)
