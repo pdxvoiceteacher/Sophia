@@ -7,6 +7,7 @@ const elements = {
   saveButton: document.getElementById("save-config"),
   saveStatus: document.getElementById("save-status"),
   gatewayStatus: document.getElementById("gateway-status"),
+<<<<<<< HEAD
   uccStatus: document.getElementById("ucc-status"),
   viewerFrame: document.getElementById("viewer-frame"),
   connectorType: document.getElementById("connector-type"),
@@ -14,6 +15,9 @@ const elements = {
   connectorModel: document.getElementById("connector-model"),
   testConnector: document.getElementById("test-connector"),
   connectorStatus: document.getElementById("connector-status"),
+=======
+  viewerFrame: document.getElementById("viewer-frame"),
+>>>>>>> origin/main
 };
 
 const state = {
@@ -21,6 +25,7 @@ const state = {
   config: null,
 };
 
+<<<<<<< HEAD
 function setChipStatus(element, label, status, ok = false) {
   element.textContent = `${label}: ${status}`;
   element.classList.toggle("ok", ok);
@@ -33,6 +38,12 @@ function getConnectorPayload() {
     connector_endpoint: elements.connectorEndpoint.value.trim() || null,
     connector_model: elements.connectorModel.value.trim() || null,
   };
+=======
+function setStatus(ok) {
+  elements.gatewayStatus.textContent = ok ? "Gateway: OK" : "Gateway: Down";
+  elements.gatewayStatus.classList.toggle("ok", ok);
+  elements.gatewayStatus.classList.toggle("down", !ok);
+>>>>>>> origin/main
 }
 
 async function loadState() {
@@ -42,18 +53,27 @@ async function loadState() {
   elements.gatewayPort.value = String(state.port);
   elements.centralStandards.value = state.config.central_standards_url || "";
   elements.localLlm.value = state.config.local_llm_url || "";
+<<<<<<< HEAD
   elements.connectorType.value = state.config.connector_type || "LocalLLMConnector";
   elements.connectorEndpoint.value = state.config.connector_endpoint || "";
   elements.connectorModel.value = state.config.connector_model || "";
+=======
+>>>>>>> origin/main
   elements.viewerFrame.src = `http://127.0.0.1:${state.port}/sophia/viewer`;
 }
 
 async function saveConfig() {
+<<<<<<< HEAD
   const connector = getConnectorPayload();
   const payload = {
     central_standards_url: elements.centralStandards.value.trim(),
     local_llm_url: elements.localLlm.value.trim() || null,
     ...connector,
+=======
+  const payload = {
+    central_standards_url: elements.centralStandards.value.trim(),
+    local_llm_url: elements.localLlm.value.trim() || null,
+>>>>>>> origin/main
   };
   await invoke("save_terminal_config", { config: payload });
   elements.saveStatus.textContent = "Saved";
@@ -62,6 +82,7 @@ async function saveConfig() {
   }, 1500);
 }
 
+<<<<<<< HEAD
 async function logConnector(status) {
   const connector = getConnectorPayload();
   const envelope = {
@@ -91,10 +112,13 @@ async function testConnectorConnection() {
   }
 }
 
+=======
+>>>>>>> origin/main
 async function pollHealth() {
   if (!state.port) return;
   try {
     const base = `http://127.0.0.1:${state.port}`;
+<<<<<<< HEAD
     const [health, wellKnown, ucc] = await Promise.all([
       fetch(`${base}/healthz`),
       fetch(`${base}/.well-known/sophia.json`),
@@ -112,6 +136,15 @@ async function pollHealth() {
   } catch (error) {
     setChipStatus(elements.gatewayStatus, "Gateway", "Down", false);
     setChipStatus(elements.uccStatus, "UCC Sync", "failed", false);
+=======
+    const [health, wellKnown] = await Promise.all([
+      fetch(`${base}/healthz`),
+      fetch(`${base}/.well-known/sophia.json`),
+    ]);
+    setStatus(health.ok && wellKnown.ok);
+  } catch (error) {
+    setStatus(false);
+>>>>>>> origin/main
   }
 }
 
@@ -119,9 +152,12 @@ function attachEvents() {
   elements.saveButton.addEventListener("click", () => {
     saveConfig();
   });
+<<<<<<< HEAD
   elements.testConnector.addEventListener("click", () => {
     testConnectorConnection();
   });
+=======
+>>>>>>> origin/main
 }
 
 async function start() {

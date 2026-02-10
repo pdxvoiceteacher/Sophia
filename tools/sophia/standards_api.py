@@ -3,15 +3,23 @@ from __future__ import annotations
 
 import hashlib
 import json
+<<<<<<< HEAD
 import os
+=======
+>>>>>>> origin/main
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
+<<<<<<< HEAD
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+=======
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, JSONResponse
+>>>>>>> origin/main
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -19,12 +27,15 @@ SCHEMA_ROOT = REPO_ROOT / "schema"
 POLICY_ROOT = REPO_ROOT / "governance" / "policies"
 REGISTRY_ROOT = REPO_ROOT / "governance" / "identity" / "registry_snapshots"
 CHANGELOG_PATH = REPO_ROOT / "docs" / "standards_changelog.json"
+<<<<<<< HEAD
 API_BASE = os.environ.get("SOPHIA_API_BASE", "/sophia/api").strip()
 CORS_ALLOWLIST = [
     origin.strip()
     for origin in os.environ.get("SOPHIA_CORS_ALLOWLIST", "").split(",")
     if origin.strip()
 ]
+=======
+>>>>>>> origin/main
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -104,8 +115,11 @@ def manifest() -> dict:
     return {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_commit(),
+<<<<<<< HEAD
         "signature": None,
         "signing_key_id": None,
+=======
+>>>>>>> origin/main
         "schemas": schema_index(),
         "policies": policy_index(),
         "registries": registry_index(),
@@ -119,6 +133,7 @@ def manifest() -> dict:
 
 
 app = FastAPI(title="Sophia Standards Gateway", version="0.1.0")
+<<<<<<< HEAD
 if CORS_ALLOWLIST:
     app.add_middleware(
         CORSMiddleware,
@@ -166,10 +181,13 @@ def prefixed(path: str) -> str:
     if not path.startswith("/"):
         path = f"/{path}"
     return f"/{base}{path}"
+=======
+>>>>>>> origin/main
 
 
 @app.get("/.well-known/sophia.json")
 def well_known() -> dict:
+<<<<<<< HEAD
     api_base = prefixed("")
     return {
         "service": "sophia-standards",
@@ -192,6 +210,21 @@ def healthz() -> dict:
     return {"status": "ok"}
 
 
+=======
+    return {
+        "service": "sophia-standards",
+        "version": "v1",
+        "manifest_url": "/manifest.json",
+        "schemas_url": "/schemas",
+        "schema_url_template": "/schemas/{name}",
+        "policy_url_template": "/policies/mvss/{policy_id}",
+        "registry_url_template": "/registry/{snapshot_id}",
+        "changelog_url": "/changelog",
+        "viewer_url": "/sophia/viewer",
+    }
+
+
+>>>>>>> origin/main
 @app.get("/manifest.json")
 def manifest_endpoint() -> dict:
     return manifest()
@@ -203,6 +236,7 @@ def schemas() -> dict:
 
 
 @app.get("/schemas/{name}")
+<<<<<<< HEAD
 def schema_by_name(name: str, request: Request) -> FileResponse:
     for entry in schema_index():
         if entry["name"] == name:
@@ -210,6 +244,12 @@ def schema_by_name(name: str, request: Request) -> FileResponse:
             response.headers["Cache-Control"] = "public, max-age=3600"
             response.headers["ETag"] = entry["sha256"]
             return response
+=======
+def schema_by_name(name: str) -> FileResponse:
+    for entry in schema_index():
+        if entry["name"] == name:
+            return FileResponse(REPO_ROOT / entry["path"])
+>>>>>>> origin/main
     raise HTTPException(status_code=404, detail="Schema not found")
 
 
@@ -217,10 +257,14 @@ def schema_by_name(name: str, request: Request) -> FileResponse:
 def policy_by_id(policy_id: str) -> JSONResponse:
     for entry in policy_index():
         if entry["policy_id"] == policy_id:
+<<<<<<< HEAD
             response = JSONResponse(load_json(REPO_ROOT / entry["path"]))
             response.headers["Cache-Control"] = "public, max-age=3600"
             response.headers["ETag"] = entry["sha256"]
             return response
+=======
+            return JSONResponse(load_json(REPO_ROOT / entry["path"]))
+>>>>>>> origin/main
     raise HTTPException(status_code=404, detail="Policy not found")
 
 
@@ -228,10 +272,14 @@ def policy_by_id(policy_id: str) -> JSONResponse:
 def registry_by_id(snapshot_id: str) -> JSONResponse:
     for entry in registry_index():
         if entry["snapshot_id"] == snapshot_id:
+<<<<<<< HEAD
             response = JSONResponse(load_json(REPO_ROOT / entry["path"]))
             response.headers["Cache-Control"] = "public, max-age=3600"
             response.headers["ETag"] = entry["sha256"]
             return response
+=======
+            return JSONResponse(load_json(REPO_ROOT / entry["path"]))
+>>>>>>> origin/main
     raise HTTPException(status_code=404, detail="Registry snapshot not found")
 
 
@@ -240,6 +288,7 @@ def changelog() -> JSONResponse:
     if not CHANGELOG_PATH.exists():
         raise HTTPException(status_code=404, detail="Changelog not found")
     return JSONResponse(load_json(CHANGELOG_PATH))
+<<<<<<< HEAD
 
 
 @app.get("/standards/rights")
@@ -301,3 +350,5 @@ def standards_index() -> JSONResponse:
             "ucc_schemas": "/ucc/schemas",
         }
     )
+=======
+>>>>>>> origin/main

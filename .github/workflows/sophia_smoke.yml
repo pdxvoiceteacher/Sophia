@@ -35,7 +35,11 @@ jobs:
 
       - name: Standards changelog gate
         env:
+<<<<<<< HEAD
           BASE_REF: ${{ github.base_ref || 'main' }}
+=======
+          BASE_REF: ${{ github.base_ref || 'master' }}
+>>>>>>> origin/main
           SOPHIA_SKIP_CHANGELOG_CHECK: ${{ secrets.SOPHIA_SKIP_CHANGELOG_CHECK || '' }}
         run: |
           git fetch origin "$BASE_REF"
@@ -44,6 +48,7 @@ jobs:
             echo "Skipping changelog check."
             exit 0
           fi
+<<<<<<< HEAD
           if echo "$CHANGED" | grep -Eq '^(docs/|tests/)'; then
             NON_DOC_TEST=$(echo "$CHANGED" | grep -Ev '^(docs/|tests/)' || true)
             if [ -z "$NON_DOC_TEST" ]; then
@@ -51,6 +56,8 @@ jobs:
               exit 0
             fi
           fi
+=======
+>>>>>>> origin/main
           if echo "$CHANGED" | grep -Eq '^(schema/|tools/sophia/|web/|governance/)'; then
             if ! echo "$CHANGED" | grep -Eq '^docs/standards_changelog.json$'; then
               echo "Standards changelog missing. Update docs/standards_changelog.json or set SOPHIA_SKIP_CHANGELOG_CHECK=1."
@@ -58,6 +65,7 @@ jobs:
             fi
           fi
 
+<<<<<<< HEAD
       - name: Run lightweight pytest smoke
         run: |
           . .venv/bin/activate
@@ -93,6 +101,8 @@ jobs:
         run: |
           cargo test --manifest-path desktop/src-tauri/Cargo.toml
 
+=======
+>>>>>>> origin/main
       - name: Standards gateway smoke
         run: |
           . .venv/bin/activate
@@ -101,7 +111,10 @@ jobs:
           curl -fsS http://localhost:8001/.well-known/sophia.json
           curl -fsS http://localhost:8001/manifest.json
           curl -fsS http://localhost:8001/schemas
+<<<<<<< HEAD
           curl -fsS http://localhost:8001/healthz
+=======
+>>>>>>> origin/main
 
       - name: Run Sophia pipeline smoke
         run: |
@@ -120,7 +133,10 @@ jobs:
             --ballot-text-translation es="¿Aprobar paquete de gobernanza?" \
             --ballot-text-translation fr="Approuver le lot de gouvernance ?" \
             --choices yes no \
+<<<<<<< HEAD
             --decision-mode pass \
+=======
+>>>>>>> origin/main
             --out-dir out/smoke
           .venv/bin/python tools/telemetry/sophia_audit.py --run-dir out/smoke --repo-root . --schema schema/sophia_audit_v3.schema.json --calibrate-trajectories --ethics-check --memory-aware --audit-sophia
           test -f out/smoke/telemetry.json

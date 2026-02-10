@@ -18,6 +18,7 @@ def test_desktop_layout_exists() -> None:
     ]
     missing = [path for path in required if not path.exists()]
     assert not missing, f"Missing desktop files: {missing}"
+<<<<<<< HEAD
 
 
 def test_terminal_connector_controls_present() -> None:
@@ -38,3 +39,5 @@ def test_windows_operator_scripts_exist() -> None:
         ROOT / "scripts" / "windows" / "dev_up.ps1",
     ]:
         assert path.exists(), f"Missing script: {path}"
+=======
+>>>>>>> origin/main
