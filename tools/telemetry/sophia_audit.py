@@ -967,6 +967,16 @@ def main() -> int:
         findings, repo / "runs" / "history" / "finding_stats.json"
     )
 
+    missing_def_fields = trend_summary.get("definition_provenance", {}).get("missing_required_fields", [])
+    if missing_def_fields:
+        findings.append({
+            "id": "finding_definition_provenance_missing_fields",
+            "severity": "warn",
+            "type": "definition_provenance_missing_fields",
+            "message": "Metric provenance is missing required registry fields.",
+            "data": {"missing": missing_def_fields},
+        })
+
     if noise_adjustments:
         trend_summary.setdefault("noise_adjustments", [])
         trend_summary["noise_adjustments"].extend(noise_adjustments)
