@@ -2,10 +2,14 @@
 
 mod state;
 
+<<<<<<< HEAD
 use state::{
     append_connector_event, find_free_port, load_config, save_config, spawn_gateway, ConnectorEnvelope,
     TerminalConfig, TerminalState,
 };
+=======
+use state::{find_free_port, load_config, save_config, spawn_gateway, TerminalConfig, TerminalState};
+>>>>>>> origin/main
 use std::path::PathBuf;
 use tauri::{Manager, State};
 
@@ -37,11 +41,14 @@ fn save_terminal_config(state: State<TerminalState>, config: TerminalConfig) -> 
     Ok(())
 }
 
+<<<<<<< HEAD
 #[tauri::command]
 fn log_connector_event(state: State<TerminalState>, envelope: ConnectorEnvelope) -> Result<(), String> {
     append_connector_event(state.config_base.clone(), &envelope)
 }
 
+=======
+>>>>>>> origin/main
 fn repo_root() -> PathBuf {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     manifest_dir
@@ -65,11 +72,15 @@ fn main() {
             child: std::sync::Mutex::new(child),
             config_base,
         })
+<<<<<<< HEAD
         .invoke_handler(tauri::generate_handler![
             get_terminal_state,
             save_terminal_config,
             log_connector_event
         ])
+=======
+        .invoke_handler(tauri::generate_handler![get_terminal_state, save_terminal_config])
+>>>>>>> origin/main
         .on_window_event(|event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event.event() {
                 if let Some(state) = event.window().app_handle().try_state::<TerminalState>() {

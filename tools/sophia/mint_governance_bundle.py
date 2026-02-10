@@ -8,12 +8,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
+<<<<<<< HEAD
 from jsonschema.validators import RefResolver
+=======
+>>>>>>> origin/main
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = REPO_ROOT / "schema" / "governance"
+<<<<<<< HEAD
 ACTION_REGISTRY_PATH = REPO_ROOT / "governance" / "policies" / "action_registry_v1.json"
+=======
+>>>>>>> origin/main
 
 
 def load_json(path: Path) -> dict:
@@ -24,6 +30,7 @@ def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+<<<<<<< HEAD
 def build_schema_store(schema_dir: Path) -> dict:
     action_schema_path = schema_dir / "action.schema.json"
     if not action_schema_path.exists():
@@ -44,6 +51,11 @@ def validate(schema_path: Path, payload: dict) -> None:
     resolver = RefResolver.from_schema(schema, store=store)
     # TODO: migrate to referencing.Registry for jsonschema >= 4.18 once supported in all environments.
     validator = Draft202012Validator(schema, resolver=resolver)
+=======
+def validate(schema_path: Path, payload: dict) -> None:
+    schema = load_json(schema_path)
+    validator = Draft202012Validator(schema)
+>>>>>>> origin/main
     errors = sorted(validator.iter_errors(payload), key=lambda e: e.path)
     if errors:
         message = "; ".join(f"{list(err.path)} {err.message}" for err in errors[:10])
@@ -92,6 +104,7 @@ def parse_translations(items: list[str]) -> dict:
     return translations
 
 
+<<<<<<< HEAD
 def load_action_registry() -> dict:
     if ACTION_REGISTRY_PATH.exists():
         return load_json(ACTION_REGISTRY_PATH)
@@ -105,6 +118,8 @@ def allowed_actions_for_scope(registry: dict, scope: str) -> list[str]:
     return (registry.get("allowed_actions") or {}).get("org", [])
 
 
+=======
+>>>>>>> origin/main
 def main() -> int:
     ap = argparse.ArgumentParser(description="Mint governance bundle artifacts for a run.")
     ap.add_argument("--registry", required=True, help="Registry snapshot JSON path")
@@ -123,6 +138,7 @@ def main() -> int:
         default=["yes", "no"],
         help="Choices list for the election (space separated)",
     )
+<<<<<<< HEAD
     ap.add_argument(
         "--decision-mode",
         choices=["pass", "fail", "auto"],
@@ -137,6 +153,8 @@ def main() -> int:
         action="store_true",
         help="Emit a shutdown-like action in the warrant (requires shutdown warrant).",
     )
+=======
+>>>>>>> origin/main
     ap.add_argument("--out-dir", required=True, help="Run directory to write artifacts")
     args = ap.parse_args()
 
@@ -233,10 +251,14 @@ def main() -> int:
     }
 
     yes_weight = totals.get("yes", {}).get("weight", 0)
+<<<<<<< HEAD
     if args.decision_mode == "auto":
         decision_value = "pass" if yes_weight >= pass_threshold and total_weight >= quorum_threshold else "fail"
     else:
         decision_value = args.decision_mode
+=======
+    decision_value = "pass" if yes_weight >= pass_threshold and total_weight >= quorum_threshold else "fail"
+>>>>>>> origin/main
 
     decision = {
         "schema": "decision_v1",
@@ -258,6 +280,7 @@ def main() -> int:
 
     authorized_actions = []
     if decision_value == "pass":
+<<<<<<< HEAD
         registry = load_action_registry()
         allowed_actions = allowed_actions_for_scope(registry, scope)
         if "apply_governance_bundle" in allowed_actions:
@@ -280,6 +303,11 @@ def main() -> int:
                     "constraints": required_constraints,
                 }
             )
+=======
+        authorized_actions = [
+            {"action": "apply_governance_bundle", "target": "sophia_run", "scope": scope, "constraints": []}
+        ]
+>>>>>>> origin/main
 
     warrant = {
         "schema": "warrant_v1",
@@ -293,6 +321,7 @@ def main() -> int:
         "authorized_actions": authorized_actions,
     }
 
+<<<<<<< HEAD
     continuity_claim = None
     continuity_warrant = None
     shutdown_warrant = None
@@ -363,23 +392,29 @@ def main() -> int:
             "appeal_route": "Submit appeal within 24h to governance channel.",
         }
 
+=======
+>>>>>>> origin/main
     validate(SCHEMA_DIR / "registry_snapshot.schema.json", registry)
     validate(SCHEMA_DIR / "mvss_policy.schema.json", policy)
     validate(SCHEMA_DIR / "election.schema.json", election)
     validate(SCHEMA_DIR / "tally.schema.json", tally)
     validate(SCHEMA_DIR / "decision.schema.json", decision)
     validate(SCHEMA_DIR / "warrant.schema.json", warrant)
+<<<<<<< HEAD
     if continuity_claim:
         validate(SCHEMA_DIR / "continuity_claim.schema.json", continuity_claim)
     if continuity_warrant:
         validate(SCHEMA_DIR / "continuity_warrant.schema.json", continuity_warrant)
     if shutdown_warrant:
         validate(SCHEMA_DIR / "shutdown_warrant.schema.json", shutdown_warrant)
+=======
+>>>>>>> origin/main
 
     write_json(out_dir / "election.json", election)
     write_json(out_dir / "tally.json", tally)
     write_json(out_dir / "decision.json", decision)
     write_json(out_dir / "warrant.json", warrant)
+<<<<<<< HEAD
     if continuity_claim:
         write_json(out_dir / "continuity_claim.json", continuity_claim)
     if continuity_warrant:
@@ -388,6 +423,10 @@ def main() -> int:
         write_json(out_dir / "shutdown_warrant.json", shutdown_warrant)
 
     print("[mint_governance_bundle] OK wrote governance bundle + policy_resolution.json")
+=======
+
+    print("[mint_governance_bundle] OK wrote election/tally/decision/warrant + policy_resolution.json")
+>>>>>>> origin/main
     return 0
 
 

@@ -10,9 +10,12 @@ use tauri::api::path::home_dir;
 pub struct TerminalConfig {
     pub central_standards_url: String,
     pub local_llm_url: Option<String>,
+<<<<<<< HEAD
     pub connector_type: String,
     pub connector_endpoint: Option<String>,
     pub connector_model: Option<String>,
+=======
+>>>>>>> origin/main
 }
 
 impl Default for TerminalConfig {
@@ -20,13 +23,17 @@ impl Default for TerminalConfig {
         Self {
             central_standards_url: "https://ultraverbaluxmentis.org/sophia/api".to_string(),
             local_llm_url: Some("http://localhost:11434".to_string()),
+<<<<<<< HEAD
             connector_type: "LocalLLMConnector".to_string(),
             connector_endpoint: Some("http://localhost:11434".to_string()),
             connector_model: Some("llama3.1".to_string()),
+=======
+>>>>>>> origin/main
         }
     }
 }
 
+<<<<<<< HEAD
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConnectorEnvelope {
     pub connector_type: String,
@@ -36,6 +43,8 @@ pub struct ConnectorEnvelope {
     pub timestamp_utc: String,
 }
 
+=======
+>>>>>>> origin/main
 pub fn config_path(base: Option<PathBuf>) -> PathBuf {
     let base_dir = base
         .or_else(home_dir)
@@ -43,6 +52,7 @@ pub fn config_path(base: Option<PathBuf>) -> PathBuf {
     base_dir.join(".sophia").join("config.json")
 }
 
+<<<<<<< HEAD
 pub fn connector_tel_path(base: Option<PathBuf>) -> PathBuf {
     let base_dir = base
         .or_else(home_dir)
@@ -50,6 +60,8 @@ pub fn connector_tel_path(base: Option<PathBuf>) -> PathBuf {
     base_dir.join(".sophia").join("connector_tel.jsonl")
 }
 
+=======
+>>>>>>> origin/main
 pub fn load_config(base: Option<PathBuf>) -> TerminalConfig {
     let path = config_path(base);
     if let Ok(contents) = fs::read_to_string(path) {
@@ -69,6 +81,7 @@ pub fn save_config(base: Option<PathBuf>, config: &TerminalConfig) -> Result<(),
     fs::write(path, payload).map_err(|err| err.to_string())
 }
 
+<<<<<<< HEAD
 pub fn append_connector_event(base: Option<PathBuf>, envelope: &ConnectorEnvelope) -> Result<(), String> {
     let path = connector_tel_path(base);
     if let Some(parent) = path.parent() {
@@ -85,6 +98,8 @@ pub fn append_connector_event(base: Option<PathBuf>, envelope: &ConnectorEnvelop
     file.write_all(line.as_bytes()).map_err(|err| err.to_string())
 }
 
+=======
+>>>>>>> origin/main
 pub fn find_free_port(start: u16, attempts: u16) -> Result<u16, String> {
     for offset in 0..attempts {
         let port = start + offset;
@@ -141,7 +156,10 @@ mod tests {
         let loaded = load_config(Some(base));
         assert_eq!(loaded.central_standards_url, config.central_standards_url);
         assert_eq!(loaded.local_llm_url, config.local_llm_url);
+<<<<<<< HEAD
         assert_eq!(loaded.connector_type, config.connector_type);
+=======
+>>>>>>> origin/main
     }
 
     #[test]

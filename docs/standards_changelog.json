@@ -3,6 +3,7 @@
     {
       "version": "0.1.0",
       "date": "2026-01-28",
+<<<<<<< HEAD
       "summary": "Initial governance schemas, MVSS policy resolver, and standards gateway manifest.",
       "commit": "b286be8"
     },
@@ -35,6 +36,9 @@
       "date": "2026-01-29",
       "summary": "Add due-process bundle flags, shutdown smoke script, and standards gateway headers.",
       "commit": "pending"
+=======
+      "summary": "Initial governance schemas, MVSS policy resolver, and standards gateway manifest."
+>>>>>>> origin/main
     }
   ]
 }
