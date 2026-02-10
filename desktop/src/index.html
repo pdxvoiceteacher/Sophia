@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sophia Terminal</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Sophia Terminal</h1>
+        <p class="subtitle">Desktop shell for the Sophia viewer and standards gateway.</p>
+      </div>
+      <div class="status-group">
+        <div class="status" id="gateway-status">Gateway: checking…</div>
+        <div class="status" id="ucc-status">UCC Sync: checking…</div>
+        <button id="check-central-sync" type="button">Check central sync</button>
+      </div>
+    </header>
+
+    <section class="connection-panel">
+      <div class="field">
+        <label for="central-standards">Central Standards URL</label>
+        <input id="central-standards" type="url" />
+      </div>
+      <div class="field">
+        <label for="local-llm">Local LLM URL</label>
+        <input id="local-llm" type="url" placeholder="http://localhost:11434" />
+      </div>
+      <div class="field">
+        <label for="gateway-port">Gateway Port</label>
+        <input id="gateway-port" type="text" readonly />
+      </div>
+      <div class="field actions">
+        <button id="save-config">Save</button>
+        <span id="save-status" class="muted"></span>
+      </div>
+    </section>
+
+    <section class="connection-panel connectors-panel">
+      <div class="field">
+        <label for="connector-type">Connector</label>
+        <select id="connector-type">
+          <option value="OpenAIConnector">OpenAIConnector</option>
+          <option value="LocalLLMConnector">LocalLLMConnector</option>
+          <option value="GrokConnector">GrokConnector</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="connector-endpoint">Connector Endpoint</label>
+        <input id="connector-endpoint" type="url" placeholder="https://api.openai.com/v1" />
+      </div>
+      <div class="field">
+        <label for="connector-model">Model</label>
+        <input id="connector-model" type="text" placeholder="gpt-4o-mini" />
+      </div>
+      <div class="field actions">
+        <button id="test-connector">Test connection</button>
+        <span id="connector-status" class="muted"></span>
+      </div>
+    </section>
+
+    <section class="connection-panel epoch-panel">
+      <div class="field">
+        <label for="epoch-baseline-scenario">Baseline scenario</label>
+        <select id="epoch-baseline-scenario"></select>
+      </div>
+      <div class="field">
+        <label for="epoch-experimental-scenario">Experimental scenario</label>
+        <select id="epoch-experimental-scenario"></select>
+      </div>
+      <div class="field actions">
+        <label>Epoch Test</label>
+        <button id="run-epoch-test" type="button">Run Epoch Test</button>
+      </div>
+      <div class="field">
+        <label for="epoch-status">Status</label>
+        <span id="epoch-status" class="muted">Idle</span>
+      </div>
+      <div class="field">
+        <label for="epoch-summary">Summary</label>
+        <span id="epoch-summary" class="muted">TEL hash eq: n/a • branch divergence: n/a • entropy spikes: n/a • ΔPsi max: n/a • Es drift: n/a</span>
+      </div>
+      <div class="field">
+        <label for="epoch-run-folder">Run folder</label>
+        <span id="epoch-run-folder" class="muted">n/a</span>
+      </div>
+    </section>
+
+    <section class="connection-panel review-panel">
+      <div class="field">
+        <label for="review-central-url">Central review URL (optional)</label>
+        <input id="review-central-url" type="url" placeholder="https://central.example/api" />
+      </div>
+      <div class="field">
+        <label for="review-submitter-id">Submitter pseudonymous ID</label>
+        <input id="review-submitter-id" type="text" placeholder="local-operator" />
+      </div>
+      <div class="field actions">
+        <button id="submit-cross-review" type="button">Submit for cross-review</button>
+      </div>
+      <div class="field actions">
+        <button id="fetch-attestations" type="button">Fetch attestations</button>
+      </div>
+      <div class="field">
+        <label for="review-status">Review status</label>
+        <span id="review-status" class="muted">Idle</span>
+      </div>
+      <div class="field">
+        <label for="review-submission-id">Submission ID</label>
+        <span id="review-submission-id" class="muted">n/a</span>
+      </div>
+      <div class="field">
+        <label for="review-attestation-path">Attestation path</label>
+        <span id="review-attestation-path" class="muted">n/a</span>
+      </div>
+    </section>
+
+    <main class="viewer-shell">
+      <iframe id="viewer-frame" title="Sophia Run Viewer"></iframe>
+    </main>
+
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

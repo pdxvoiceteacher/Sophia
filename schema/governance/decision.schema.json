@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:governance:decision:v1",
+  "title": "Governance Decision v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "decision_id",
+    "election_id",
+    "created_at_utc",
+    "stakeholder_scope",
+    "mvss_policy_ref",
+    "registry_snapshot_ref",
+    "registry_federation",
+    "decision"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "decision_v1" },
+    "decision_id": { "type": "string" },
+    "election_id": { "type": "string" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "stakeholder_scope": { "type": "string" },
+    "mvss_policy_ref": { "type": "string" },
+    "registry_snapshot_ref": { "type": "string" },
+    "registry_federation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "peers"],
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "peers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "decision": { "type": "string" },
+    "decision_proof": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "ledger_anchor": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
