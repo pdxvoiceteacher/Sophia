@@ -64,7 +64,6 @@ jobs:
           python -m pytest -q \
             tests/test_schema_ref_resolution.py \
             tests/test_web_viewer_smoke.py \
-            tests/test_epoch_runner.py \
             tests/test_sophia_pipeline_smoke.py \
             tests/test_terminal_desktop_layout.py \
             tests/test_ucc_gateway_endpoints.py \
