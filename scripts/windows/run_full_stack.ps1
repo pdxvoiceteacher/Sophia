@@ -26,6 +26,11 @@ $gatewayJob = Start-Job -ScriptBlock {
 
 try {
   Start-Sleep -Seconds 2
+<<<<<<< HEAD
+  Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:$Port/healthz" | Out-Null
+  Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:$Port/.well-known/sophia.json" | Out-Null
+=======
+>>>>>>> origin/main
   & (Join-Path $repoRoot "scripts/windows/run_governance_smoke.ps1")
   Write-Host "Viewer URL: http://localhost:$Port/sophia/viewer"
   Write-Host "API URL: http://localhost:$Port/.well-known/sophia.json"

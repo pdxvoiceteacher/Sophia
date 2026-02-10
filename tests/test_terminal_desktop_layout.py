@@ -18,3 +18,26 @@ def test_desktop_layout_exists() -> None:
     ]
     missing = [path for path in required if not path.exists()]
     assert not missing, f"Missing desktop files: {missing}"
+<<<<<<< HEAD
+
+
+def test_terminal_connector_controls_present() -> None:
+    html = (DESKTOP / "src" / "index.html").read_text(encoding="utf-8")
+    for element_id in [
+        "connector-type",
+        "connector-endpoint",
+        "connector-model",
+        "test-connector",
+        "ucc-status",
+    ]:
+        assert f'id="{element_id}"' in html
+
+
+def test_windows_operator_scripts_exist() -> None:
+    for path in [
+        ROOT / "scripts" / "windows" / "dev.ps1",
+        ROOT / "scripts" / "windows" / "dev_up.ps1",
+    ]:
+        assert path.exists(), f"Missing script: {path}"
+=======
+>>>>>>> origin/main

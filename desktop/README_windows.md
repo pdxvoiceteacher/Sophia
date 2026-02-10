@@ -30,3 +30,13 @@ Use the repo preflight + smoke workflow:
 ```powershell
 .\scripts\windows\dev_up.ps1
 ```
+<<<<<<< HEAD
+
+## Operator entrypoint
+```powershell
+.\scripts\windows\dev.ps1
+# optional
+.\scripts\windows\dev.ps1 -LaunchFullStack
+```
+=======
+>>>>>>> origin/main

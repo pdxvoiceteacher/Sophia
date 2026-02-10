@@ -20,6 +20,14 @@ All governance artifacts must include:
 - `registry_federation` placeholders to keep federation-ready metadata aligned with future scaling
   (`{ "enabled": false, "peers": [] }` until federation is enabled).
 
+<<<<<<< HEAD
+Additional canonical inputs used to mint governance artifacts:
+
+- **Registry snapshot** (`registry_snapshot.json`): Enumerates stakeholders, weights, and scopes.
+- **MVSS policy** (`mvss_policy.json`): Declares quorum/pass ratios per scope.
+
+=======
+>>>>>>> origin/main
 ## Policy Resolution Step
 
 Before minting a tally or decision, resolve the MVSS policy against a registry snapshot so each
@@ -38,6 +46,26 @@ python tools/sophia/resolve_mvss_policy.py \
 The output artifact captures quorum and pass thresholds computed for the election instance. Persist
 the output alongside the election bundle.
 
+<<<<<<< HEAD
+## Governance Bundle Generator (POC)
+
+To generate a full governance bundle (policy resolution, election, tally, decision, warrant) for a
+run directory:
+
+```
+python tools/sophia/mint_governance_bundle.py \
+  --registry governance/identity/registry_snapshots/demo_registry_snapshot.json \
+  --policy governance/policies/demo_mvss_policy.json \
+  --stakeholder-scope global \
+  --ballot-text-primary "Approve governance bundle?" \
+  --ballot-text-translation es="¿Aprobar paquete de gobernanza?" \
+  --ballot-text-translation fr="Approuver le lot de gouvernance ?" \
+  --choices yes no \
+  --out-dir out/smoke
+```
+
+=======
+>>>>>>> origin/main
 ## Accessibility & Language Justice Commitments
 
 Sophia governance is designed to meet international accessibility expectations:

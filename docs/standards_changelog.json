@@ -3,7 +3,42 @@
     {
       "version": "0.1.0",
       "date": "2026-01-28",
+<<<<<<< HEAD
+      "summary": "Initial governance schemas, MVSS policy resolver, and standards gateway manifest.",
+      "commit": "b286be8"
+    },
+    {
+      "version": "0.1.1",
+      "date": "2026-01-28",
+      "summary": "Standards gateway run scripts, changelog schema/automation, and pass-first smoke updates.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.2",
+      "date": "2026-01-28",
+      "summary": "Serve viewer from gateway, add health check, and standardize changelog gate behavior.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.3",
+      "date": "2026-01-28",
+      "summary": "Add due process schemas, action registry checks, and rights standards endpoint.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.4",
+      "date": "2026-01-29",
+      "summary": "Unify action schema and harden standards gateway with index, cache headers, and rate limit.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.5",
+      "date": "2026-01-29",
+      "summary": "Add due-process bundle flags, shutdown smoke script, and standards gateway headers.",
+      "commit": "pending"
+=======
       "summary": "Initial governance schemas, MVSS policy resolver, and standards gateway manifest."
+>>>>>>> origin/main
     }
   ]
 }

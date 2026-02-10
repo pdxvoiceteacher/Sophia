@@ -7,11 +7,27 @@ import math
 from datetime import datetime, timezone
 from pathlib import Path
 
+<<<<<<< HEAD
+from jsonschema import Draft202012Validator
+=======
+>>>>>>> origin/main
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
+<<<<<<< HEAD
+def validate(schema_path: Path, payload: dict) -> None:
+    schema = load_json(schema_path)
+    validator = Draft202012Validator(schema)
+    errors = sorted(validator.iter_errors(payload), key=lambda e: e.path)
+    if errors:
+        message = "; ".join(f"{list(err.path)} {err.message}" for err in errors[:10])
+        raise ValueError(f"Schema validation failed for {schema_path.name}: {message}")
+
+
+=======
+>>>>>>> origin/main
 def normalize_ratio(value: float | int | None, fallback: float) -> float:
     if value is None:
         return fallback
@@ -53,6 +69,13 @@ def main() -> int:
     policy = load_json(Path(args.policy))
     scope = args.stakeholder_scope
 
+<<<<<<< HEAD
+    schema_dir = Path(__file__).resolve().parents[2] / "schema" / "governance"
+    validate(schema_dir / "registry_snapshot.schema.json", registry)
+    validate(schema_dir / "mvss_policy.schema.json", policy)
+
+=======
+>>>>>>> origin/main
     stakeholders = registry.get("stakeholders", [])
     eligible = [entry for entry in stakeholders if in_scope(entry, scope)]
     total_weight = sum(float(entry.get("weight", 1)) for entry in eligible)
