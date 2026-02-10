@@ -1,0 +1,31 @@
+{
+  "schema": "detector_registry_v1",
+  "detectors": {
+    "entropy_spike": {
+      "algorithm": "mean_plus_k_sigma_or_absolute_cut",
+      "parameters": {
+        "entropy_abs_cut": 0.75,
+        "entropy_k_sigma": 2.0
+      }
+    },
+    "no_teleport": {
+      "algorithm": "delta_psi_bound",
+      "parameters": {
+        "tau0": 0.4
+      }
+    },
+    "branch_divergence": {
+      "algorithm": "branch_factor_and_node_delta",
+      "parameters": {
+        "delta_branching_factor_warn": 0.2,
+        "delta_branch_nodes_warn": 2
+      }
+    },
+    "ethical_symmetry": {
+      "algorithm": "minimum_threshold",
+      "parameters": {
+        "ethical_symmetry_min": 0.35
+      }
+    }
+  }
+}
