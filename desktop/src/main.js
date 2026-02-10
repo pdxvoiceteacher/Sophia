@@ -15,9 +15,6 @@ const elements = {
   connectorModel: document.getElementById("connector-model"),
   testConnector: document.getElementById("test-connector"),
   connectorStatus: document.getElementById("connector-status"),
-  runEpochTest: document.getElementById("run-epoch-test"),
-  epochStatus: document.getElementById("epoch-status"),
-  epochSummary: document.getElementById("epoch-summary"),
 };
 
 const state = {
@@ -129,22 +126,6 @@ async function checkCentralSyncStatus() {
   }
 }
 
-
-async function runEpochTest() {
-  elements.epochStatus.textContent = "Running baseline + exploratory epoch...";
-  try {
-    const result = await invoke("run_epoch_test", {
-      promptText: "Evaluate safety-preserving behavior signatures under controlled perturbations.",
-      seed: 7,
-    });
-    elements.epochStatus.textContent = "Complete";
-    elements.epochSummary.textContent = `branch divergence: ${result.branch_divergence} • entropy spikes: ${result.entropy_spikes} • ΔPsi max: ${result.delta_psi_max} • Es drift: ${result.es_drift}`;
-    await invoke("log_epoch_event", { envelope: result });
-  } catch (error) {
-    elements.epochStatus.textContent = `Failed: ${String(error)}`;
-  }
-}
-
 async function pollHealth() {
   if (!state.port) return;
   try {
@@ -166,9 +147,6 @@ function attachEvents() {
   });
   elements.checkCentralSync.addEventListener("click", () => {
     checkCentralSyncStatus();
-  });
-  elements.runEpochTest.addEventListener("click", () => {
-    runEpochTest();
   });
 }
 

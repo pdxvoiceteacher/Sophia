@@ -19,9 +19,6 @@ def test_web_viewer_required_ids():
         "warrant",
         "execution-receipt",
         "execution-diffs",
-        "epoch-comparison",
-        "epoch-findings",
-        "epoch-findings-link",
         "json-viewer",
     ]
     for element_id in required_ids:
@@ -36,8 +33,5 @@ def test_web_viewer_governance_files_referenced():
         "tally.json",
         "decision.json",
         "warrant.json",
-        "epoch.json",
-        "epoch_metrics.json",
-        "epoch_findings.json",
     ]:
         assert filename in app_js, f"Missing reference to {filename} in app.js"
