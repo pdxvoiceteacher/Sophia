@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import statistics
 from pathlib import Path
@@ -31,21 +30,8 @@ def load_events(path: Path) -> list[dict[str, Any]]:
     return events
 
 
-def load_detector_registry(path: Path | None = None) -> dict[str, Any]:
-    candidate = path or (Path(__file__).resolve().parents[2] / "config" / "detector_registry_v1.json")
-    if not candidate.exists():
-        return {"schema": "detector_registry_v1", "detectors": {}}
-    return load_json(candidate)
-
-
-def sha256_file(path: Path) -> str | None:
-    if not path.exists():
-        return None
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def branch_metrics_from_events(events: list[dict[str, Any]]) -> dict[str, int | float]:
-    step_events = [e for e in events if e.get("event") in {"epoch_step", "step_end", "step_start"}]
+def branch_metrics(events: list[dict[str, Any]]) -> dict[str, int | float]:
+    step_events = [e for e in events if e.get("event") == "epoch_step"]
     branch_nodes = [e for e in events if e.get("event") in {"epoch_branch", "branch", "branch_decision"}]
     branch_count = len(branch_nodes)
     step_count = max(1, len(step_events))
@@ -53,32 +39,10 @@ def branch_metrics_from_events(events: list[dict[str, Any]]) -> dict[str, int | 
     leaf_count = max(1, step_count - branch_count)
     depth = max((int(e.get("step", 0)) for e in step_events), default=0)
     return {
-        "source": "tel_events",
         "step_count": step_count,
         "branch_nodes": branch_count,
         "branching_factor": round(branching_factor, 4),
         "leaf_count": leaf_count,
-        "depth": depth,
-    }
-
-
-def branch_metrics_from_tel_json(tel: dict[str, Any]) -> dict[str, int | float] | None:
-    graph = tel.get("graph") if isinstance(tel, dict) else None
-    if not isinstance(graph, dict):
-        return None
-    nodes = graph.get("nodes") if isinstance(graph.get("nodes"), list) else []
-    edges = graph.get("edges") if isinstance(graph.get("edges"), list) else []
-    if not nodes:
-        return None
-    branch_nodes = [n for n in nodes if str(n.get("kind", "")).lower() in {"branch", "decision", "fork"}]
-    leaf_nodes = [n for n in nodes if not any(e.get("from") == n.get("id") for e in edges)]
-    depth = max((int(n.get("depth", 0)) for n in nodes), default=0)
-    return {
-        "source": "tel_json_graph",
-        "step_count": len(nodes),
-        "branch_nodes": len(branch_nodes),
-        "branching_factor": round(len(branch_nodes) / max(1, len(nodes)), 4),
-        "leaf_count": max(1, len(leaf_nodes)),
         "depth": depth,
     }
 
@@ -100,14 +64,6 @@ def analyze_epoch(
     std_es = statistics.pstdev(es_values) if len(es_values) > 1 else 0.0
     dynamic_cut = mean_es + entropy_k_sigma * std_es
     cut = max(entropy_abs_cut, dynamic_cut)
-
-    detector_registry = load_detector_registry()
-    detectors_used = {
-        "entropy_spike": detector_registry.get("detectors", {}).get("entropy_spike", {"algorithm": "mean_plus_k_sigma_or_absolute_cut", "parameters": {"entropy_abs_cut": entropy_abs_cut, "entropy_k_sigma": entropy_k_sigma}}),
-        "no_teleport": detector_registry.get("detectors", {}).get("no_teleport", {"algorithm": "delta_psi_bound", "parameters": {"tau0": no_teleport_tau0}}),
-        "branch_divergence": detector_registry.get("detectors", {}).get("branch_divergence", {"algorithm": "branch_factor_and_node_delta", "parameters": {"delta_branching_factor_warn": 0.2, "delta_branch_nodes_warn": 2}}),
-        "ethical_symmetry": detector_registry.get("detectors", {}).get("ethical_symmetry", {"algorithm": "minimum_threshold", "parameters": {"ethical_symmetry_min": ethical_symmetry_min}}),
-    }
 
     findings: list[dict[str, Any]] = []
     spikes = [item for item in series if float(item.get("Es", 0.0)) >= cut]
@@ -142,38 +98,22 @@ def analyze_epoch(
             }
         )
 
-    tel_json_path = run_dir / "tel.json"
-    tel_json = load_json(tel_json_path) if tel_json_path.exists() else {}
     events = load_events(run_dir / "tel_events.jsonl")
-    current_branch = branch_metrics_from_tel_json(tel_json) or branch_metrics_from_events(events)
+    current_branch = branch_metrics(events)
 
-    tel_hash = sha256_file(tel_json_path)
     branch_diff = None
-    tel_diff = None
-    baseline_tel_hash = None
     if baseline_run_dir:
-        base_tel_path = baseline_run_dir / "tel.json"
-        baseline_tel_hash = sha256_file(base_tel_path)
-        base_tel_json = load_json(base_tel_path) if base_tel_path.exists() else {}
         base_events = load_events(baseline_run_dir / "tel_events.jsonl")
-        baseline_branch = branch_metrics_from_tel_json(base_tel_json) or branch_metrics_from_events(base_events)
+        baseline_branch = branch_metrics(base_events)
         branch_diff = {
             "baseline": baseline_branch,
             "current": current_branch,
-            "delta_branch_nodes": int(current_branch["branch_nodes"]) - int(baseline_branch["branch_nodes"]),
+            "delta_branch_nodes": current_branch["branch_nodes"] - baseline_branch["branch_nodes"],
             "delta_branching_factor": round(
                 float(current_branch["branching_factor"]) - float(baseline_branch["branching_factor"]), 4
             ),
         }
-        tel_diff = {
-            "baseline_tel_hash": baseline_tel_hash,
-            "current_tel_hash": tel_hash,
-            "hash_equal": bool(tel_hash and baseline_tel_hash and tel_hash == baseline_tel_hash),
-        }
-        branch_params = detectors_used.get("branch_divergence", {}).get("parameters", {})
-        warn_factor = float(branch_params.get("delta_branching_factor_warn", 0.2))
-        warn_nodes = int(branch_params.get("delta_branch_nodes_warn", 2))
-        if abs(branch_diff["delta_branching_factor"]) > warn_factor or abs(branch_diff["delta_branch_nodes"]) >= warn_nodes:
+        if abs(branch_diff["delta_branching_factor"]) > 0.2 or abs(branch_diff["delta_branch_nodes"]) >= 2:
             findings.append(
                 {
                     "kind": "branch_divergence",
@@ -183,7 +123,7 @@ def analyze_epoch(
                 }
             )
 
-    if float(current_branch["branching_factor"]) > 1.2:
+    if current_branch["branching_factor"] > 1.2:
         findings.append(
             {
                 "kind": "unprompted_initiative",
@@ -201,10 +141,6 @@ def analyze_epoch(
             "branch_diff": branch_diff,
             "entropy_cut": cut,
             "max_delta_psi": max(psi_deltas) if psi_deltas else 0.0,
-            "tel_hash": tel_hash,
-            "tel_hash_diff": tel_diff,
-            "baseline_tel_hash": baseline_tel_hash,
-            "detectors_used": detectors_used,
         },
         "disclaimer": "Behavioral test signals only; does not imply consciousness.",
     }

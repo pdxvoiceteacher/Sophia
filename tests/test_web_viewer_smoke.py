@@ -19,10 +19,6 @@ def test_web_viewer_required_ids():
         "warrant",
         "execution-receipt",
         "execution-diffs",
-        "epoch-comparison",
-        "epoch-findings",
-        "epoch-findings-link",
-        "attestations-panel",
         "json-viewer",
     ]
     for element_id in required_ids:
@@ -37,25 +33,5 @@ def test_web_viewer_governance_files_referenced():
         "tally.json",
         "decision.json",
         "warrant.json",
-        "epoch.json",
-        "epoch_metrics.json",
-        "epoch_findings.json",
-        "retrospection.json",
-        "attestations.json",
     ]:
         assert filename in app_js, f"Missing reference to {filename} in app.js"
-
-
-def test_web_viewer_expected_files_list_includes_epoch_artifacts():
-    app_js = read_text(ROOT / "web" / "src" / "app.js")
-    expected_block = app_js.split("const expectedFiles = [", 1)[1].split("];", 1)[0]
-    for filename in ["epoch.json", "epoch_metrics.json", "epoch_findings.json", "retrospection.json"]:
-        assert f"\"{filename}\"" in expected_block
-
-
-def test_web_viewer_attestations_wired():
-    app_js = read_text(ROOT / "web" / "src" / "app.js")
-    ui_js = read_text(ROOT / "web" / "src" / "ui.js")
-    assert "attestationsPath" in app_js
-    assert "renderAttestations" in app_js
-    assert "export function renderAttestations" in ui_js
