@@ -1,0 +1,23 @@
+{
+  "version": "0.1",
+  "need_market_protection": {
+    "forbid_gating_essential_needs": true,
+    "protected_capabilities": [
+      "standards_read_api",
+      "governance_schema_access",
+      "due_process_visibility"
+    ]
+  },
+  "want_market_tier": {
+    "enabled": true,
+    "features": [
+      "enterprise_dashboards",
+      "connector_integrations",
+      "ops_controls"
+    ]
+  },
+  "solidarity_toggle": {
+    "enabled": true,
+    "default": false
+  }
+}
