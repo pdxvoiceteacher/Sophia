@@ -3,20 +3,26 @@ param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Resolve-Path "."
+$repoRoot = (Resolve-Path ".").Path
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+
+Write-Host "[sanitize] repo root: $repoRoot"
+Write-Host "[sanitize] script dir: $(Join-Path $repoRoot 'scripts/windows')"
 
 $failed = @()
 
 Get-ChildItem -Path (Join-Path $repoRoot "scripts/windows") -Filter "*.ps1" | ForEach-Object {
   $path = $_.FullName
+  Write-Host "[sanitize] normalize UTF-8 no BOM + param() formatting: $path"
   $content = Get-Content $path -Raw
   $content = $content -replace "^\uFEFF", ""
   $content = $content -replace "^\s*(?=param\()", ""
   [System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
 }
 
-& (Join-Path $repoRoot "scripts/windows/check_no_binaries.ps1")
+$checkNoBinaries = Join-Path $repoRoot "scripts/windows/check_no_binaries.ps1"
+Write-Host "[sanitize] running: $checkNoBinaries"
+& $checkNoBinaries
 if ($LASTEXITCODE -ne 0) {
   $failed += "check_no_binaries.ps1"
 }
@@ -27,6 +33,8 @@ if (-not (Test-Path $pythonExe)) {
   exit 1
 }
 
+$pytestArgs = "tests/test_windows_ps1_param.py tests/test_no_repo_binaries.py tests/test_no_desktop_binaries.py"
+Write-Host "[sanitize] running: $pythonExe -m pytest -q $pytestArgs"
 & $pythonExe -m pytest -q tests/test_windows_ps1_param.py tests/test_no_repo_binaries.py tests/test_no_desktop_binaries.py
 if ($LASTEXITCODE -ne 0) {
   $failed += "pytest"

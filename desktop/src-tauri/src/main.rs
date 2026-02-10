@@ -2,14 +2,11 @@
 
 mod state;
 
-<<<<<<< HEAD
 use state::{
-    append_connector_event, find_free_port, load_config, save_config, spawn_gateway, ConnectorEnvelope,
-    TerminalConfig, TerminalState,
+    append_connector_event, check_central_sync as check_central_sync_impl, find_free_port, guardrails_path, load_config, load_guardrails,
+    save_config, spawn_gateway, test_connector_endpoint as test_connector_endpoint_impl, validate_market_flags, CentralSyncState,
+    ConnectorEnvelope, ConnectorTestResult, TerminalConfig, TerminalState,
 };
-=======
-use state::{find_free_port, load_config, save_config, spawn_gateway, TerminalConfig, TerminalState};
->>>>>>> origin/main
 use std::path::PathBuf;
 use tauri::{Manager, State};
 
@@ -33,7 +30,15 @@ fn get_terminal_state(state: State<TerminalState>) -> TerminalStateResponse {
 }
 
 #[tauri::command]
+fn validate_enabled_market_flags(state: State<TerminalState>, flags: Vec<String>) -> Result<(), String> {
+    let path = guardrails_path(&state.repo_root);
+    let guardrails = load_guardrails(&path).map_err(|err| format!("guardrails_load_failed: {err}"))?;
+    validate_market_flags(&flags, &guardrails)
+}
+
+#[tauri::command]
 fn save_terminal_config(state: State<TerminalState>, config: TerminalConfig) -> Result<(), String> {
+    validate_enabled_market_flags(state.clone(), config.enabled_market_flags.clone())?;
     save_config(state.config_base.clone(), &config)?;
     if let Ok(mut guard) = state.config.lock() {
         *guard = config;
@@ -41,14 +46,21 @@ fn save_terminal_config(state: State<TerminalState>, config: TerminalConfig) -> 
     Ok(())
 }
 
-<<<<<<< HEAD
 #[tauri::command]
 fn log_connector_event(state: State<TerminalState>, envelope: ConnectorEnvelope) -> Result<(), String> {
     append_connector_event(state.config_base.clone(), &envelope)
 }
 
-=======
->>>>>>> origin/main
+#[tauri::command]
+fn test_connector_endpoint(endpoint: String) -> ConnectorTestResult {
+    test_connector_endpoint_impl(&endpoint)
+}
+
+#[tauri::command]
+fn check_central_sync(state: State<TerminalState>, central_url: String) -> Result<CentralSyncState, String> {
+    check_central_sync_impl(&central_url, state.config_base.clone())
+}
+
 fn repo_root() -> PathBuf {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     manifest_dir
@@ -71,16 +83,16 @@ fn main() {
             config: std::sync::Mutex::new(config),
             child: std::sync::Mutex::new(child),
             config_base,
+            repo_root,
         })
-<<<<<<< HEAD
         .invoke_handler(tauri::generate_handler![
             get_terminal_state,
+            validate_enabled_market_flags,
             save_terminal_config,
-            log_connector_event
+            log_connector_event,
+            test_connector_endpoint,
+            check_central_sync
         ])
-=======
-        .invoke_handler(tauri::generate_handler![get_terminal_state, save_terminal_config])
->>>>>>> origin/main
         .on_window_event(|event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event.event() {
                 if let Some(state) = event.window().app_handle().try_state::<TerminalState>() {

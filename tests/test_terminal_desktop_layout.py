@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import json
 from pathlib import Path
 
 
@@ -18,7 +21,6 @@ def test_desktop_layout_exists() -> None:
     ]
     missing = [path for path in required if not path.exists()]
     assert not missing, f"Missing desktop files: {missing}"
-<<<<<<< HEAD
 
 
 def test_terminal_connector_controls_present() -> None:
@@ -29,6 +31,7 @@ def test_terminal_connector_controls_present() -> None:
         "connector-model",
         "test-connector",
         "ucc-status",
+        "check-central-sync",
     ]:
         assert f'id="{element_id}"' in html
 
@@ -37,7 +40,26 @@ def test_windows_operator_scripts_exist() -> None:
     for path in [
         ROOT / "scripts" / "windows" / "dev.ps1",
         ROOT / "scripts" / "windows" / "dev_up.ps1",
+        ROOT / "scripts" / "windows" / "doctor.ps1",
     ]:
         assert path.exists(), f"Missing script: {path}"
-=======
->>>>>>> origin/main
+
+
+def test_tauri_command_names_wired() -> None:
+    main_rs = (DESKTOP / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
+    for symbol in [
+        "fn test_connector_endpoint(",
+        "fn check_central_sync(",
+        "fn validate_enabled_market_flags(",
+        "test_connector_endpoint,",
+        "check_central_sync",
+        "validate_enabled_market_flags",
+    ]:
+        assert symbol in main_rs
+
+
+def test_axiom9_guardrails_json_valid() -> None:
+    path = ROOT / "config" / "axiom9_guardrails.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["forbidden_need_markets"]
+    assert payload["allowed_want_markets"]

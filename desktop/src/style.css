@@ -32,14 +32,11 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
-<<<<<<< HEAD
 .status-group {
   display: flex;
   gap: 10px;
 }
 
-=======
->>>>>>> origin/main
 .subtitle {
   margin: 4px 0 0;
   color: var(--muted);
@@ -87,12 +84,8 @@ label {
   color: var(--muted);
 }
 
-<<<<<<< HEAD
 input,
 select {
-=======
-input {
->>>>>>> origin/main
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid var(--border);

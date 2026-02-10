@@ -140,7 +140,6 @@ function renderKeyValueLines(pairs) {
     .join("");
 }
 
-<<<<<<< HEAD
 function formatActionDetail(actionDetail) {
   if (!actionDetail || typeof actionDetail !== "object") {
     return "";
@@ -330,8 +329,6 @@ export function renderDueProcess(continuityContainer, shutdownContainer, data) {
   `;
 }
 
-=======
->>>>>>> origin/main
 export function renderElection(container, data) {
   if (!data) {
     container.innerHTML = "<p class='muted'>No run loaded.</p>";
@@ -347,7 +344,6 @@ export function renderElection(container, data) {
     { label: "Ballots", value: election.ballots?.length || election.ballot_count },
     { label: "Tally hash", value: tally.hash || tally.tally_hash },
   ]);
-<<<<<<< HEAD
   const totals = tally.totals || {};
   const totalsSummary = Object.entries(totals)
     .map(([choice, stats]) => {
@@ -384,9 +380,6 @@ export function renderElection(container, data) {
     <div class="plain-only">${plainSummary}</div>
     ${ballotBlocks || "<p class='muted'>No ballots found.</p>"}
   `;
-=======
-  container.innerHTML = summaryLines || "<p class='muted'>No election metadata found.</p>";
->>>>>>> origin/main
 }
 
 export function renderDecisionProof(container, data) {

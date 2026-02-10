@@ -36,7 +36,6 @@ def save_json(p: Path, payload: dict) -> None:
     )
 
 
-<<<<<<< HEAD
 def build_schema_store(schema_dir: Path) -> dict:
     action_schema_path = schema_dir / "action.schema.json"
     if not action_schema_path.exists():
@@ -57,11 +56,6 @@ def validate_instance(schema_path: Path, instance: dict) -> list[str]:
     resolver = RefResolver.from_schema(schema, store=store)
     # TODO: migrate to referencing.Registry for jsonschema >= 4.18 once supported in all environments.
     validator = Draft202012Validator(schema, resolver=resolver)
-=======
-def validate_instance(schema_path: Path, instance: dict) -> list[str]:
-    schema = load_json(schema_path)
-    validator = Draft202012Validator(schema)
->>>>>>> origin/main
     return [f"{list(err.path)} {err.message}" for err in validator.iter_errors(instance)]
 
 
@@ -83,7 +77,6 @@ def extract_governance_summary(election: dict | None, tally: dict | None, decisi
     return summary
 
 
-<<<<<<< HEAD
 def load_action_registry(repo: Path) -> dict | None:
     registry_path = repo / "governance" / "policies" / "action_registry_v1.json"
     if registry_path.exists():
@@ -184,8 +177,6 @@ def shutdown_warrant_missing_fields(shutdown_warrant: dict) -> list[str]:
     return missing
 
 
-=======
->>>>>>> origin/main
 def load_repair_targets(repo: Path) -> dict:
     targets_path = repo / "sophia-core" / "config" / "repair_targets.json"
     if not targets_path.exists():
@@ -740,7 +731,6 @@ def main() -> int:
                 "details": None
             })
 
-<<<<<<< HEAD
     risk_score, risk_components = compute_risk_score(
         findings,
         contradiction_clusters,
@@ -750,19 +740,14 @@ def main() -> int:
     metrics_snapshot.setdefault("risk_score", risk_score)
     metrics_snapshot.setdefault("risk_components", risk_components)
 
-=======
->>>>>>> origin/main
     governance_paths = {
         "election": run_dir / "election.json",
         "tally": run_dir / "tally.json",
         "decision": run_dir / "decision.json",
         "warrant": run_dir / "warrant.json",
-<<<<<<< HEAD
         "continuity_claim": run_dir / "continuity_claim.json",
         "continuity_warrant": run_dir / "continuity_warrant.json",
         "shutdown_warrant": run_dir / "shutdown_warrant.json",
-=======
->>>>>>> origin/main
     }
     governance = {
         name: load_json(path) if path.exists() else None
@@ -775,7 +760,6 @@ def main() -> int:
             "tally": schema_dir / "tally.schema.json",
             "decision": schema_dir / "decision.schema.json",
             "warrant": schema_dir / "warrant.schema.json",
-<<<<<<< HEAD
             "continuity_claim": schema_dir / "continuity_claim.schema.json",
             "continuity_warrant": schema_dir / "continuity_warrant.schema.json",
             "shutdown_warrant": schema_dir / "shutdown_warrant.schema.json",
@@ -795,12 +779,6 @@ def main() -> int:
                     )
                     continue
                 errors = validate_instance(schema_path, instance)
-=======
-        }
-        for key, instance in governance.items():
-            if instance:
-                errors = validate_instance(schema_map[key], instance)
->>>>>>> origin/main
                 for idx, error in enumerate(errors[:5], start=1):
                     findings.append(
                         {
@@ -815,12 +793,9 @@ def main() -> int:
         tally = governance["tally"]
         decision_doc = governance["decision"]
         warrant = governance["warrant"]
-<<<<<<< HEAD
         continuity_claim = governance["continuity_claim"]
         continuity_warrant = governance["continuity_warrant"]
         shutdown_warrant = governance["shutdown_warrant"]
-=======
->>>>>>> origin/main
         if election:
             for idx, ballot in enumerate(election.get("ballots", []), start=1):
                 translations = (ballot.get("ballot_text") or {}).get("translations") or {}
@@ -866,7 +841,6 @@ def main() -> int:
                         "data": {"decision": decision_doc.get("decision")},
                     }
                 )
-<<<<<<< HEAD
             action_registry = load_action_registry(repo)
             if action_registry:
                 scope = decision_doc.get("stakeholder_scope") or "org"
@@ -940,11 +914,6 @@ def main() -> int:
         governance_summary["continuity_warrant_present"] = bool(continuity_warrant)
         governance_summary["shutdown_warrant_present"] = bool(shutdown_warrant)
         trend_summary.setdefault("governance_summary", {}).update(governance_summary)
-=======
-        trend_summary.setdefault("governance_summary", {}).update(
-            extract_governance_summary(election, tally, decision_doc)
-        )
->>>>>>> origin/main
 
     noise_adjustments = apply_noise_suppression(
         findings, repo / "runs" / "history" / "finding_stats.json"

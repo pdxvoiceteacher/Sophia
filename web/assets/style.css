@@ -296,7 +296,6 @@ pre {
   display: block;
 }
 
-<<<<<<< HEAD
 details {
   margin-top: 4px;
 }
@@ -305,8 +304,6 @@ details > summary {
   cursor: pointer;
 }
 
-=======
->>>>>>> origin/main
 @media (max-width: 960px) {
   .layout {
     grid-template-columns: 1fr;

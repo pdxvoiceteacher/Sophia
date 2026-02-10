@@ -8,13 +8,10 @@ import {
   renderClaims,
   renderContradictions,
   renderEvents,
-<<<<<<< HEAD
   renderGovernanceOverview,
   renderLegitimacyStrip,
   renderDueProcess,
   renderMissingFiles,
-=======
->>>>>>> origin/main
   renderElection,
   renderDecisionProof,
   renderLedgerAnchor,
@@ -50,13 +47,10 @@ const elements = {
   claims: document.getElementById("claims"),
   contradictions: document.getElementById("contradictions"),
   events: document.getElementById("events"),
-<<<<<<< HEAD
   governanceOverview: document.getElementById("governance-overview"),
   legitimacyStrip: document.getElementById("legitimacy-strip"),
   continuityPanel: document.getElementById("continuity-panel"),
   shutdownPanel: document.getElementById("shutdown-panel"),
-=======
->>>>>>> origin/main
   electionSummary: document.getElementById("election-summary"),
   decisionProof: document.getElementById("decision-proof"),
   ledgerAnchor: document.getElementById("ledger-anchor"),
@@ -135,15 +129,11 @@ function buildNormalized(run) {
   const tallyPath = findFilePath(run, "tally.json");
   const decisionPath = findFilePath(run, "decision.json");
   const warrantPath = findFilePath(run, "warrant.json");
-<<<<<<< HEAD
   const continuityClaimPath = findFilePath(run, "continuity_claim.json");
   const continuityWarrantPath = findFilePath(run, "continuity_warrant.json");
   const shutdownWarrantPath = findFilePath(run, "shutdown_warrant.json");
   const receiptPath = findFilePath(run, "execution_receipt.json");
   const policyResolutionPath = findFilePath(run, "policy_resolution.json");
-=======
-  const receiptPath = findFilePath(run, "execution_receipt.json");
->>>>>>> origin/main
 
   const telemetry = telemetryPath ? decodeJson(telemetryPath) : null;
   const sophiaAudit = auditPath ? decodeJson(auditPath) : null;
@@ -153,15 +143,11 @@ function buildNormalized(run) {
   const tally = tallyPath ? decodeJson(tallyPath) : null;
   const decision = decisionPath ? decodeJson(decisionPath) : null;
   const warrant = warrantPath ? decodeJson(warrantPath) : null;
-<<<<<<< HEAD
   const continuityClaim = continuityClaimPath ? decodeJson(continuityClaimPath) : null;
   const continuityWarrant = continuityWarrantPath ? decodeJson(continuityWarrantPath) : null;
   const shutdownWarrant = shutdownWarrantPath ? decodeJson(shutdownWarrantPath) : null;
   const executionReceipt = receiptPath ? decodeJson(receiptPath) : null;
   const policyResolution = policyResolutionPath ? decodeJson(policyResolutionPath) : null;
-=======
-  const executionReceipt = receiptPath ? decodeJson(receiptPath) : null;
->>>>>>> origin/main
 
   const filesIndex = run.files.map((path) => ({
     path,
@@ -202,15 +188,11 @@ function buildNormalized(run) {
     tally,
     decision,
     warrant,
-<<<<<<< HEAD
     continuityClaim,
     continuityWarrant,
     shutdownWarrant,
     executionReceipt,
     policyResolution,
-=======
-    executionReceipt,
->>>>>>> origin/main
     filesIndex,
     missingFiles,
     derived,
@@ -247,29 +229,22 @@ function render() {
   renderClaims(elements.claims, state.normalized);
   renderContradictions(elements.contradictions, state.normalized);
   renderEvents(elements.events, state.normalized);
-<<<<<<< HEAD
   renderGovernanceOverview(elements.governanceOverview, state.normalized);
   renderLegitimacyStrip(elements.legitimacyStrip, state.normalized);
   renderDueProcess(elements.continuityPanel, elements.shutdownPanel, state.normalized);
-=======
->>>>>>> origin/main
   renderElection(elements.electionSummary, state.normalized);
   renderDecisionProof(elements.decisionProof, state.normalized);
   renderLedgerAnchor(elements.ledgerAnchor, state.normalized);
   renderWarrant(elements.warrant, state.normalized);
   renderExecution(elements.executionReceipt, state.normalized);
   renderExecutionDiffs(elements.executionDiffs, state.normalized);
-<<<<<<< HEAD
   updateDashboardVisibility();
   updateGovernanceVisibility();
-=======
->>>>>>> origin/main
   if (state.normalized) {
     elements.jsonViewer.textContent = JSON.stringify(state.normalized.sophiaAudit || {}, null, 2);
   }
 }
 
-<<<<<<< HEAD
 function updateDashboardVisibility() {
   const hasRun = Boolean(state.normalized);
   if (elements.dashboardEmpty) {
@@ -284,8 +259,6 @@ function updateDashboardVisibility() {
   }
 }
 
-=======
->>>>>>> origin/main
 function updateGovernanceVisibility() {
   if (!state.normalized) return;
   const hasGovernance =
@@ -293,12 +266,9 @@ function updateGovernanceVisibility() {
     state.normalized.tally ||
     state.normalized.decision ||
     state.normalized.warrant ||
-<<<<<<< HEAD
     state.normalized.continuityClaim ||
     state.normalized.continuityWarrant ||
     state.normalized.shutdownWarrant ||
-=======
->>>>>>> origin/main
     state.normalized.policyResolution ||
     state.normalized.executionReceipt;
   const governanceTabs = ["election", "warrant", "execution"];
