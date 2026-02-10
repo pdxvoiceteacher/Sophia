@@ -466,3 +466,10 @@ setDensity(state.density);
 document.body.classList.toggle("plain", state.plainMode);
 attachListeners();
 render();
+
+const params = new URLSearchParams(window.location.search);
+const localRun = params.get("local_run");
+const mode = params.get("mode") || "experimental";
+if (localRun) {
+  loadGatewayRun(`/sophia/local-runs/${encodeURIComponent(localRun)}/${encodeURIComponent(mode)}`, `local/${localRun}/${mode}`);
+}
