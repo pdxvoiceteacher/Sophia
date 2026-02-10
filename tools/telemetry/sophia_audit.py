@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -15,10 +15,15 @@ from typing import Any, Dict, List
 _run_audit_v3 = None
 _run_audit_v2 = None
 _run_basic_audit = None
-if importlib.util.find_spec("sophia_core.audit") is not None:
-    from sophia_core.audit import run_audit_v3 as _run_audit_v3
-    from sophia_core.audit import run_audit_v2 as _run_audit_v2
-    from sophia_core.audit import run_basic_audit as _run_basic_audit
+try:
+    if importlib.util.find_spec("sophia_core.audit") is not None:
+        from sophia_core.audit import run_audit_v3 as _run_audit_v3
+        from sophia_core.audit import run_audit_v2 as _run_audit_v2
+        from sophia_core.audit import run_basic_audit as _run_basic_audit
+except ModuleNotFoundError:
+    _run_audit_v3 = None
+    _run_audit_v2 = None
+    _run_basic_audit = None
 
 from jsonschema import Draft202012Validator
 from jsonschema.validators import RefResolver
@@ -317,11 +322,45 @@ def apply_noise_suppression(findings: list[dict], history_path: Path, threshold:
     return noise_adjustments
 
 
+
+
+def load_epoch_summary(run_dir: Path) -> dict:
+    epoch_path = run_dir / "epoch.json"
+    metrics_path = run_dir / "epoch_metrics.json"
+    findings_path = run_dir / "epoch_findings.json"
+    if not (epoch_path.exists() and metrics_path.exists() and findings_path.exists()):
+        return {}
+    epoch = load_json(epoch_path)
+    metrics = load_json(metrics_path)
+    findings_payload = load_json(findings_path)
+    findings = findings_payload.get("findings") or []
+    kinds = {}
+    for f in findings:
+        kind = f.get("kind", "unknown")
+        kinds[kind] = kinds.get(kind, 0) + 1
+    series = metrics.get("step_series") or []
+    max_delta_psi = 0.0
+    prev = None
+    for row in series:
+        psi = float(row.get("Psi", 0.0))
+        if prev is not None:
+            max_delta_psi = max(max_delta_psi, abs(psi - prev))
+        prev = psi
+    return {
+        "epoch_id": epoch.get("epoch_id"),
+        "run_mode": epoch.get("run_mode"),
+        "prompt_hash": epoch.get("prompt_hash"),
+        "finding_counts": kinds,
+        "max_delta_psi": max_delta_psi,
+        "branch_analysis": findings_payload.get("analysis", {}).get("branch", {}),
+        "disclaimer": findings_payload.get("disclaimer", "Behavioral test signals only; does not imply consciousness."),
+    }
 def compute_risk_score(
     findings: list[dict],
     contradiction_clusters: list[dict],
     ethical_symmetry: Any,
     memory_drift_flag: bool,
+    epoch_summary: dict | None = None,
 ) -> tuple[int, dict]:
     counts = {
         "missing_evidence": sum(1 for f in findings if f["type"] == "missing_evidence"),
@@ -340,7 +379,10 @@ def compute_risk_score(
     contradiction_risk = min(20, counts["contradictions"] * 10)
     ethics_risk = 15 if ethics_breach else 0
 
-    risk_score = min(100, evidence_integrity + coherence_drift + contradiction_risk + ethics_risk)
+    epoch_counts = (epoch_summary or {}).get("finding_counts", {})
+    epoch_risk = min(20, int(epoch_counts.get("teleport_violation", 0)) * 10 + int(epoch_counts.get("branch_divergence", 0)) * 6 + int(epoch_counts.get("entropy_spike", 0)) * 4 + int(epoch_counts.get("ethical_symmetry_drop", 0)) * 4)
+
+    risk_score = min(100, evidence_integrity + coherence_drift + contradiction_risk + ethics_risk + epoch_risk)
     components = {
         "evidence_integrity": evidence_integrity,
         "coherence_drift": coherence_drift,
@@ -349,6 +391,7 @@ def compute_risk_score(
         "counts": counts,
         "memory_drift": bool(memory_drift_flag),
         "ethical_symmetry_breach": bool(ethics_breach),
+        "epoch_behavioral": epoch_risk,
     }
     return risk_score, components
 
@@ -469,12 +512,17 @@ def main() -> int:
             import sys
 
             sys.path.insert(0, str(sophia_src))
-            if importlib.util.find_spec("sophia_core.audit") is not None:
-                module = importlib.import_module("sophia_core.audit")
-                run_audit_v3 = getattr(module, "run_audit_v3", None)
-                run_audit_v2 = getattr(module, "run_audit_v2", None)
-                run_basic_audit = getattr(module, "run_basic_audit", None)
-            else:
+            try:
+                if importlib.util.find_spec("sophia_core.audit") is not None:
+                    module = importlib.import_module("sophia_core.audit")
+                    run_audit_v3 = getattr(module, "run_audit_v3", None)
+                    run_audit_v2 = getattr(module, "run_audit_v2", None)
+                    run_basic_audit = getattr(module, "run_basic_audit", None)
+                else:
+                    run_audit_v3 = None
+                    run_audit_v2 = None
+                    run_basic_audit = None
+            except ModuleNotFoundError:
                 run_audit_v3 = None
                 run_audit_v2 = None
                 run_basic_audit = None

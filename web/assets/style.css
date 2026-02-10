@@ -309,3 +309,13 @@ details > summary {
     grid-template-columns: 1fr;
   }
 }
+
+.warning-banner {
+  border: 1px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  color: #fef3c7;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
