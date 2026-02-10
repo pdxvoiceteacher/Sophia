@@ -16,6 +16,21 @@
   "properties": {
     "schema": { "type": "string", "const": "sophia_plan_v1" },
     "run_id": { "type": "string" },
+    "stakeholder_scope": { "type": "string" },
+    "mvss_policy_ref": { "type": "string" },
+    "registry_federation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "peers"],
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "peers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
     "decision": { "type": "string", "enum": ["pass", "warn", "fail"] },
     "risk_score": { "type": "integer", "minimum": 0, "maximum": 100 },
     "top_risks": {
