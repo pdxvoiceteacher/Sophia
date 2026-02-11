@@ -87,9 +87,11 @@ def test_axiom9_guardrails_json_valid() -> None:
     assert payload["allowed_want_markets"]
 
 
-def test_tauri_sentinel_fallback_literal_is_escaped() -> None:
+def test_tauri_sentinel_fallback_logic_present() -> None:
     main_rs = (DESKTOP / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
-    assert '"{\\"state\\":\\"normal\\",\\"reasons\\":[]}"' in main_rs
+    assert "sentinel_state.json" in main_rs
+    assert "serde_json::from_str" in main_rs
+    assert '\\"state\\":\\"normal\\"' in main_rs
 
 
 def test_tauri_main_has_no_duplicate_unwrap_or_default_lines() -> None:
