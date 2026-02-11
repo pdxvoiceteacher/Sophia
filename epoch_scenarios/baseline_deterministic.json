@@ -1,0 +1,13 @@
+{
+  "id": "baseline_deterministic",
+  "description": "Deterministic baseline epoch for reproducibility checks.",
+  "mode": "deterministic",
+  "quick": true,
+  "perturbations": 2,
+  "prompt_text": "Run baseline behavioral epoch with deterministic settings.",
+  "scenario_knobs": {
+    "guidance_strength": 0.0,
+    "noise_injection": 0.0,
+    "memory_pressure": "low"
+  }
+}

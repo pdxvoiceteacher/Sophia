@@ -8,6 +8,19 @@ import {
   renderClaims,
   renderContradictions,
   renderEvents,
+  renderGovernanceOverview,
+  renderLegitimacyStrip,
+  renderDueProcess,
+  renderMissingFiles,
+  renderElection,
+  renderDecisionProof,
+  renderLedgerAnchor,
+  renderWarrant,
+  renderExecution,
+  renderExecutionDiffs,
+  renderEpochs,
+  renderAttestations,
+  renderSentinel,
 } from "./ui.js";
 
 const state = {
@@ -29,9 +42,29 @@ const elements = {
   topRisks: document.getElementById("top-risks"),
   actions: document.getElementById("recommended-actions"),
   artifacts: document.getElementById("artifacts"),
+  missingFiles: document.getElementById("missing-files"),
+  missingFilesPanel: document.getElementById("missing-files-panel"),
+  dashboardEmpty: document.getElementById("dashboard-empty"),
+  dashboardCards: document.querySelectorAll(".dashboard-card"),
+  loadSample: document.getElementById("load-sample"),
   claims: document.getElementById("claims"),
   contradictions: document.getElementById("contradictions"),
   events: document.getElementById("events"),
+  governanceOverview: document.getElementById("governance-overview"),
+  legitimacyStrip: document.getElementById("legitimacy-strip"),
+  continuityPanel: document.getElementById("continuity-panel"),
+  shutdownPanel: document.getElementById("shutdown-panel"),
+  electionSummary: document.getElementById("election-summary"),
+  decisionProof: document.getElementById("decision-proof"),
+  ledgerAnchor: document.getElementById("ledger-anchor"),
+  warrant: document.getElementById("warrant"),
+  executionReceipt: document.getElementById("execution-receipt"),
+  executionDiffs: document.getElementById("execution-diffs"),
+  epochComparison: document.getElementById("epoch-comparison"),
+  epochFindings: document.getElementById("epoch-findings"),
+  epochFindingsLink: document.getElementById("epoch-findings-link"),
+  attestationsPanel: document.getElementById("attestations-panel"),
+  sentinelPanel: document.getElementById("sentinel-panel"),
   jsonViewer: document.getElementById("json-viewer"),
   tabs: document.querySelectorAll(".tab"),
   views: document.querySelectorAll(".view"),
@@ -78,20 +111,80 @@ function findFilePath(run, fileName) {
 }
 
 function buildNormalized(run) {
+  const expectedFiles = [
+    "telemetry.json",
+    "sophia_audit.json",
+    "sophia_plan.json",
+    "audit_bundle.json",
+    "election.json",
+    "tally.json",
+    "decision.json",
+    "warrant.json",
+    "continuity_claim.json",
+    "continuity_warrant.json",
+    "shutdown_warrant.json",
+    "execution_receipt.json",
+    "policy_resolution.json",
+    "tel.json",
+    "tel_events.jsonl",
+    "ucc_tel_events.jsonl",
+    "epoch.json",
+    "epoch_metrics.json",
+    "epoch_findings.json",
+    "retrospection.json",
+    "attestations.json",
+    "sentinel_state.json",
+  ];
   const telemetryPath = findFilePath(run, "telemetry.json");
   const auditPath = findFilePath(run, "sophia_audit.json");
   const planPath = findFilePath(run, "sophia_plan.json");
   const bundlePath = findFilePath(run, "audit_bundle.json");
+  const electionPath = findFilePath(run, "election.json");
+  const tallyPath = findFilePath(run, "tally.json");
+  const decisionPath = findFilePath(run, "decision.json");
+  const warrantPath = findFilePath(run, "warrant.json");
+  const continuityClaimPath = findFilePath(run, "continuity_claim.json");
+  const continuityWarrantPath = findFilePath(run, "continuity_warrant.json");
+  const shutdownWarrantPath = findFilePath(run, "shutdown_warrant.json");
+  const receiptPath = findFilePath(run, "execution_receipt.json");
+  const policyResolutionPath = findFilePath(run, "policy_resolution.json");
+  const epochPath = findFilePath(run, "epoch.json");
+  const epochMetricsPath = findFilePath(run, "epoch_metrics.json");
+  const epochFindingsPath = findFilePath(run, "epoch_findings.json");
+  const attestationsPath = findFilePath(run, "attestations.json");
+  const sentinelPath = findFilePath(run, "sentinel_state.json");
 
   const telemetry = telemetryPath ? decodeJson(telemetryPath) : null;
   const sophiaAudit = auditPath ? decodeJson(auditPath) : null;
   const sophiaPlan = planPath ? decodeJson(planPath) : null;
   const auditBundle = bundlePath ? decodeJson(bundlePath) : null;
+  const election = electionPath ? decodeJson(electionPath) : null;
+  const tally = tallyPath ? decodeJson(tallyPath) : null;
+  const decision = decisionPath ? decodeJson(decisionPath) : null;
+  const warrant = warrantPath ? decodeJson(warrantPath) : null;
+  const continuityClaim = continuityClaimPath ? decodeJson(continuityClaimPath) : null;
+  const continuityWarrant = continuityWarrantPath ? decodeJson(continuityWarrantPath) : null;
+  const shutdownWarrant = shutdownWarrantPath ? decodeJson(shutdownWarrantPath) : null;
+  const executionReceipt = receiptPath ? decodeJson(receiptPath) : null;
+  const policyResolution = policyResolutionPath ? decodeJson(policyResolutionPath) : null;
+  const epoch = epochPath ? decodeJson(epochPath) : null;
+  const epochMetrics = epochMetricsPath ? decodeJson(epochMetricsPath) : null;
+  const epochFindings = epochFindingsPath ? decodeJson(epochFindingsPath) : null;
+  const attestations = attestationsPath ? decodeJson(attestationsPath) : null;
+  const sentinelState = sentinelPath ? decodeJson(sentinelPath) : null;
 
   const filesIndex = run.files.map((path) => ({
     path,
     size: run.sizes[path] || state.files[path]?.byteLength || 0,
   }));
+
+  const root = run.rootPath === "(root)" ? "" : `${run.rootPath}/`;
+  const missingFiles = expectedFiles
+    .map((name) => {
+      const path = findFilePath(run, name);
+      return path ? null : { name, expectedPath: `${root}${name}` || name };
+    })
+    .filter(Boolean);
 
   const derived = {
     decision: sophiaAudit?.decision || sophiaPlan?.decision || "unknown",
@@ -115,7 +208,23 @@ function buildNormalized(run) {
     sophiaAudit,
     sophiaPlan,
     auditBundle,
+    election,
+    tally,
+    decision,
+    warrant,
+    continuityClaim,
+    continuityWarrant,
+    shutdownWarrant,
+    executionReceipt,
+    policyResolution,
+    epoch,
+    epochMetrics,
+    epochFindings,
+    epochFindingsPath,
+    attestations,
+    sentinelState,
     filesIndex,
+    missingFiles,
     derived,
   };
 }
@@ -146,12 +255,125 @@ function render() {
   renderTopRisks(elements.topRisks, state.normalized);
   renderActions(elements.actions, state.normalized);
   renderArtifacts(elements.artifacts, state.normalized);
+  renderMissingFiles(elements.missingFiles, state.normalized);
   renderClaims(elements.claims, state.normalized);
   renderContradictions(elements.contradictions, state.normalized);
   renderEvents(elements.events, state.normalized);
+  renderGovernanceOverview(elements.governanceOverview, state.normalized);
+  renderLegitimacyStrip(elements.legitimacyStrip, state.normalized);
+  renderDueProcess(elements.continuityPanel, elements.shutdownPanel, state.normalized);
+  renderElection(elements.electionSummary, state.normalized);
+  renderDecisionProof(elements.decisionProof, state.normalized);
+  renderLedgerAnchor(elements.ledgerAnchor, state.normalized);
+  renderWarrant(elements.warrant, state.normalized);
+  renderExecution(elements.executionReceipt, state.normalized);
+  renderExecutionDiffs(elements.executionDiffs, state.normalized);
+  renderEpochs(elements.epochComparison, elements.epochFindings, elements.epochFindingsLink, state.normalized);
+  renderAttestations(elements.attestationsPanel, state.normalized);
+  renderSentinel(elements.sentinelPanel, state.normalized);
+  updateDashboardVisibility();
+  updateGovernanceVisibility();
   if (state.normalized) {
     elements.jsonViewer.textContent = JSON.stringify(state.normalized.sophiaAudit || {}, null, 2);
   }
+}
+
+function updateDashboardVisibility() {
+  const hasRun = Boolean(state.normalized);
+  if (elements.dashboardEmpty) {
+    elements.dashboardEmpty.classList.toggle("hidden", hasRun);
+  }
+  if (elements.dashboardCards) {
+    elements.dashboardCards.forEach((card) => card.classList.toggle("hidden", !hasRun));
+  }
+  if (elements.missingFilesPanel) {
+    const hasMissing = Boolean(state.normalized?.missingFiles?.length);
+    elements.missingFilesPanel.classList.toggle("hidden", !hasRun || !hasMissing);
+  }
+}
+
+function updateGovernanceVisibility() {
+  if (!state.normalized) return;
+  const hasGovernance =
+    state.normalized.election ||
+    state.normalized.tally ||
+    state.normalized.decision ||
+    state.normalized.warrant ||
+    state.normalized.continuityClaim ||
+    state.normalized.continuityWarrant ||
+    state.normalized.shutdownWarrant ||
+    state.normalized.policyResolution ||
+    state.normalized.executionReceipt;
+  const governanceTabs = ["election", "warrant", "execution"];
+  governanceTabs.forEach((view) => {
+    const tab = document.querySelector(`.tab[data-view="${view}"]`);
+    const panel = document.getElementById(`view-${view}`);
+    if (tab) tab.classList.toggle("hidden", !hasGovernance);
+    if (panel) panel.classList.toggle("hidden", !hasGovernance);
+  });
+  if (elements.governanceOverview) {
+    elements.governanceOverview.closest(".card")?.classList.toggle("hidden", !hasGovernance);
+  }
+}
+
+
+async function loadGatewayRun(basePath, runName) {
+  const sampleFiles = [
+    "telemetry.json",
+    "sophia_audit.json",
+    "sophia_plan.json",
+    "audit_bundle.json",
+    "election.json",
+    "tally.json",
+    "decision.json",
+    "warrant.json",
+    "continuity_claim.json",
+    "continuity_warrant.json",
+    "shutdown_warrant.json",
+    "execution_receipt.json",
+    "policy_resolution.json",
+    "tel.json",
+    "tel_events.jsonl",
+    "ucc_tel_events.jsonl",
+    "epoch.json",
+    "epoch_metrics.json",
+    "epoch_findings.json",
+    "retrospection.json",
+    "attestations.json",
+    "sentinel_state.json",
+  ];
+  const files = {};
+  const entries = [];
+  for (const filename of sampleFiles) {
+    const path = `${basePath}/${filename}`;
+    try {
+      const response = await fetch(path);
+      if (!response.ok) continue;
+      const buffer = await response.arrayBuffer();
+      files[path] = new Uint8Array(buffer);
+      entries.push({ path, size: buffer.byteLength });
+    } catch {
+      continue;
+    }
+  }
+  if (!entries.length) {
+    return false;
+  }
+  state.files = files;
+  state.runs = [
+    {
+      name: runName,
+      rootPath: runName,
+      files: entries.map((entry) => entry.path),
+      sizes: entries.reduce((acc, entry) => {
+        acc[entry.path] = entry.size;
+        return acc;
+      }, {}),
+    },
+  ];
+  setRunOptions();
+  selectRun(state.runs[0]?.name);
+  return true;
 }
 
 async function loadRunFromZip(file) {
@@ -168,6 +390,13 @@ async function loadRunFromFolder(files) {
   state.files = result.files;
   setRunOptions();
   selectRun(state.runs[0]?.name);
+}
+
+async function loadSampleRun() {
+  const ok = await loadGatewayRun("/out/smoke", "out/smoke");
+  if (!ok) {
+    alert("Sample run not found. Serve the repo root so /out/smoke is accessible.");
+  }
 }
 
 function selectRun(name) {
@@ -272,8 +501,21 @@ function attachListeners() {
   elements.copyCommand.addEventListener("click", () => copyText(getNextCommand()));
   elements.copyPr.addEventListener("click", () => copyText(getPrSnippet()));
   elements.copyBug.addEventListener("click", () => copyText(getBugTemplate()));
+  if (elements.loadSample) {
+    elements.loadSample.addEventListener("click", () => {
+      loadSampleRun();
+    });
+  }
 }
 
 setDensity(state.density);
+document.body.classList.toggle("plain", state.plainMode);
 attachListeners();
 render();
+
+const params = new URLSearchParams(window.location.search);
+const localRun = params.get("local_run");
+const mode = params.get("mode") || "experimental";
+if (localRun) {
+  loadGatewayRun(`/sophia/local-runs/${encodeURIComponent(localRun)}/${encodeURIComponent(mode)}`, `local/${localRun}/${mode}`);
+}
