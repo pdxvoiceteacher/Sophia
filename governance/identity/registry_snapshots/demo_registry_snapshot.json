@@ -1,0 +1,32 @@
+{
+  "schema": "registry_snapshot_v1",
+  "snapshot_id": "registry_demo_20260124",
+  "created_at_utc": "2026-01-24T00:00:00Z",
+  "registry_federation": { "enabled": false, "peers": [] },
+  "stakeholders": [
+    {
+      "stakeholder_id": "stakeholder_global_1",
+      "display_name": "Global Stewardship Council",
+      "stakeholder_scope": ["global", "national"],
+      "weight": 2,
+      "public_key": "TODO:PUBLIC_KEY_PLACEHOLDER",
+      "roles": ["steward", "observer"]
+    },
+    {
+      "stakeholder_id": "stakeholder_global_2",
+      "display_name": "Regional Advisory Group",
+      "stakeholder_scope": "global",
+      "weight": 1,
+      "public_key": "TODO:PUBLIC_KEY_PLACEHOLDER",
+      "roles": ["advisor"]
+    },
+    {
+      "stakeholder_id": "stakeholder_national_1",
+      "display_name": "National Safety Board",
+      "stakeholder_scope": "national",
+      "weight": 3,
+      "public_key": "TODO:PUBLIC_KEY_PLACEHOLDER",
+      "roles": ["regulator"]
+    }
+  ]
+}
