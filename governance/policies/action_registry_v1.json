@@ -1,0 +1,17 @@
+{
+  "schema": "action_registry_v1",
+  "version": "1.0",
+  "allowed_actions": {
+    "org": ["apply_governance_bundle", "rotate_keys", "backup_state", "archive_evidence"],
+    "state": ["apply_governance_bundle", "backup_state", "archive_evidence"],
+    "global": ["apply_governance_bundle", "backup_state", "archive_evidence"]
+  },
+  "forbidden_classes": [
+    "harm",
+    "coercion",
+    "stealth",
+    "self_spreading",
+    "weaponization"
+  ],
+  "required_constraints": ["time_bound", "logging", "receipt_required"]
+}
