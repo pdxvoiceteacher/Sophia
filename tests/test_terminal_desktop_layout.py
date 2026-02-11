@@ -32,17 +32,6 @@ def test_terminal_connector_controls_present() -> None:
         "test-connector",
         "ucc-status",
         "check-central-sync",
-        "run-epoch-test",
-        "epoch-status",
-        "epoch-summary",
-        "review-attestation-path",
-        "review-submission-id",
-        "review-status",
-        "fetch-attestations",
-        "submit-cross-review",
-        "review-central-url",
-        "epoch-experimental-scenario",
-        "epoch-baseline-scenario",
     ]:
         assert f'id="{element_id}"' in html
 
@@ -65,16 +54,6 @@ def test_tauri_command_names_wired() -> None:
         "test_connector_endpoint,",
         "check_central_sync",
         "validate_enabled_market_flags",
-        "fn run_epoch_test(",
-        "fn log_epoch_event(",
-        "run_epoch_test",
-        "log_epoch_event",
-        "fetch_attestations",
-        "create_cross_review_submission",
-        "list_epoch_scenarios",
-        "fn fetch_attestations(",
-        "fn create_cross_review_submission(",
-        "fn list_epoch_scenarios(",
     ]:
         assert symbol in main_rs
 

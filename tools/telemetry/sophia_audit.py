@@ -355,58 +355,6 @@ def load_epoch_summary(run_dir: Path) -> dict:
         "branch_analysis": findings_payload.get("analysis", {}).get("branch", {}),
         "disclaimer": findings_payload.get("disclaimer", "Behavioral test signals only; does not imply consciousness."),
     }
-
-
-def load_metric_registry(repo: Path) -> dict:
-    path = repo / "config" / "metric_registry_v1.json"
-    if not path.exists():
-        return {"schema": "metric_registry_v1", "metrics": {}}
-    return load_json(path)
-
-
-def load_detector_registry(repo: Path) -> dict:
-    path = repo / "config" / "detector_registry_v1.json"
-    if not path.exists():
-        return {"schema": "detector_registry_v1", "detectors": {}}
-    return load_json(path)
-
-
-def build_definition_provenance(run_dir: Path, tele: dict, repo: Path) -> dict:
-    metric_registry = load_metric_registry(repo)
-    detector_registry = load_detector_registry(repo)
-    epoch_findings_path = run_dir / "epoch_findings.json"
-    epoch_findings = load_json(epoch_findings_path) if epoch_findings_path.exists() else {}
-    detectors_used = ((epoch_findings.get("analysis") or {}).get("detectors_used") or {}) if isinstance(epoch_findings, dict) else {}
-
-    metrics = tele.get("metrics") or {}
-    metric_provenance = {
-        "TEL": {"provenance_source": "tel.json + tel_events.jsonl", "artifact_hashes": True},
-        "E": {"proxy": "telemetry.metrics.E", "estimator": "declared_proxy"},
-        "T": {"proxy": "telemetry.metrics.T"},
-        "Psi": {"formula": "E*T"},
-        "DeltaS": {"proxy": "telemetry.metrics.DeltaS", "mode": "surrogate"},
-        "Lambda": {"detector": "registry_declared", "thresholds": detectors_used.get("branch_divergence", {}).get("parameters", {})},
-        "Es": {"test_suite": "epoch_step_invariance_proxy"},
-    }
-    if "DeltaS_mode" in metrics:
-        metric_provenance["DeltaS"]["mode"] = metrics.get("DeltaS_mode")
-
-    missing = []
-    for metric, rule in metric_registry.get("metrics", {}).items():
-        mp = metric_provenance.get(metric, {})
-        for field in rule.get("required_fields", []):
-            if field not in mp:
-                missing.append(f"{metric}:{field}")
-
-    return {
-        "metric_registry": metric_registry.get("schema", "metric_registry_v1"),
-        "detector_registry": detector_registry.get("schema", "detector_registry_v1"),
-        "metric_provenance": metric_provenance,
-        "detectors_used": detectors_used,
-        "missing_required_fields": missing,
-        "deltaS_mode": metric_provenance.get("DeltaS", {}).get("mode", "surrogate"),
-    }
-
 def compute_risk_score(
     findings: list[dict],
     contradiction_clusters: list[dict],
@@ -831,19 +779,11 @@ def main() -> int:
                 "details": None
             })
 
-    epoch_summary = load_epoch_summary(run_dir)
-    if epoch_summary:
-        trend_summary.setdefault("epoch_summary", {}).update(epoch_summary)
-
-    definition_provenance = build_definition_provenance(run_dir, tele, repo)
-    trend_summary.setdefault("definition_provenance", {}).update(definition_provenance)
-
     risk_score, risk_components = compute_risk_score(
         findings,
         contradiction_clusters,
         ethical_symmetry,
         memory_drift_flag,
-        epoch_summary=epoch_summary or None,
     )
     metrics_snapshot.setdefault("risk_score", risk_score)
     metrics_snapshot.setdefault("risk_components", risk_components)

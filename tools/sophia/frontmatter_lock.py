@@ -44,30 +44,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--docs-dir", default="docs/frontmatter")
     ap.add_argument("--out", default="frontmatter_lock_report.json")
-    ap.add_argument(
-        "--mode",
-        choices=("enforce", "warn", "off"),
-        default="enforce",
-        help="enforce: non-zero exit on findings, warn: always zero exit, off: skip checks",
-    )
     args = ap.parse_args()
 
     docs_dir = Path(args.docs_dir)
     files = sorted(docs_dir.glob("*.md"))
-
-    if args.mode == "off":
-        report = {
-            "schema": "frontmatter_lock_report_v1",
-            "mode": args.mode,
-            "files_scanned": [str(p) for p in files],
-            "required_sentences": REQUIRED_SENTENCES,
-            "banned_terms": BANNED_TERMS,
-            "decision": "skipped",
-            "findings": [],
-        }
-        Path(args.out).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        return 0
-
     findings: list[dict] = []
 
     for path in files:
@@ -88,7 +68,6 @@ def main() -> int:
     decision = "fail" if any(f["severity"] == "fail" for f in findings) else "pass"
     report = {
         "schema": "frontmatter_lock_report_v1",
-        "mode": args.mode,
         "files_scanned": [str(p) for p in files],
         "required_sentences": REQUIRED_SENTENCES,
         "banned_terms": BANNED_TERMS,
@@ -96,7 +75,7 @@ def main() -> int:
         "findings": findings,
     }
     Path(args.out).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    if decision == "fail" and args.mode == "enforce":
+    if decision == "fail":
         raise SystemExit(1)
     return 0
 
