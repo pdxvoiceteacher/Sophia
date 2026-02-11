@@ -1,0 +1,16 @@
+{
+  "name": "sophia-terminal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "icons": "tauri icon --input src-tauri/icons/icon.svg --output src-tauri/icons",
+    "pretauri:build": "npm run icons"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.6.0"
+  }
+}
