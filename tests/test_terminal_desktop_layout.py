@@ -116,3 +116,9 @@ def test_attestations_attach_to_run_wired() -> None:
     assert "runFolder: state.lastEpochResult?.run_folder || null" in main_js
     assert "run_folder: Option<String>" in main_rs
     assert "run_dir.join(\"attestations.json\")" in main_rs
+
+
+def test_submit_cross_review_has_single_runfolder_key() -> None:
+    main_js = (DESKTOP / "src" / "main.js").read_text(encoding="utf-8")
+    submit_block = main_js.split("async function submitCrossReview()", 1)[1].split("async function createLocalBundle()", 1)[0]
+    assert submit_block.count("runFolder:") == 1

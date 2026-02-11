@@ -315,10 +315,9 @@ async function submitCrossReview() {
   elements.reviewStatus.textContent = "Creating submission bundle...";
   try {
     const result = await invoke("create_cross_review_submission", {
-      runFolder: state.lastEpochResult.run_folder,
+      runFolder: state.lastEpochResult?.run_folder || null,
       submitterId: elements.reviewSubmitterId.value.trim() || null,
       centralUrl: elements.reviewCentralUrl.value.trim() || null,
-      runFolder: state.lastEpochResult?.run_folder || null,
     });
     state.lastSubmissionId = result.submission_id;
     elements.reviewStatus.textContent = result.detail;

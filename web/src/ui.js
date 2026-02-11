@@ -227,6 +227,20 @@ export function renderLegitimacyStrip(container, data) {
   const warrant = data.warrant || {};
   const shutdownWarrant = data.shutdownWarrant || {};
   const sentinel = data.sentinelState || {};
+  const attestationsPayload = data.attestations;
+  const attestationItems = Array.isArray(attestationsPayload)
+    ? attestationsPayload
+    : attestationsPayload?.attestations || (attestationsPayload ? [attestationsPayload] : []);
+  const attestationSummary = attestationItems.reduce(
+    (acc, item) => {
+      const status = String(item?.status || "pending").toLowerCase();
+      if (status === "pass") acc.pass += 1;
+      else if (status === "fail") acc.fail += 1;
+      else acc.pending += 1;
+      return acc;
+    },
+    { pass: 0, fail: 0, pending: 0 }
+  );
   const auditDecision = data.derived?.decision;
   const riskScore = data.derived?.riskScore ?? "n/a";
   const topFindings = (data.sophiaAudit?.findings || []).slice(0, 3);
@@ -252,6 +266,7 @@ export function renderLegitimacyStrip(container, data) {
     <div class="summary-line"><strong>Shutdown warrant:</strong> ${shutdownStatus}</div>
     <div class="summary-line"><strong>Audit:</strong> risk ${riskScore} • ${topFindingsText || "no findings"}</div>
     <div class="summary-line"><strong>Sentinel:</strong> ${sentinel.state || "normal"} • reasons ${(sentinel.reasons || []).length}</div>
+    <div class="summary-line"><strong>Attestations:</strong> total ${attestationItems.length} • pass ${attestationSummary.pass} • fail ${attestationSummary.fail} • pending ${attestationSummary.pending}</div>
     <div class="summary-line"><strong>Scope:</strong> ${scope} • ${policyRef}</div>
   `;
 }
@@ -266,6 +281,20 @@ export function renderDueProcess(continuityContainer, shutdownContainer, data) {
   const continuityWarrant = data.continuityWarrant || {};
   const shutdownWarrant = data.shutdownWarrant || {};
   const sentinel = data.sentinelState || {};
+  const attestationsPayload = data.attestations;
+  const attestationItems = Array.isArray(attestationsPayload)
+    ? attestationsPayload
+    : attestationsPayload?.attestations || (attestationsPayload ? [attestationsPayload] : []);
+  const attestationSummary = attestationItems.reduce(
+    (acc, item) => {
+      const status = String(item?.status || "pending").toLowerCase();
+      if (status === "pass") acc.pass += 1;
+      else if (status === "fail") acc.fail += 1;
+      else acc.pending += 1;
+      return acc;
+    },
+    { pass: 0, fail: 0, pending: 0 }
+  );
   const warrant = data.warrant || {};
   const warrantActions = warrant.authorized_actions || warrant.actions || [];
   const shutdownActionsPresent = warrantActions.some((action) =>

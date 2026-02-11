@@ -89,6 +89,75 @@ def load_action_registry(repo: Path) -> dict | None:
     return None
 
 
+def load_action_registry_v2(repo: Path) -> dict | None:
+    registry_path = repo / "governance" / "policies" / "action_registry_v2.json"
+    if registry_path.exists():
+        return load_json(registry_path)
+    return None
+
+
+def classify_action(action_name: str, *, action_registry_v2: dict | None, sensitive_registry: dict | None) -> tuple[str, list[str]]:
+    action_id = (action_name or "").strip()
+    if action_registry_v2:
+        action_entry = (action_registry_v2.get("actions") or {}).get(action_id)
+        if isinstance(action_entry, dict):
+            return str(action_entry.get("class", "benign")), list(action_entry.get("requires") or [])
+    fallback_sensitive = is_sensitive_action(action_id, sensitive_registry)
+    return ("sensitive", ["governance_warrant", "attestations.json"]) if fallback_sensitive else ("benign", [])
+
+
+def enforce_action_requirements_by_class(
+    *,
+    findings: list[dict],
+    actions: list[dict],
+    sentinel_level: str,
+    run_dir: Path,
+    warrant: dict,
+    continuity_warrant: dict | None,
+    shutdown_warrant: dict | None,
+    action_registry_v2: dict | None,
+    sensitive_registry: dict | None,
+) -> None:
+    if sentinel_level not in {"protect", "quarantine"}:
+        return
+    for action in actions:
+        action_name = str(action.get("action", ""))
+        action_class, required_artifacts = classify_action(
+            action_name,
+            action_registry_v2=action_registry_v2,
+            sensitive_registry=sensitive_registry,
+        )
+        if action_class not in {"sensitive", "shutdown_like", "continuity_sensitive"}:
+            continue
+
+        missing: list[str] = []
+        for artifact in required_artifacts:
+            if artifact == "attestations.json" and not (run_dir / "attestations.json").exists():
+                missing.append(artifact)
+            elif artifact == "governance_warrant" and not warrant.get("governance_warrant"):
+                missing.append(artifact)
+            elif artifact == "shutdown_warrant" and not shutdown_warrant:
+                missing.append(artifact)
+            elif artifact == "continuity_warrant" and not continuity_warrant:
+                missing.append(artifact)
+
+        if missing:
+            findings.append(
+                {
+                    "id": f"finding_sentinel_action_class_requirements_{action_name}",
+                    "severity": "fail",
+                    "type": "sentinel_action_class_requirements_missing",
+                    "message": "Sentinel posture requires additional due-process artifacts for action class.",
+                    "data": {
+                        "state": sentinel_level,
+                        "action": action_name,
+                        "action_class": action_class,
+                        "missing": missing,
+                    },
+                }
+            )
+
+
 def validate_actions(
     findings: list[dict],
     action_registry: dict,
@@ -897,6 +966,7 @@ def main() -> int:
     }
     sentinel_state = load_sentinel_state(run_dir)
     sensitive_registry = load_sensitive_action_registry(repo)
+    action_registry_v2 = load_action_registry_v2(repo)
     if any(governance.values()):
         schema_dir = repo / "schema" / "governance"
         schema_map = {
@@ -977,28 +1047,17 @@ def main() -> int:
             actions = warrant.get("authorized_actions", []) or []
             sentinel_level = str((sentinel_state or {}).get("state", "normal"))
             if sentinel_level in {"protect", "quarantine"}:
-                sensitive_actions = [a for a in actions if is_sensitive_action(str(a.get("action", "")), sensitive_registry)]
-                if sensitive_actions and not warrant.get("governance_warrant"):
-                    findings.append(
-                        {
-                            "id": "finding_sentinel_sensitive_action_requires_warrant",
-                            "severity": "fail",
-                            "type": "sentinel_sensitive_action_requires_warrant",
-                            "message": "Sensitive actions require governance_warrant when sentinel state is protect/quarantine.",
-                            "data": {"state": sentinel_level, "actions": [a.get("action") for a in sensitive_actions]},
-                        }
-                    )
-                attestations_path = run_dir / "attestations.json"
-                if sensitive_actions and not attestations_path.exists():
-                    findings.append(
-                        {
-                            "id": "finding_sentinel_sensitive_action_requires_attestations",
-                            "severity": "fail",
-                            "type": "sentinel_sensitive_action_requires_attestations",
-                            "message": "Sensitive actions require attestations.json artifact when sentinel state is protect/quarantine.",
-                            "data": {"state": sentinel_level},
-                        }
-                    )
+                enforce_action_requirements_by_class(
+                    findings=findings,
+                    actions=actions,
+                    sentinel_level=sentinel_level,
+                    run_dir=run_dir,
+                    warrant=warrant,
+                    continuity_warrant=continuity_warrant,
+                    shutdown_warrant=shutdown_warrant,
+                    action_registry_v2=action_registry_v2,
+                    sensitive_registry=sensitive_registry,
+                )
             if actions and decision_doc.get("decision") != "pass":
                 findings.append(
                     {
@@ -1083,6 +1142,7 @@ def main() -> int:
         governance_summary["shutdown_warrant_present"] = bool(shutdown_warrant)
         governance_summary["sentinel_state"] = (sentinel_state or {}).get("state", "normal")
         governance_summary["sensitive_action_registry_source"] = sensitive_registry.get("source", "builtin_default")
+        governance_summary["action_registry_v2_source"] = "governance/policies/action_registry_v2.json" if action_registry_v2 else "none"
         trend_summary.setdefault("governance_summary", {}).update(governance_summary)
 
     noise_adjustments = apply_noise_suppression(

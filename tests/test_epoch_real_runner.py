@@ -76,3 +76,26 @@ def test_deterministic_tel_hash_replay(monkeypatch, tmp_path: Path) -> None:
     assert sha(tmp_path / "a" / "tel.json") == sha(tmp_path / "b" / "tel.json")
     assert (tmp_path / "a" / "retrospection.json").exists()
     assert (tmp_path / "a" / "sentinel_state.json").exists()
+
+
+def test_epoch_outputs_manifest_includes_attestations_when_present(monkeypatch, tmp_path: Path) -> None:
+    def fake_run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool) -> None:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "tel.json").write_text('{"run_id":"x","created_at":"2026-01-01T00:00:00Z","environment":{"git_commit":"abc"}}\n', encoding="utf-8")
+        (out_dir / "telemetry.json").write_text('{"metrics":{"E":0.1,"T":0.2,"Psi":0.02,"DeltaS":0.0,"Lambda":0.0,"Es":0.1}}\n', encoding="utf-8")
+        (out_dir / "attestations.json").write_text('{"schema":"attestations_v1","status":"pending"}\n', encoding="utf-8")
+
+    monkeypatch.setattr(run_epoch_real, "run_pipeline", fake_run_pipeline)
+    args = type("Args", (), {
+        "scenario": "epoch_scenarios/baseline_deterministic.json",
+        "prompt_text": "",
+        "mode": "deterministic",
+        "seed": 7,
+        "out": str(tmp_path / "run"),
+        "baseline_run_dir": "",
+        "emit_tel": True,
+        "emit_tel_events": False,
+    })
+    run_epoch_real.run_epoch_real(args)
+    epoch = json.loads((tmp_path / "run" / "epoch.json").read_text(encoding="utf-8"))
+    assert "attestations.json" in (epoch.get("outputs_manifest") or {})

@@ -70,3 +70,9 @@ def test_web_viewer_sentinel_wired():
     assert "sentinelPath" in app_js
     assert "renderSentinel" in app_js
     assert "export function renderSentinel" in ui_js
+
+
+def test_legitimacy_strip_mentions_sentinel_and_attestations():
+    ui_js = read_text(ROOT / "web" / "src" / "ui.js")
+    assert "<strong>Sentinel:</strong>" in ui_js
+    assert "<strong>Attestations:</strong>" in ui_js

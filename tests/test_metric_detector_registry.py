@@ -44,3 +44,17 @@ def test_sensitive_action_registry_present() -> None:
     payload = json.loads((root / "config" / "sensitive_action_registry_v1.json").read_text(encoding="utf-8-sig"))
     assert payload["schema"] == "sensitive_action_registry_v1"
     assert payload["sensitive_tokens"]
+
+
+def test_action_registry_v2_present() -> None:
+    root = Path(__file__).resolve().parents[1]
+    payload = json.loads((root / "governance" / "policies" / "action_registry_v2.json").read_text(encoding="utf-8-sig"))
+    assert payload["schema"] == "action_registry_v2"
+    assert payload["actions"]
+
+
+def test_audit_prefers_action_registry_v2_classification() -> None:
+    source = (Path(__file__).resolve().parents[1] / "tools" / "telemetry" / "sophia_audit.py").read_text(encoding="utf-8")
+    assert "load_action_registry_v2" in source
+    assert "classify_action" in source
+    assert "enforce_action_requirements_by_class" in source

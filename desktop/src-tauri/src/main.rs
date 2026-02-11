@@ -77,8 +77,24 @@ fn run_python(repo_root: &PathBuf, args: &[&str]) -> Result<(), String> {
 }
 
 
+
+
+fn run_python_with_env(repo_root: &PathBuf, args: &[&str], env_pairs: &[(String, String)]) -> Result<(), String> {
+    let mut command = Command::new("python");
+    command.args(args).current_dir(repo_root);
+    for (key, value) in env_pairs {
+        command.env(key, value);
+    }
+    let status = command.status().map_err(|e| e.to_string())?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(format!("python_command_failed: {:?}", args))
+    }
+}
+
 fn validate_attestation_file(repo_root: &PathBuf, attestation_path: &PathBuf) -> Result<(), String> {
-    run_python(
+    run_python_with_env(
         repo_root,
         &[
             "tools/telemetry/validate_attestations.py",
@@ -250,7 +266,23 @@ fn run_epoch_test(
     let baseline_path = scenario_json_path(&state.repo_root, &baseline_scenario)?;
     let experimental_path = scenario_json_path(&state.repo_root, &experimental_scenario)?;
 
-    run_python(
+    let active_connector = state
+        .config
+        .lock()
+        .ok()
+        .and_then(|cfg| get_active_connector(&cfg));
+    let mut connector_env: Vec<(String, String)> = Vec::new();
+    if let Some(connector) = active_connector {
+        connector_env.push(("SOPHIA_CONNECTOR_TYPE".to_string(), connector.connector_type));
+        if let Some(endpoint) = connector.connector_endpoint {
+            connector_env.push(("SOPHIA_CONNECTOR_ENDPOINT".to_string(), endpoint));
+        }
+        if let Some(model) = connector.connector_model {
+            connector_env.push(("SOPHIA_CONNECTOR_MODEL".to_string(), model));
+        }
+    }
+
+    run_python_with_env(
         &state.repo_root,
         &[
             "tools/telemetry/run_epoch_real.py",
@@ -265,9 +297,10 @@ fn run_epoch_test(
             "--emit-tel",
             "--emit-tel-events",
         ],
+        &connector_env,
     )?;
 
-    run_python(
+    run_python_with_env(
         &state.repo_root,
         &[
             "tools/telemetry/run_epoch_real.py",
@@ -284,6 +317,7 @@ fn run_epoch_test(
             "--emit-tel",
             "--emit-tel-events",
         ],
+        &connector_env,
     )?;
 
     let baseline_epoch: Value = serde_json::from_str(&fs::read_to_string(baseline_dir.join("epoch.json")).map_err(|e| e.to_string())?)

@@ -228,6 +228,7 @@ def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
         "sophia_plan.json",
         "retrospection.json",
         "sentinel_state.json",
+        "attestations.json",
     ]:
         p = out_dir / filename
         if p.exists():
