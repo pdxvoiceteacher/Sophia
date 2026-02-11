@@ -15,6 +15,9 @@ const elements = {
   connectorModel: document.getElementById("connector-model"),
   testConnector: document.getElementById("test-connector"),
   connectorStatus: document.getElementById("connector-status"),
+  addConnector: document.getElementById("add-connector"),
+  activeConnector: document.getElementById("active-connector"),
+  connectorList: document.getElementById("connector-list"),
   epochBaselineScenario: document.getElementById("epoch-baseline-scenario"),
   epochExperimentalScenario: document.getElementById("epoch-experimental-scenario"),
   runEpochTest: document.getElementById("run-epoch-test"),
@@ -39,7 +42,63 @@ const state = {
   scenarios: [],
   lastEpochResult: null,
   lastSubmissionId: null,
+  connectors: [],
 };
+
+
+
+function normalizeConnectors(config) {
+  const connectors = Array.isArray(config.connectors) ? config.connectors : [];
+  if (connectors.length) {
+    return connectors.map((item, index) => ({
+      id: item.id || `connector-${index + 1}`,
+      connector_type: item.connector_type || item.type || "LocalLLMConnector",
+      connector_endpoint: item.connector_endpoint || item.endpoint || null,
+      connector_model: item.connector_model || item.model || null,
+      enabled: item.enabled !== false,
+    }));
+  }
+  return [
+    {
+      id: "migrated-default",
+      connector_type: config.connector_type || "LocalLLMConnector",
+      connector_endpoint: config.connector_endpoint || null,
+      connector_model: config.connector_model || null,
+      enabled: true,
+    },
+  ];
+}
+
+function renderConnectorControls() {
+  elements.activeConnector.innerHTML = "";
+  state.connectors.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.id;
+    option.textContent = `${item.id} (${item.connector_type})${item.enabled ? "" : " [disabled]"}`;
+    elements.activeConnector.appendChild(option);
+  });
+  const activeId = state.config?.active_connector_id || state.connectors.find((c) => c.enabled)?.id || state.connectors[0]?.id;
+  if (activeId) elements.activeConnector.value = activeId;
+
+  elements.connectorList.innerHTML = "";
+  state.connectors.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "summary-line";
+    const chk = document.createElement("input");
+    chk.type = "checkbox";
+    chk.checked = item.enabled;
+    chk.dataset.connectorId = item.id;
+    chk.addEventListener("change", () => {
+      const found = state.connectors.find((c) => c.id === item.id);
+      if (found) found.enabled = chk.checked;
+    });
+    row.appendChild(chk);
+    const label = document.createElement("span");
+    label.textContent = ` ${item.id} • ${item.connector_type} • ${item.connector_model || "n/a"}`;
+    row.appendChild(label);
+    elements.connectorList.appendChild(row);
+  });
+}
 
 function setChipStatus(element, label, status, ok = false) {
   element.textContent = `${label}: ${status}`;
@@ -48,6 +107,15 @@ function setChipStatus(element, label, status, ok = false) {
 }
 
 function getConnectorPayload() {
+  const activeId = elements.activeConnector.value || state.config?.active_connector_id;
+  const active = state.connectors.find((item) => item.id === activeId) || state.connectors.find((item) => item.enabled);
+  if (active) {
+    return {
+      connector_type: active.connector_type,
+      connector_endpoint: active.connector_endpoint,
+      connector_model: active.connector_model,
+    };
+  }
   return {
     connector_type: elements.connectorType.value,
     connector_endpoint: elements.connectorEndpoint.value.trim() || null,
@@ -112,6 +180,11 @@ async function loadState() {
   elements.connectorType.value = state.config.connector_type || "LocalLLMConnector";
   elements.connectorEndpoint.value = state.config.connector_endpoint || "";
   elements.connectorModel.value = state.config.connector_model || "";
+  state.connectors = normalizeConnectors(state.config);
+  renderConnectorControls();
+  elements.activeConnector.addEventListener("change", () => {
+    state.config.active_connector_id = elements.activeConnector.value;
+  });
   elements.viewerFrame.src = `http://127.0.0.1:${state.port}/sophia/viewer`;
 
   state.scenarios = await invoke("list_epoch_scenarios");
@@ -125,6 +198,8 @@ async function saveConfig() {
     central_standards_url: elements.centralStandards.value.trim(),
     local_llm_url: elements.localLlm.value.trim() || null,
     ...connector,
+    connectors: state.connectors,
+    active_connector_id: elements.activeConnector.value || null,
     enabled_market_flags: enabledMarketFlags,
   };
 
@@ -152,6 +227,24 @@ async function logConnector(status) {
     timestamp_utc: new Date().toISOString(),
   };
   await invoke("log_connector_event", { envelope });
+}
+
+
+
+function addConnector() {
+  const id = `connector-${state.connectors.length + 1}`;
+  state.connectors.push({
+    id,
+    connector_type: elements.connectorType.value,
+    connector_endpoint: elements.connectorEndpoint.value.trim() || null,
+    connector_model: elements.connectorModel.value.trim() || null,
+    enabled: true,
+  });
+  if (!state.config) state.config = {};
+  state.config.active_connector_id = id;
+  renderConnectorControls();
+  elements.activeConnector.value = id;
+  elements.connectorStatus.textContent = `Added ${id}. Click Save to persist.`;
 }
 
 async function testConnectorConnection() {
@@ -225,6 +318,7 @@ async function submitCrossReview() {
       runFolder: state.lastEpochResult.run_folder,
       submitterId: elements.reviewSubmitterId.value.trim() || null,
       centralUrl: elements.reviewCentralUrl.value.trim() || null,
+      runFolder: state.lastEpochResult?.run_folder || null,
     });
     state.lastSubmissionId = result.submission_id;
     elements.reviewStatus.textContent = result.detail;
@@ -292,6 +386,7 @@ async function pollHealth() {
 
 function attachEvents() {
   elements.saveButton.addEventListener("click", saveConfig);
+  elements.addConnector.addEventListener("click", addConnector);
   elements.testConnector.addEventListener("click", testConnectorConnection);
   elements.checkCentralSync.addEventListener("click", checkCentralSyncStatus);
   elements.runEpochTest.addEventListener("click", runEpochTest);

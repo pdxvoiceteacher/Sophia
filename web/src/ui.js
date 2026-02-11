@@ -226,6 +226,7 @@ export function renderLegitimacyStrip(container, data) {
   const decision = data.decision || {};
   const warrant = data.warrant || {};
   const shutdownWarrant = data.shutdownWarrant || {};
+  const sentinel = data.sentinelState || {};
   const auditDecision = data.derived?.decision;
   const riskScore = data.derived?.riskScore ?? "n/a";
   const topFindings = (data.sophiaAudit?.findings || []).slice(0, 3);
@@ -250,6 +251,7 @@ export function renderLegitimacyStrip(container, data) {
     <div class="summary-line"><strong>Continuity:</strong> claim ${continuityClaim} • protections ${continuityWarrant}</div>
     <div class="summary-line"><strong>Shutdown warrant:</strong> ${shutdownStatus}</div>
     <div class="summary-line"><strong>Audit:</strong> risk ${riskScore} • ${topFindingsText || "no findings"}</div>
+    <div class="summary-line"><strong>Sentinel:</strong> ${sentinel.state || "normal"} • reasons ${(sentinel.reasons || []).length}</div>
     <div class="summary-line"><strong>Scope:</strong> ${scope} • ${policyRef}</div>
   `;
 }
@@ -263,6 +265,7 @@ export function renderDueProcess(continuityContainer, shutdownContainer, data) {
   const continuityClaim = data.continuityClaim || {};
   const continuityWarrant = data.continuityWarrant || {};
   const shutdownWarrant = data.shutdownWarrant || {};
+  const sentinel = data.sentinelState || {};
   const warrant = data.warrant || {};
   const warrantActions = warrant.authorized_actions || warrant.actions || [];
   const shutdownActionsPresent = warrantActions.some((action) =>

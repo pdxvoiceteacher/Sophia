@@ -29,6 +29,9 @@ def test_terminal_connector_controls_present() -> None:
         "connector-type",
         "connector-endpoint",
         "connector-model",
+        "add-connector",
+        "active-connector",
+        "connector-list",
         "test-connector",
         "ucc-status",
         "check-central-sync",
@@ -78,6 +81,8 @@ def test_tauri_command_names_wired() -> None:
         "fn fetch_attestations(",
         "fn create_cross_review_submission(",
         "fn list_epoch_scenarios(",
+        "fn get_active_connector_config(",
+        "get_active_connector_config",
     ]:
         assert symbol in main_rs
 
@@ -103,3 +108,11 @@ def test_tauri_sentinel_fallback_logic_present() -> None:
 def test_tauri_main_has_no_duplicate_unwrap_or_default_lines() -> None:
     main_rs = (DESKTOP / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
     assert ".unwrap_or_default();\n        .unwrap_or_default();" not in main_rs
+
+
+def test_attestations_attach_to_run_wired() -> None:
+    main_js = (DESKTOP / "src" / "main.js").read_text(encoding="utf-8")
+    main_rs = (DESKTOP / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
+    assert "runFolder: state.lastEpochResult?.run_folder || null" in main_js
+    assert "run_folder: Option<String>" in main_rs
+    assert "run_dir.join(\"attestations.json\")" in main_rs

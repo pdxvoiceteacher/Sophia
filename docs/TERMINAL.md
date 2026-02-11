@@ -117,3 +117,10 @@ Run the Windows doctor helper for actionable checks and next commands:
 - **Port already in use**: the app will increment the port until it finds a free slot (8001 → 8002 → …). If all attempts fail, restart the app after freeing a port.
 - **Firewall prompts**: allow local loopback connections for `python` if prompted so the embedded viewer can reach `http://127.0.0.1:<PORT>/sophia/viewer`.
 - **Gateway reports Down**: verify Python + `uvicorn` are available in your environment and that the standards API starts from the repo root.
+
+
+## Frontmatter lock defaults
+
+Local/research workflows default to non-blocking frontmatter checks via environment defaults:
+`SOPHIA_FRONTMATTER_PROFILE=research` and `SOPHIA_FRONTMATTER_MODE=warn`.
+CI remains strict by explicitly invoking publication enforcement (`--profile publication --mode enforce`) in the smoke workflow.

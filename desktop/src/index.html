@@ -55,9 +55,20 @@
         <label for="connector-model">Model</label>
         <input id="connector-model" type="text" placeholder="gpt-4o-mini" />
       </div>
+      <div class="field">
+        <label for="active-connector">Active connector</label>
+        <select id="active-connector"></select>
+      </div>
+      <div class="field actions">
+        <button id="add-connector" type="button">Add connector</button>
+      </div>
       <div class="field actions">
         <button id="test-connector">Test connection</button>
         <span id="connector-status" class="muted"></span>
+      </div>
+      <div class="field">
+        <label>Configured connectors</label>
+        <div id="connector-list" class="muted"></div>
       </div>
     </section>
 

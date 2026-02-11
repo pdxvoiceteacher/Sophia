@@ -10,12 +10,15 @@ use tauri::api::path::home_dir;
 use url::Url;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct TerminalConfig {
     pub central_standards_url: String,
     pub local_llm_url: Option<String>,
     pub connector_type: String,
     pub connector_endpoint: Option<String>,
     pub connector_model: Option<String>,
+    pub connectors: Vec<ConnectorConfig>,
+    pub active_connector_id: Option<String>,
     pub enabled_market_flags: Vec<String>,
 }
 
@@ -27,9 +30,26 @@ impl Default for TerminalConfig {
             connector_type: "LocalLLMConnector".to_string(),
             connector_endpoint: Some("http://localhost:11434".to_string()),
             connector_model: Some("llama3.1".to_string()),
+            connectors: vec![ConnectorConfig {
+                id: "local-default".to_string(),
+                connector_type: "LocalLLMConnector".to_string(),
+                connector_endpoint: Some("http://localhost:11434".to_string()),
+                connector_model: Some("llama3.1".to_string()),
+                enabled: true,
+            }],
+            active_connector_id: Some("local-default".to_string()),
             enabled_market_flags: vec!["enterprise_workflows".to_string()],
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConnectorConfig {
+    pub id: String,
+    pub connector_type: String,
+    pub connector_endpoint: Option<String>,
+    pub connector_model: Option<String>,
+    pub enabled: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -106,7 +126,17 @@ pub fn epoch_tel_path(base: Option<PathBuf>) -> PathBuf {
 pub fn load_config(base: Option<PathBuf>) -> TerminalConfig {
     let path = config_path(base);
     if let Ok(contents) = fs::read_to_string(path) {
-        if let Ok(config) = serde_json::from_str::<TerminalConfig>(&contents) {
+        if let Ok(mut config) = serde_json::from_str::<TerminalConfig>(&contents) {
+            if config.connectors.is_empty() {
+                config.connectors = vec![ConnectorConfig {
+                    id: "migrated-default".to_string(),
+                    connector_type: config.connector_type.clone(),
+                    connector_endpoint: config.connector_endpoint.clone(),
+                    connector_model: config.connector_model.clone(),
+                    enabled: true,
+                }];
+                config.active_connector_id = Some("migrated-default".to_string());
+            }
             return config;
         }
     }
@@ -423,4 +453,22 @@ mod tests {
         let bad = vec!["housing".to_string()];
         assert!(validate_market_flags(&bad, &guardrails).is_err());
     }
+}
+
+
+pub fn get_active_connector(config: &TerminalConfig) -> Option<ConnectorConfig> {
+    if config.connectors.is_empty() {
+        return None;
+    }
+    if let Some(active) = &config.active_connector_id {
+        if let Some(found) = config
+            .connectors
+            .iter()
+            .find(|c| c.id == *active && c.enabled)
+            .cloned()
+        {
+            return Some(found);
+        }
+    }
+    config.connectors.iter().find(|c| c.enabled).cloned()
 }

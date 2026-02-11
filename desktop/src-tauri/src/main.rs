@@ -6,9 +6,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use state::{
     append_connector_event, append_epoch_event, check_central_sync as check_central_sync_impl, find_free_port,
+    get_active_connector,
     guardrails_path, load_config, load_guardrails, save_config, spawn_gateway,
     test_connector_endpoint as test_connector_endpoint_impl, validate_market_flags, CentralSyncState,
-    ConnectorEnvelope, ConnectorTestResult, EpochTestEnvelope, TerminalConfig, TerminalState,
+    ConnectorConfig, ConnectorEnvelope, ConnectorTestResult, EpochTestEnvelope, TerminalConfig, TerminalState,
 };
 use std::fs;
 use std::path::PathBuf;
@@ -19,6 +20,11 @@ use tauri::{Manager, State};
 struct TerminalStateResponse {
     port: u16,
     config: TerminalConfig,
+}
+
+#[derive(Serialize)]
+struct ActiveConnectorResponse {
+    connector: Option<ConnectorConfig>,
 }
 
 #[derive(Serialize)]
@@ -153,6 +159,20 @@ fn get_terminal_state(state: State<TerminalState>) -> TerminalStateResponse {
         .map(|guard| guard.clone())
         .unwrap_or_default();
     TerminalStateResponse { port: state.port, config }
+}
+
+
+
+#[tauri::command]
+fn get_active_connector_config(state: State<TerminalState>) -> ActiveConnectorResponse {
+    let config = state
+        .config
+        .lock()
+        .map(|guard| guard.clone())
+        .unwrap_or_default();
+    ActiveConnectorResponse {
+        connector: get_active_connector(&config),
+    }
 }
 
 #[tauri::command]
@@ -442,9 +462,10 @@ fn create_cross_review_submission(
 
 #[tauri::command]
 fn fetch_attestations(
-    _state: State<TerminalState>,
+    state: State<TerminalState>,
     submission_id: String,
     central_url: Option<String>,
+    run_folder: Option<String>,
 ) -> Result<AttestationResult, String> {
     let att_dir = sophia_home().join("attestations");
     fs::create_dir_all(&att_dir).map_err(|e| e.to_string())?;
@@ -526,6 +547,39 @@ fn fetch_attestations(
         .map_err(|e| e.to_string())?;
     let summary = summarize_attestations(&summary_payload);
 
+    if let Some(run_folder) = run_folder {
+        let run_dir = PathBuf::from(run_folder);
+        if run_dir.exists() {
+            let run_attestations = run_dir.join("attestations.json");
+            fs::write(
+                &run_attestations,
+                serde_json::to_string_pretty(&summary_payload).map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?;
+
+            let epoch_path = run_dir.join("epoch.json");
+            if epoch_path.exists() {
+                if let Ok(epoch_raw) = fs::read_to_string(&epoch_path) {
+                    if let Ok(mut epoch_doc) = serde_json::from_str::<Value>(&epoch_raw) {
+                        if let Some(outputs) = epoch_doc
+                            .get_mut("outputs_manifest")
+                            .and_then(|v| v.as_object_mut())
+                        {
+                            outputs.insert(
+                                "attestations.json".to_string(),
+                                json!({"attached": true, "source": run_attestations.to_string_lossy()}),
+                            );
+                            let _ = fs::write(
+                                &epoch_path,
+                                serde_json::to_string_pretty(&epoch_doc).map_err(|e| e.to_string())?,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Ok(AttestationResult {
         submission_id,
         attestation_path: att_path.to_string_lossy().to_string(),
@@ -560,6 +614,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             get_terminal_state,
+            get_active_connector_config,
             list_epoch_scenarios,
             validate_enabled_market_flags,
             save_terminal_config,
