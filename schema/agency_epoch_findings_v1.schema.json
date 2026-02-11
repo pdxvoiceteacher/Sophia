@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agency_epoch_findings_v1.schema.json",
+  "title": "Agency Epoch Findings v1",
+  "type": "object",
+  "required": ["epoch_id", "findings"],
+  "properties": {
+    "epoch_id": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "severity", "message"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "entropy_spike",
+              "branch_divergence",
+              "teleport_violation",
+              "ethical_symmetry_drop",
+              "unprompted_initiative"
+            ]
+          },
+          "severity": { "type": "string", "enum": ["info", "warn", "fail"] },
+          "message": { "type": "string" },
+          "data": { "type": "object" }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
