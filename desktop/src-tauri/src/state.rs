@@ -73,6 +73,8 @@ pub struct EpochTestEnvelope {
     pub entropy_spikes: usize,
     pub delta_psi_max: f64,
     pub es_drift: f64,
+    pub sentinel_state: String,
+    pub sentinel_reason_count: usize,
     pub run_folder: String,
     pub timestamp_utc: String,
 }

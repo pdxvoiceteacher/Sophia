@@ -35,6 +35,7 @@ def test_terminal_connector_controls_present() -> None:
         "run-epoch-test",
         "epoch-status",
         "epoch-summary",
+        "epoch-sentinel",
         "review-attestation-path",
         "review-submission-id",
         "review-status",

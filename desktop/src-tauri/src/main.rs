@@ -251,6 +251,24 @@ fn run_epoch_test(
     )
     .map_err(|e| e.to_string())?;
 
+
+    let sentinel_doc: Value = serde_json::from_str(
+        &fs::read_to_string(exploratory_dir.join("sentinel_state.json")).unwrap_or_else(|_| {
+            "{\"state\":\"normal\",\"reasons\":[]}".to_string()
+        }),
+    )
+    .unwrap_or_else(|_| json!({"state": "normal", "reasons": []}));
+    let sentinel_state = sentinel_doc
+        .get("state")
+        .and_then(|v| v.as_str())
+        .unwrap_or("normal")
+        .to_string();
+    let sentinel_reason_count = sentinel_doc
+        .get("reasons")
+        .and_then(|v| v.as_array())
+        .map(|items| items.len())
+        .unwrap_or(0);
+
     let avg_es = |metrics: &Value| -> f64 {
         let series = metrics
             .get("step_series")
@@ -281,6 +299,8 @@ fn run_epoch_test(
         entropy_spikes,
         delta_psi_max,
         es_drift: avg_es(&exploratory_metrics) - avg_es(&baseline_metrics),
+        sentinel_state,
+        sentinel_reason_count,
         run_folder: run_root.to_string_lossy().to_string(),
         timestamp_utc: chrono::Utc::now().to_rfc3339(),
     })

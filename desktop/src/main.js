@@ -21,6 +21,7 @@ const elements = {
   epochStatus: document.getElementById("epoch-status"),
   epochSummary: document.getElementById("epoch-summary"),
   epochRunFolder: document.getElementById("epoch-run-folder"),
+  epochSentinel: document.getElementById("epoch-sentinel"),
   reviewCentralUrl: document.getElementById("review-central-url"),
   reviewSubmitterId: document.getElementById("review-submitter-id"),
   submitCrossReview: document.getElementById("submit-cross-review"),
@@ -195,10 +196,12 @@ async function runEpochTest() {
     elements.epochStatus.textContent = "Complete";
     elements.epochSummary.textContent = `TEL hash eq: ${result.tel_hash_equal} • branch divergence: ${result.branch_divergence} • entropy spikes: ${result.entropy_spikes} • ΔPsi max: ${result.delta_psi_max} • Es drift: ${result.es_drift}`;
     elements.epochRunFolder.textContent = result.run_folder || "n/a";
+    elements.epochSentinel.textContent = `state: ${result.sentinel_state || "normal"} • reasons: ${result.sentinel_reason_count ?? 0}`;
     updateViewerForEpochRun(result.run_folder, "experimental");
     await invoke("log_epoch_event", { envelope: result });
   } catch (error) {
     elements.epochStatus.textContent = `Failed: ${String(error)}`;
+    elements.epochSentinel.textContent = "state: n/a • reasons: n/a";
   }
 }
 
