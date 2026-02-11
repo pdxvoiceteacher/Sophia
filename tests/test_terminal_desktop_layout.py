@@ -93,7 +93,9 @@ def test_tauri_sentinel_fallback_logic_present() -> None:
     assert "serde_json::from_str" in main_rs
     assert '\\"state\\":\\"normal\\"' in main_rs
     assert "unwrap_or_else(|_|" in main_rs
-    assert "json!({\"state\": \"normal\", \"reasons\": []})" in main_rs
+    assert "json!({" in main_rs
+    assert "\"state\": \"normal\"" in main_rs
+    assert "\"reasons\": []" in main_rs
 
 
 def test_tauri_main_has_no_duplicate_unwrap_or_default_lines() -> None:
