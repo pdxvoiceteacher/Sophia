@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -33,7 +34,7 @@ def test_frontmatter_lock_catches_banned_terms(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = run_lock(docs_dir, tmp_path / "report.json")
+    result = run_lock(docs_dir, tmp_path / "report.json", "--profile", "publication", "--mode", "enforce")
     assert result.returncode != 0
 
 
@@ -88,7 +89,7 @@ def test_frontmatter_lock_profiles_change_severity_and_governance_hint(tmp_path:
     )
 
     publication_report = tmp_path / "publication_report.json"
-    publication = run_lock(docs_dir, publication_report, "--profile", "publication")
+    publication = run_lock(docs_dir, publication_report, "--profile", "publication", "--mode", "enforce")
     assert publication.returncode != 0
 
     safeguard_report = tmp_path / "safeguard_report.json"
@@ -97,3 +98,28 @@ def test_frontmatter_lock_profiles_change_severity_and_governance_hint(tmp_path:
     payload = json.loads(safeguard_report.read_text(encoding="utf-8"))
     assert payload["governance_hints"]["due_process_required"] is True
     assert payload["governance_hints"]["sentinel_state_hint"] == "protect"
+
+
+def test_frontmatter_lock_env_defaults_are_non_blocking(tmp_path: Path) -> None:
+    docs_dir = tmp_path / "frontmatter"
+    docs_dir.mkdir(parents=True, exist_ok=True)
+    bad = docs_dir / "sample.md"
+    bad.write_text("# Abstract\nThis includes thoughts and lived experience.\n", encoding="utf-8")
+
+    env = dict(os.environ)
+    env["SOPHIA_FRONTMATTER_PROFILE"] = "research"
+    env["SOPHIA_FRONTMATTER_MODE"] = "warn"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "tools/sophia/frontmatter_lock.py",
+            "--docs-dir",
+            str(docs_dir),
+            "--out",
+            str(tmp_path / "report.json"),
+        ],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert result.returncode == 0

@@ -31,10 +31,20 @@ struct SubmissionResult {
 }
 
 #[derive(Serialize)]
+struct AttestationSummary {
+    total: usize,
+    pass: usize,
+    fail: usize,
+    pending: usize,
+    latest_timestamp: Option<String>,
+}
+
+#[derive(Serialize)]
 struct AttestationResult {
     submission_id: String,
     attestation_path: String,
     detail: String,
+    summary: AttestationSummary,
 }
 
 #[derive(Deserialize)]
@@ -72,6 +82,58 @@ fn validate_attestation_file(repo_root: &PathBuf, attestation_path: &PathBuf) ->
             attestation_path.to_string_lossy().as_ref(),
         ],
     )
+}
+
+
+
+fn summarize_attestations(payload: &Value) -> AttestationSummary {
+    let items: Vec<&Value> = if let Some(array) = payload.as_array() {
+        array.iter().collect()
+    } else if let Some(array) = payload.get("attestations").and_then(|v| v.as_array()) {
+        array.iter().collect()
+    } else {
+        vec![payload]
+    };
+
+    let mut pass = 0;
+    let mut fail = 0;
+    let mut pending = 0;
+    let mut latest_timestamp: Option<String> = None;
+
+    for item in items.iter().filter(|v| !v.is_null()) {
+        let status = item.get("status").and_then(|v| v.as_str()).unwrap_or("pending").to_lowercase();
+        if status == "pass" {
+            pass += 1;
+        } else if status == "fail" {
+            fail += 1;
+        } else {
+            pending += 1;
+        }
+
+        let ts = item
+            .get("timestamp_utc")
+            .or_else(|| item.get("timestamp"))
+            .or_else(|| item.get("reviewed_at"))
+            .and_then(|v| v.as_str())
+            .map(str::to_string);
+        if let Some(ts) = ts {
+            let should_update = match latest_timestamp.as_ref() {
+                Some(current) => ts > *current,
+                None => true,
+            };
+            if should_update {
+                latest_timestamp = Some(ts);
+            }
+        }
+    }
+
+    AttestationSummary {
+        total: pass + fail + pending,
+        pass,
+        fail,
+        pending,
+        latest_timestamp,
+    }
 }
 
 fn scenario_json_path(repo_root: &PathBuf, scenario_name: &str) -> Result<PathBuf, String> {
@@ -374,6 +436,7 @@ fn create_cross_review_submission(
         bundle_path: build.bundle_path,
         posted,
         detail,
+        summary,
     })
 }
 
@@ -459,10 +522,15 @@ fn fetch_attestations(
 
     validate_attestation_file(&state.repo_root, &att_path)?;
 
+    let summary_payload: Value = serde_json::from_str(&fs::read_to_string(&att_path).map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?;
+    let summary = summarize_attestations(&summary_payload);
+
     Ok(AttestationResult {
         submission_id,
         attestation_path: att_path.to_string_lossy().to_string(),
         detail,
+        summary,
     })
 }
 

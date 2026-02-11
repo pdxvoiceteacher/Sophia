@@ -41,7 +41,9 @@ def test_terminal_connector_controls_present() -> None:
         "review-status",
         "fetch-attestations",
         "submit-cross-review",
+        "create-local-bundle",
         "review-central-url",
+        "review-attestation-summary",
         "epoch-experimental-scenario",
         "epoch-baseline-scenario",
     ]:

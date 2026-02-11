@@ -37,3 +37,10 @@ def test_sentinel_state_schema_accepts_sample() -> None:
         "policy_profile": "safeguard",
     }
     Draft202012Validator(schema).validate(payload)
+
+
+def test_sensitive_action_registry_present() -> None:
+    root = Path(__file__).resolve().parents[1]
+    payload = json.loads((root / "config" / "sensitive_action_registry_v1.json").read_text(encoding="utf-8-sig"))
+    assert payload["schema"] == "sensitive_action_registry_v1"
+    assert payload["sensitive_tokens"]

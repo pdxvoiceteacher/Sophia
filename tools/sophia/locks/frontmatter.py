@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -37,6 +38,14 @@ PROFILES: dict[str, dict[str, Any]] = {
     },
 }
 
+
+
+
+def env_choice(name: str, *, fallback: str, allowed: set[str]) -> str:
+    value = os.getenv(name, fallback).strip().lower()
+    if value in allowed:
+        return value
+    return fallback
 
 def read(path: Path) -> str:
     return path.read_text(encoding="utf-8-sig")
@@ -140,11 +149,21 @@ def build_arg_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("--docs-dir", default="docs/frontmatter")
     ap.add_argument("--out", default="frontmatter_lock_report.json")
-    ap.add_argument("--profile", choices=tuple(PROFILES.keys()), default="publication")
+    default_profile = env_choice(
+        "SOPHIA_FRONTMATTER_PROFILE",
+        fallback="research",
+        allowed=set(PROFILES.keys()),
+    )
+    default_mode = env_choice(
+        "SOPHIA_FRONTMATTER_MODE",
+        fallback="warn",
+        allowed={"enforce", "warn", "off"},
+    )
+    ap.add_argument("--profile", choices=tuple(PROFILES.keys()), default=default_profile)
     ap.add_argument(
         "--mode",
         choices=("enforce", "warn", "off"),
-        default="enforce",
+        default=default_mode,
         help="enforce: non-zero exit on fail findings, warn: always zero exit, off: skip checks",
     )
     return ap

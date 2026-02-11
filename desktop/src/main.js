@@ -25,10 +25,12 @@ const elements = {
   reviewCentralUrl: document.getElementById("review-central-url"),
   reviewSubmitterId: document.getElementById("review-submitter-id"),
   submitCrossReview: document.getElementById("submit-cross-review"),
+  createLocalBundle: document.getElementById("create-local-bundle"),
   fetchAttestations: document.getElementById("fetch-attestations"),
   reviewStatus: document.getElementById("review-status"),
   reviewSubmissionId: document.getElementById("review-submission-id"),
   reviewAttestationPath: document.getElementById("review-attestation-path"),
+  reviewAttestationSummary: document.getElementById("review-attestation-summary"),
 };
 
 const state = {
@@ -51,6 +53,13 @@ function getConnectorPayload() {
     connector_endpoint: elements.connectorEndpoint.value.trim() || null,
     connector_model: elements.connectorModel.value.trim() || null,
   };
+}
+
+
+
+function formatAttestationSummary(summary) {
+  if (!summary) return "n/a";
+  return `total: ${summary.total ?? 0} • pass: ${summary.pass ?? 0} • fail: ${summary.fail ?? 0} • pending: ${summary.pending ?? 0} • latest: ${summary.latest_timestamp || "n/a"}`;
 }
 
 function endpointHost(endpoint) {
@@ -226,6 +235,29 @@ async function submitCrossReview() {
   }
 }
 
+
+
+async function createLocalBundle() {
+  if (!state.lastEpochResult?.run_folder) {
+    elements.reviewStatus.textContent = "Run an epoch test first.";
+    return;
+  }
+  elements.reviewStatus.textContent = "Creating local bundle...";
+  try {
+    const result = await invoke("create_cross_review_submission", {
+      runFolder: state.lastEpochResult.run_folder,
+      submitterId: elements.reviewSubmitterId.value.trim() || null,
+      centralUrl: null,
+    });
+    state.lastSubmissionId = result.submission_id;
+    elements.reviewStatus.textContent = `local bundle ready (${result.detail})`;
+    elements.reviewSubmissionId.textContent = result.submission_id;
+    elements.reviewAttestationPath.textContent = result.bundle_path;
+  } catch (error) {
+    elements.reviewStatus.textContent = `Bundle failed: ${String(error)}`;
+  }
+}
+
 async function fetchAttestations() {
   const submissionId = state.lastSubmissionId || elements.reviewSubmissionId.textContent;
   if (!submissionId || submissionId === "n/a") {
@@ -240,6 +272,7 @@ async function fetchAttestations() {
     });
     elements.reviewStatus.textContent = result.detail;
     elements.reviewAttestationPath.textContent = result.attestation_path;
+    elements.reviewAttestationSummary.textContent = formatAttestationSummary(result.summary);
   } catch (error) {
     elements.reviewStatus.textContent = `Fetch failed: ${String(error)}`;
   }
@@ -263,6 +296,7 @@ function attachEvents() {
   elements.checkCentralSync.addEventListener("click", checkCentralSyncStatus);
   elements.runEpochTest.addEventListener("click", runEpochTest);
   elements.submitCrossReview.addEventListener("click", submitCrossReview);
+  elements.createLocalBundle.addEventListener("click", createLocalBundle);
   elements.fetchAttestations.addEventListener("click", fetchAttestations);
 }
 

@@ -576,7 +576,21 @@ export function renderAttestations(container, data) {
     container.innerHTML = "<p class='muted'>No attestations artifact found.</p>";
     return;
   }
-  container.innerHTML = items
+  const summary = items.reduce(
+    (acc, item) => {
+      const status = String(item.status || "pending").toLowerCase();
+      if (status === "pass") acc.pass += 1;
+      else if (status === "fail") acc.fail += 1;
+      else acc.pending += 1;
+      const ts = item.timestamp_utc || item.timestamp || item.reviewed_at || "";
+      if (ts && (!acc.latest || ts > acc.latest)) acc.latest = ts;
+      return acc;
+    },
+    { pass: 0, fail: 0, pending: 0, latest: "" }
+  );
+  container.innerHTML = `
+    <div class="summary-line"><strong>Summary:</strong> total ${items.length} • pass ${summary.pass} • fail ${summary.fail} • pending ${summary.pending} • latest ${summary.latest || "n/a"}</div>
+  ` + items
     .map(
       (item) => `
       <div class="summary-line">

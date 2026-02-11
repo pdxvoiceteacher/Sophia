@@ -184,11 +184,31 @@ def shutdown_warrant_missing_fields(shutdown_warrant: dict) -> list[str]:
 
 
 
-def is_sensitive_action(action_name: str) -> bool:
-    lowered = action_name.lower()
-    tokens = ("control", "override", "shutdown", "terminate", "coercive")
-    return any(token in lowered for token in tokens)
 
+
+def load_sensitive_action_registry(repo: Path) -> dict:
+    path = repo / "config" / "sensitive_action_registry_v1.json"
+    if not path.exists():
+        return {
+            "sensitive_tokens": ["control", "override", "shutdown", "terminate", "coercive"],
+            "sensitive_actions": [],
+            "source": "builtin_default",
+        }
+    payload = load_json(path)
+    payload["source"] = str(path)
+    return payload
+
+
+def is_sensitive_action(action_name: str, registry: dict | None = None) -> bool:
+    lowered = action_name.lower()
+    reg = registry or {}
+    exact_actions = {str(item).lower() for item in reg.get("sensitive_actions") or []}
+    if lowered in exact_actions:
+        return True
+    tokens = tuple(str(item).lower() for item in (reg.get("sensitive_tokens") or []))
+    if not tokens:
+        tokens = ("control", "override", "shutdown", "terminate", "coercive")
+    return any(token in lowered for token in tokens)
 
 def load_sentinel_state(run_dir: Path) -> dict | None:
     path = run_dir / "sentinel_state.json"
@@ -876,6 +896,7 @@ def main() -> int:
         for name, path in governance_paths.items()
     }
     sentinel_state = load_sentinel_state(run_dir)
+    sensitive_registry = load_sensitive_action_registry(repo)
     if any(governance.values()):
         schema_dir = repo / "schema" / "governance"
         schema_map = {
@@ -956,7 +977,7 @@ def main() -> int:
             actions = warrant.get("authorized_actions", []) or []
             sentinel_level = str((sentinel_state or {}).get("state", "normal"))
             if sentinel_level in {"protect", "quarantine"}:
-                sensitive_actions = [a for a in actions if is_sensitive_action(str(a.get("action", "")))]
+                sensitive_actions = [a for a in actions if is_sensitive_action(str(a.get("action", "")), sensitive_registry)]
                 if sensitive_actions and not warrant.get("governance_warrant"):
                     findings.append(
                         {
@@ -1061,6 +1082,7 @@ def main() -> int:
         governance_summary["continuity_warrant_present"] = bool(continuity_warrant)
         governance_summary["shutdown_warrant_present"] = bool(shutdown_warrant)
         governance_summary["sentinel_state"] = (sentinel_state or {}).get("state", "normal")
+        governance_summary["sensitive_action_registry_source"] = sensitive_registry.get("source", "builtin_default")
         trend_summary.setdefault("governance_summary", {}).update(governance_summary)
 
     noise_adjustments = apply_noise_suppression(
