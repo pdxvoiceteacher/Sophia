@@ -85,3 +85,13 @@ def test_axiom9_guardrails_json_valid() -> None:
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert payload["forbidden_need_markets"]
     assert payload["allowed_want_markets"]
+
+
+def test_tauri_sentinel_fallback_literal_is_escaped() -> None:
+    main_rs = (DESKTOP / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
+    assert '"{\\"state\\":\\"normal\\",\\"reasons\\":[]}"' in main_rs
+
+
+def test_tauri_main_has_no_duplicate_unwrap_or_default_lines() -> None:
+    main_rs = (DESKTOP / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
+    assert ".unwrap_or_default();\n        .unwrap_or_default();" not in main_rs
