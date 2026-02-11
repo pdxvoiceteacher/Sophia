@@ -1,0 +1,13 @@
+{
+  "id": "experimental_entropy_probe",
+  "description": "Target entropy/consistency stress profile.",
+  "mode": "stochastic",
+  "quick": true,
+  "perturbations": 5,
+  "prompt_text": "Run exploratory epoch to probe entropy and ethical symmetry behavior.",
+  "scenario_knobs": {
+    "guidance_strength": 0.25,
+    "noise_injection": 0.3,
+    "memory_pressure": "high"
+  }
+}
