@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:standards_changelog:v1",
+  "title": "Standards Changelog v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entries"],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["version", "date", "summary", "commit"],
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "summary": { "type": "string" },
+          "commit": { "type": "string" }
+        }
+      }
+    }
+  }
+}
