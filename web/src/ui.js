@@ -511,3 +511,97 @@ export function renderExecutionDiffs(container, data) {
     })
     .join("");
 }
+
+export function renderEpochs(comparisonContainer, findingsContainer, linkElement, data) {
+  if (!data) {
+    comparisonContainer.innerHTML = "<p class='muted'>No run loaded.</p>";
+    findingsContainer.innerHTML = "<p class='muted'>No epoch findings loaded.</p>";
+    if (linkElement) linkElement.removeAttribute("href");
+    return;
+  }
+  const epoch = data.epoch || {};
+  const metrics = data.epochMetrics || {};
+  const findings = (data.epochFindings || {}).findings || [];
+  const branch = (data.epochFindings || {}).analysis?.branch || {};
+  const branchDiff = (data.epochFindings || {}).analysis?.branch_diff || null;
+  const telHash = (data.epochFindings || {}).analysis?.tel_hash || "n/a";
+  const telHashDiff = (data.epochFindings || {}).analysis?.tel_hash_diff || null;
+
+  comparisonContainer.innerHTML = `
+    <div class="summary-line"><strong>Epoch ID:</strong> ${epoch.epoch_id || "n/a"}</div>
+    <div class="summary-line"><strong>Mode:</strong> ${epoch.run_mode || "n/a"}</div>
+    <div class="summary-line"><strong>Prompt hash:</strong> ${epoch.prompt_hash || "n/a"}</div>
+    <div class="summary-line"><strong>TEL hash:</strong> ${telHash}</div>
+    <div class="summary-line"><strong>Branch nodes:</strong> ${branch.branch_nodes ?? 0}</div>
+    <div class="summary-line"><strong>Branching factor:</strong> ${branch.branching_factor ?? 0}</div>
+    <div class="summary-line"><strong>Depth:</strong> ${branch.depth ?? 0}</div>
+    <div class="summary-line"><strong>Leaf count:</strong> ${branch.leaf_count ?? 0}</div>
+    <div class="summary-line"><strong>Steps:</strong> ${(metrics.step_series || []).length}</div>
+    ${
+      branchDiff
+        ? `<div class="summary-line"><strong>Baseline vs experimental:</strong> nodes ${branchDiff.delta_branch_nodes}, factor ${branchDiff.delta_branching_factor}</div>`
+        : ""
+    }
+    ${
+      telHashDiff
+        ? `<div class="summary-line"><strong>TEL hash diff:</strong> equal=${telHashDiff.hash_equal} (baseline=${telHashDiff.baseline_tel_hash || "n/a"})</div>`
+        : ""
+    }
+  `;
+
+  if (!findings.length) {
+    findingsContainer.innerHTML = "<p class='muted'>No epoch findings.</p>";
+  } else {
+    findingsContainer.innerHTML = findings
+      .map(
+        (item) => `<div class="summary-line"><strong>${item.kind}</strong> — ${item.message}<div class="detail muted">Severity: ${item.severity}</div></div>`
+      )
+      .join("");
+  }
+
+  if (linkElement) {
+    linkElement.href = data.epochFindingsPath || "#";
+  }
+}
+
+export function renderAttestations(container, data) {
+  if (!container) return;
+  if (!data) {
+    container.innerHTML = "<p class='muted'>No run loaded.</p>";
+    return;
+  }
+  const payload = data.attestations;
+  const items = Array.isArray(payload) ? payload : payload?.attestations || (payload ? [payload] : []);
+  if (!items.length) {
+    container.innerHTML = "<p class='muted'>No attestations artifact found.</p>";
+    return;
+  }
+  container.innerHTML = items
+    .map(
+      (item) => `
+      <div class="summary-line">
+        <strong>${item.submission_id || item.id || "attestation"}</strong> — ${item.status || "pending"}
+        <div class="detail muted">Reviewer: ${item.reviewer || "n/a"} • Detail: ${item.detail || "n/a"}</div>
+      </div>
+    `
+    )
+    .join("");
+}
+
+
+export function renderSentinel(container, data) {
+  const sentinel = data?.sentinelState;
+  if (!sentinel) {
+    container.innerHTML = "<p class='muted'>No sentinel_state.json artifact found.</p>";
+    return;
+  }
+  const reasons = Array.isArray(sentinel.reasons) ? sentinel.reasons : [];
+  const artifacts = Array.isArray(sentinel.artifact_links) ? sentinel.artifact_links : [];
+  container.innerHTML = `
+    <div class="summary-line"><strong>State:</strong> ${sentinel.state || "normal"}</div>
+    <div class="summary-line"><strong>Policy profile:</strong> ${sentinel.policy_profile || "n/a"}</div>
+    <div class="summary-line"><strong>Reasons:</strong> ${reasons.length}</div>
+    <ul>${reasons.map((item) => `<li>${item}</li>`).join("")}</ul>
+    <div class="summary-line"><strong>Linked artifacts:</strong> ${artifacts.join(", ") || "none"}</div>
+  `;
+}

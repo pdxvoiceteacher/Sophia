@@ -18,6 +18,9 @@ import {
   renderWarrant,
   renderExecution,
   renderExecutionDiffs,
+  renderEpochs,
+  renderAttestations,
+  renderSentinel,
 } from "./ui.js";
 
 const state = {
@@ -57,6 +60,11 @@ const elements = {
   warrant: document.getElementById("warrant"),
   executionReceipt: document.getElementById("execution-receipt"),
   executionDiffs: document.getElementById("execution-diffs"),
+  epochComparison: document.getElementById("epoch-comparison"),
+  epochFindings: document.getElementById("epoch-findings"),
+  epochFindingsLink: document.getElementById("epoch-findings-link"),
+  attestationsPanel: document.getElementById("attestations-panel"),
+  sentinelPanel: document.getElementById("sentinel-panel"),
   jsonViewer: document.getElementById("json-viewer"),
   tabs: document.querySelectorAll(".tab"),
   views: document.querySelectorAll(".view"),
@@ -120,6 +128,12 @@ function buildNormalized(run) {
     "tel.json",
     "tel_events.jsonl",
     "ucc_tel_events.jsonl",
+    "epoch.json",
+    "epoch_metrics.json",
+    "epoch_findings.json",
+    "retrospection.json",
+    "attestations.json",
+    "sentinel_state.json",
   ];
   const telemetryPath = findFilePath(run, "telemetry.json");
   const auditPath = findFilePath(run, "sophia_audit.json");
@@ -134,6 +148,11 @@ function buildNormalized(run) {
   const shutdownWarrantPath = findFilePath(run, "shutdown_warrant.json");
   const receiptPath = findFilePath(run, "execution_receipt.json");
   const policyResolutionPath = findFilePath(run, "policy_resolution.json");
+  const epochPath = findFilePath(run, "epoch.json");
+  const epochMetricsPath = findFilePath(run, "epoch_metrics.json");
+  const epochFindingsPath = findFilePath(run, "epoch_findings.json");
+  const attestationsPath = findFilePath(run, "attestations.json");
+  const sentinelPath = findFilePath(run, "sentinel_state.json");
 
   const telemetry = telemetryPath ? decodeJson(telemetryPath) : null;
   const sophiaAudit = auditPath ? decodeJson(auditPath) : null;
@@ -148,6 +167,11 @@ function buildNormalized(run) {
   const shutdownWarrant = shutdownWarrantPath ? decodeJson(shutdownWarrantPath) : null;
   const executionReceipt = receiptPath ? decodeJson(receiptPath) : null;
   const policyResolution = policyResolutionPath ? decodeJson(policyResolutionPath) : null;
+  const epoch = epochPath ? decodeJson(epochPath) : null;
+  const epochMetrics = epochMetricsPath ? decodeJson(epochMetricsPath) : null;
+  const epochFindings = epochFindingsPath ? decodeJson(epochFindingsPath) : null;
+  const attestations = attestationsPath ? decodeJson(attestationsPath) : null;
+  const sentinelState = sentinelPath ? decodeJson(sentinelPath) : null;
 
   const filesIndex = run.files.map((path) => ({
     path,
@@ -193,6 +217,12 @@ function buildNormalized(run) {
     shutdownWarrant,
     executionReceipt,
     policyResolution,
+    epoch,
+    epochMetrics,
+    epochFindings,
+    epochFindingsPath,
+    attestations,
+    sentinelState,
     filesIndex,
     missingFiles,
     derived,
@@ -238,6 +268,9 @@ function render() {
   renderWarrant(elements.warrant, state.normalized);
   renderExecution(elements.executionReceipt, state.normalized);
   renderExecutionDiffs(elements.executionDiffs, state.normalized);
+  renderEpochs(elements.epochComparison, elements.epochFindings, elements.epochFindingsLink, state.normalized);
+  renderAttestations(elements.attestationsPanel, state.normalized);
+  renderSentinel(elements.sentinelPanel, state.normalized);
   updateDashboardVisibility();
   updateGovernanceVisibility();
   if (state.normalized) {
@@ -283,24 +316,8 @@ function updateGovernanceVisibility() {
   }
 }
 
-async function loadRunFromZip(file) {
-  const result = await loadZipFile(file);
-  state.runs = result.runs;
-  state.files = result.files;
-  setRunOptions();
-  selectRun(state.runs[0]?.name);
-}
 
-async function loadRunFromFolder(files) {
-  const result = await loadFolderFiles(files);
-  state.runs = result.runs;
-  state.files = result.files;
-  setRunOptions();
-  selectRun(state.runs[0]?.name);
-}
-
-async function loadSampleRun() {
-  const basePath = "/out/smoke";
+async function loadGatewayRun(basePath, runName) {
   const sampleFiles = [
     "telemetry.json",
     "sophia_audit.json",
@@ -318,6 +335,12 @@ async function loadSampleRun() {
     "tel.json",
     "tel_events.jsonl",
     "ucc_tel_events.jsonl",
+    "epoch.json",
+    "epoch_metrics.json",
+    "epoch_findings.json",
+    "retrospection.json",
+    "attestations.json",
+    "sentinel_state.json",
   ];
   const files = {};
   const entries = [];
@@ -329,19 +352,18 @@ async function loadSampleRun() {
       const buffer = await response.arrayBuffer();
       files[path] = new Uint8Array(buffer);
       entries.push({ path, size: buffer.byteLength });
-    } catch (error) {
+    } catch {
       continue;
     }
   }
   if (!entries.length) {
-    alert("Sample run not found. Serve the repo root so /out/smoke is accessible.");
-    return;
+    return false;
   }
   state.files = files;
   state.runs = [
     {
-      name: "out/smoke",
-      rootPath: "out/smoke",
+      name: runName,
+      rootPath: runName,
       files: entries.map((entry) => entry.path),
       sizes: entries.reduce((acc, entry) => {
         acc[entry.path] = entry.size;
@@ -351,6 +373,30 @@ async function loadSampleRun() {
   ];
   setRunOptions();
   selectRun(state.runs[0]?.name);
+  return true;
+}
+
+async function loadRunFromZip(file) {
+  const result = await loadZipFile(file);
+  state.runs = result.runs;
+  state.files = result.files;
+  setRunOptions();
+  selectRun(state.runs[0]?.name);
+}
+
+async function loadRunFromFolder(files) {
+  const result = await loadFolderFiles(files);
+  state.runs = result.runs;
+  state.files = result.files;
+  setRunOptions();
+  selectRun(state.runs[0]?.name);
+}
+
+async function loadSampleRun() {
+  const ok = await loadGatewayRun("/out/smoke", "out/smoke");
+  if (!ok) {
+    alert("Sample run not found. Serve the repo root so /out/smoke is accessible.");
+  }
 }
 
 function selectRun(name) {

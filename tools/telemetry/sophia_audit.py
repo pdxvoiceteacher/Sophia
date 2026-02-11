@@ -182,6 +182,20 @@ def shutdown_warrant_missing_fields(shutdown_warrant: dict) -> list[str]:
     return missing
 
 
+
+
+def is_sensitive_action(action_name: str) -> bool:
+    lowered = action_name.lower()
+    tokens = ("control", "override", "shutdown", "terminate", "coercive")
+    return any(token in lowered for token in tokens)
+
+
+def load_sentinel_state(run_dir: Path) -> dict | None:
+    path = run_dir / "sentinel_state.json"
+    if not path.exists():
+        return None
+    return load_json(path)
+
 def load_repair_targets(repo: Path) -> dict:
     targets_path = repo / "sophia-core" / "config" / "repair_targets.json"
     if not targets_path.exists():
@@ -355,6 +369,58 @@ def load_epoch_summary(run_dir: Path) -> dict:
         "branch_analysis": findings_payload.get("analysis", {}).get("branch", {}),
         "disclaimer": findings_payload.get("disclaimer", "Behavioral test signals only; does not imply consciousness."),
     }
+
+
+def load_metric_registry(repo: Path) -> dict:
+    path = repo / "config" / "metric_registry_v1.json"
+    if not path.exists():
+        return {"schema": "metric_registry_v1", "metrics": {}}
+    return load_json(path)
+
+
+def load_detector_registry(repo: Path) -> dict:
+    path = repo / "config" / "detector_registry_v1.json"
+    if not path.exists():
+        return {"schema": "detector_registry_v1", "detectors": {}}
+    return load_json(path)
+
+
+def build_definition_provenance(run_dir: Path, tele: dict, repo: Path) -> dict:
+    metric_registry = load_metric_registry(repo)
+    detector_registry = load_detector_registry(repo)
+    epoch_findings_path = run_dir / "epoch_findings.json"
+    epoch_findings = load_json(epoch_findings_path) if epoch_findings_path.exists() else {}
+    detectors_used = ((epoch_findings.get("analysis") or {}).get("detectors_used") or {}) if isinstance(epoch_findings, dict) else {}
+
+    metrics = tele.get("metrics") or {}
+    metric_provenance = {
+        "TEL": {"provenance_source": "tel.json + tel_events.jsonl", "artifact_hashes": True},
+        "E": {"proxy": "telemetry.metrics.E", "estimator": "declared_proxy"},
+        "T": {"proxy": "telemetry.metrics.T"},
+        "Psi": {"formula": "E*T"},
+        "DeltaS": {"proxy": "telemetry.metrics.DeltaS", "mode": "surrogate"},
+        "Lambda": {"detector": "registry_declared", "thresholds": detectors_used.get("branch_divergence", {}).get("parameters", {})},
+        "Es": {"test_suite": "epoch_step_invariance_proxy"},
+    }
+    if "DeltaS_mode" in metrics:
+        metric_provenance["DeltaS"]["mode"] = metrics.get("DeltaS_mode")
+
+    missing = []
+    for metric, rule in metric_registry.get("metrics", {}).items():
+        mp = metric_provenance.get(metric, {})
+        for field in rule.get("required_fields", []):
+            if field not in mp:
+                missing.append(f"{metric}:{field}")
+
+    return {
+        "metric_registry": metric_registry.get("schema", "metric_registry_v1"),
+        "detector_registry": detector_registry.get("schema", "detector_registry_v1"),
+        "metric_provenance": metric_provenance,
+        "detectors_used": detectors_used,
+        "missing_required_fields": missing,
+        "deltaS_mode": metric_provenance.get("DeltaS", {}).get("mode", "surrogate"),
+    }
+
 def compute_risk_score(
     findings: list[dict],
     contradiction_clusters: list[dict],
@@ -779,11 +845,19 @@ def main() -> int:
                 "details": None
             })
 
+    epoch_summary = load_epoch_summary(run_dir)
+    if epoch_summary:
+        trend_summary.setdefault("epoch_summary", {}).update(epoch_summary)
+
+    definition_provenance = build_definition_provenance(run_dir, tele, repo)
+    trend_summary.setdefault("definition_provenance", {}).update(definition_provenance)
+
     risk_score, risk_components = compute_risk_score(
         findings,
         contradiction_clusters,
         ethical_symmetry,
         memory_drift_flag,
+        epoch_summary=epoch_summary or None,
     )
     metrics_snapshot.setdefault("risk_score", risk_score)
     metrics_snapshot.setdefault("risk_components", risk_components)
@@ -801,6 +875,7 @@ def main() -> int:
         name: load_json(path) if path.exists() else None
         for name, path in governance_paths.items()
     }
+    sentinel_state = load_sentinel_state(run_dir)
     if any(governance.values()):
         schema_dir = repo / "schema" / "governance"
         schema_map = {
@@ -879,6 +954,30 @@ def main() -> int:
             )
         if decision_doc and warrant:
             actions = warrant.get("authorized_actions", []) or []
+            sentinel_level = str((sentinel_state or {}).get("state", "normal"))
+            if sentinel_level in {"protect", "quarantine"}:
+                sensitive_actions = [a for a in actions if is_sensitive_action(str(a.get("action", "")))]
+                if sensitive_actions and not warrant.get("governance_warrant"):
+                    findings.append(
+                        {
+                            "id": "finding_sentinel_sensitive_action_requires_warrant",
+                            "severity": "fail",
+                            "type": "sentinel_sensitive_action_requires_warrant",
+                            "message": "Sensitive actions require governance_warrant when sentinel state is protect/quarantine.",
+                            "data": {"state": sentinel_level, "actions": [a.get("action") for a in sensitive_actions]},
+                        }
+                    )
+                attestations_path = run_dir / "attestations.json"
+                if sensitive_actions and not attestations_path.exists():
+                    findings.append(
+                        {
+                            "id": "finding_sentinel_sensitive_action_requires_attestations",
+                            "severity": "fail",
+                            "type": "sentinel_sensitive_action_requires_attestations",
+                            "message": "Sensitive actions require attestations.json artifact when sentinel state is protect/quarantine.",
+                            "data": {"state": sentinel_level},
+                        }
+                    )
             if actions and decision_doc.get("decision") != "pass":
                 findings.append(
                     {
@@ -961,6 +1060,7 @@ def main() -> int:
         governance_summary["continuity_claim_present"] = bool(continuity_claim)
         governance_summary["continuity_warrant_present"] = bool(continuity_warrant)
         governance_summary["shutdown_warrant_present"] = bool(shutdown_warrant)
+        governance_summary["sentinel_state"] = (sentinel_state or {}).get("state", "normal")
         trend_summary.setdefault("governance_summary", {}).update(governance_summary)
 
     noise_adjustments = apply_noise_suppression(

@@ -62,6 +62,21 @@ pub struct Axiom9Guardrails {
     pub allowed_want_markets: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EpochTestEnvelope {
+    pub baseline_epoch_id: String,
+    pub exploratory_epoch_id: String,
+    pub baseline_tel_hash: Option<String>,
+    pub experimental_tel_hash: Option<String>,
+    pub tel_hash_equal: bool,
+    pub branch_divergence: bool,
+    pub entropy_spikes: usize,
+    pub delta_psi_max: f64,
+    pub es_drift: f64,
+    pub run_folder: String,
+    pub timestamp_utc: String,
+}
+
 pub fn config_path(base: Option<PathBuf>) -> PathBuf {
     let base_dir = base.or_else(home_dir).unwrap_or_else(|| PathBuf::from("."));
     base_dir.join(".sophia").join("config.json")
@@ -79,6 +94,11 @@ pub fn central_sync_path(base: Option<PathBuf>) -> PathBuf {
 
 pub fn guardrails_path(repo_root: &PathBuf) -> PathBuf {
     repo_root.join("config").join("axiom9_guardrails.json")
+}
+
+pub fn epoch_tel_path(base: Option<PathBuf>) -> PathBuf {
+    let base_dir = base.or_else(home_dir).unwrap_or_else(|| PathBuf::from("."));
+    base_dir.join(".sophia").join("epoch_tel.jsonl")
 }
 
 pub fn load_config(base: Option<PathBuf>) -> TerminalConfig {
@@ -102,6 +122,22 @@ pub fn save_config(base: Option<PathBuf>, config: &TerminalConfig) -> Result<(),
 
 pub fn append_connector_event(base: Option<PathBuf>, envelope: &ConnectorEnvelope) -> Result<(), String> {
     let path = connector_tel_path(base);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|err| err.to_string())?;
+    }
+    let mut line = serde_json::to_string(envelope).map_err(|err| err.to_string())?;
+    line.push('\n');
+    use std::io::Write;
+    let mut file = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .map_err(|err| err.to_string())?;
+    file.write_all(line.as_bytes()).map_err(|err| err.to_string())
+}
+
+pub fn append_epoch_event(base: Option<PathBuf>, envelope: &EpochTestEnvelope) -> Result<(), String> {
+    let path = epoch_tel_path(base);
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|err| err.to_string())?;
     }

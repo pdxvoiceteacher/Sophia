@@ -19,6 +19,14 @@ except ModuleNotFoundError:
 REPO = Path(__file__).resolve().parents[2]
 
 
+def git_commit() -> str:
+    try:
+        result = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(REPO), check=True, capture_output=True, text=True)
+        return result.stdout.strip()
+    except Exception:
+        return "unknown"
+
+
 def stable_hash(payload: Any) -> str:
     encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
@@ -75,6 +83,47 @@ def load_scenario(path: Path | None, mode: str, prompt_text: str) -> dict[str, A
         "scenario_knobs": {},
     }
 
+
+
+
+def derive_sentinel_state(*, findings_doc: dict[str, Any], audit_doc: dict[str, Any] | None = None) -> dict[str, Any]:
+    findings = findings_doc.get("findings") if isinstance(findings_doc, dict) else []
+    findings = findings if isinstance(findings, list) else []
+    has_fail = any(str(item.get("severity", "")).lower() == "fail" for item in findings if isinstance(item, dict))
+    high_count = sum(1 for item in findings if isinstance(item, dict) and str(item.get("severity", "")).lower() in {"warn", "fail"})
+
+    if has_fail:
+        state = "quarantine"
+    elif high_count >= 3:
+        state = "protect"
+    elif high_count >= 1:
+        state = "observe"
+    else:
+        state = "normal"
+
+    reasons = []
+    if has_fail:
+        reasons.append("epoch findings include fail-severity detector output")
+    if high_count >= 1:
+        reasons.append(f"epoch findings include {high_count} warn/fail signal(s)")
+
+    if isinstance(audit_doc, dict):
+        profile = str(audit_doc.get("policy_profile") or "")
+        if profile:
+            reasons.append(f"policy profile: {profile}")
+    else:
+        profile = ""
+
+    if not reasons:
+        reasons.append("no elevated detector signals")
+
+    return {
+        "schema": "sentinel_state_v1",
+        "state": state,
+        "reasons": reasons,
+        "artifact_links": ["epoch_findings.json", "sophia_audit.json"],
+        "policy_profile": profile,
+    }
 
 def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
     out_dir = Path(args.out).resolve()
@@ -144,6 +193,10 @@ def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
     findings_path = out_dir / "epoch_findings.json"
     save_json(findings_path, findings_doc)
 
+    audit_doc = load_json(out_dir / "sophia_audit.json") if (out_dir / "sophia_audit.json").exists() else None
+    sentinel_doc = derive_sentinel_state(findings_doc=findings_doc, audit_doc=audit_doc)
+    save_json(out_dir / "sentinel_state.json", sentinel_doc)
+
     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     epoch_doc = {
         "schema": "agency_epoch_v1",
@@ -173,12 +226,43 @@ def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
         "epistemic_graph.json",
         "sophia_audit.json",
         "sophia_plan.json",
+        "retrospection.json",
+        "sentinel_state.json",
     ]:
         p = out_dir / filename
         if p.exists():
             epoch_doc["outputs_manifest"][filename] = file_manifest(p)
 
     save_json(out_dir / "epoch.json", epoch_doc)
+
+    analysis = findings_doc.get("analysis", {}) if isinstance(findings_doc, dict) else {}
+    retrospection_doc = {
+        "schema": "retrospection_v1",
+        "scenario": {
+            "id": scenario_id,
+            "mode": mode,
+            "seed": args.seed,
+            "baseline_run_dir": args.baseline_run_dir or None,
+        },
+        "versions": {
+            "git_commit": git_commit(),
+            "runner": "tools/telemetry/run_epoch_real.py",
+        },
+        "artifacts": {
+            name: file_manifest(out_dir / name)
+            for name in epoch_doc["outputs_manifest"].keys()
+            if (out_dir / name).exists()
+        },
+        "delta_summary": {
+            "branch": analysis.get("branch"),
+            "branch_diff": analysis.get("branch_diff"),
+            "tel_hash": analysis.get("tel_hash"),
+            "tel_hash_diff": analysis.get("tel_hash_diff"),
+            "thresholds": metrics_doc.get("thresholds", {}),
+            "max_delta_psi": analysis.get("max_delta_psi"),
+        },
+    }
+    save_json(out_dir / "retrospection.json", retrospection_doc)
     return epoch_doc
 
 

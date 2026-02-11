@@ -61,6 +61,62 @@
       </div>
     </section>
 
+    <section class="connection-panel epoch-panel">
+      <div class="field">
+        <label for="epoch-baseline-scenario">Baseline scenario</label>
+        <select id="epoch-baseline-scenario"></select>
+      </div>
+      <div class="field">
+        <label for="epoch-experimental-scenario">Experimental scenario</label>
+        <select id="epoch-experimental-scenario"></select>
+      </div>
+      <div class="field actions">
+        <label>Epoch Test</label>
+        <button id="run-epoch-test" type="button">Run Epoch Test</button>
+      </div>
+      <div class="field">
+        <label for="epoch-status">Status</label>
+        <span id="epoch-status" class="muted">Idle</span>
+      </div>
+      <div class="field">
+        <label for="epoch-summary">Summary</label>
+        <span id="epoch-summary" class="muted">TEL hash eq: n/a • branch divergence: n/a • entropy spikes: n/a • ΔPsi max: n/a • Es drift: n/a</span>
+      </div>
+      <div class="field">
+        <label for="epoch-run-folder">Run folder</label>
+        <span id="epoch-run-folder" class="muted">n/a</span>
+      </div>
+    </section>
+
+    <section class="connection-panel review-panel">
+      <div class="field">
+        <label for="review-central-url">Central review URL (optional)</label>
+        <input id="review-central-url" type="url" placeholder="https://central.example/api" />
+      </div>
+      <div class="field">
+        <label for="review-submitter-id">Submitter pseudonymous ID</label>
+        <input id="review-submitter-id" type="text" placeholder="local-operator" />
+      </div>
+      <div class="field actions">
+        <button id="submit-cross-review" type="button">Submit for cross-review</button>
+      </div>
+      <div class="field actions">
+        <button id="fetch-attestations" type="button">Fetch attestations</button>
+      </div>
+      <div class="field">
+        <label for="review-status">Review status</label>
+        <span id="review-status" class="muted">Idle</span>
+      </div>
+      <div class="field">
+        <label for="review-submission-id">Submission ID</label>
+        <span id="review-submission-id" class="muted">n/a</span>
+      </div>
+      <div class="field">
+        <label for="review-attestation-path">Attestation path</label>
+        <span id="review-attestation-path" class="muted">n/a</span>
+      </div>
+    </section>
+
     <main class="viewer-shell">
       <iframe id="viewer-frame" title="Sophia Run Viewer"></iframe>
     </main>

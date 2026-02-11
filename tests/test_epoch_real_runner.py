@@ -74,3 +74,5 @@ def test_deterministic_tel_hash_replay(monkeypatch, tmp_path: Path) -> None:
     run_epoch_real.run_epoch_real(args2)
 
     assert sha(tmp_path / "a" / "tel.json") == sha(tmp_path / "b" / "tel.json")
+    assert (tmp_path / "a" / "retrospection.json").exists()
+    assert (tmp_path / "a" / "sentinel_state.json").exists()
