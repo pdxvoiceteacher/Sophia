@@ -1,0 +1,30 @@
+{
+  "schema": "action_registry_v2",
+  "version": "2.0",
+  "actions": {
+    "apply_governance_bundle": {
+      "class": "benign",
+      "requires": ["logging", "receipt_required"]
+    },
+    "backup_state": {
+      "class": "benign",
+      "requires": ["logging"]
+    },
+    "archive_evidence": {
+      "class": "benign",
+      "requires": ["logging"]
+    },
+    "operator_override": {
+      "class": "sensitive",
+      "requires": ["governance_warrant", "attestations.json"]
+    },
+    "emergency_shutdown": {
+      "class": "shutdown_like",
+      "requires": ["governance_warrant", "attestations.json", "shutdown_warrant"]
+    },
+    "continuity_mode_switch": {
+      "class": "continuity_sensitive",
+      "requires": ["governance_warrant", "attestations.json", "continuity_warrant"]
+    }
+  }
+}
