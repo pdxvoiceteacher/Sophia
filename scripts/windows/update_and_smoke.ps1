@@ -1,10 +1,10 @@
-Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
-
 param(
   [ValidateSet("ci", "research")]
   [string]$Mode = "ci"
 )
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path "."
 Set-Location $repoRoot
