@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "network_policy_v1.schema.json",
+  "title": "Network Policy v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "profile",
+    "share_scopes",
+    "encryption",
+    "peer_set"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "network_policy_v1" },
+    "profile": {
+      "type": "string",
+      "enum": ["witness_only", "reproducible_audit", "full_relay"]
+    },
+    "share_scopes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "encryption": {
+      "type": "object",
+      "required": ["alg", "key_wrap"],
+      "properties": {
+        "alg": { "type": "string" },
+        "key_wrap": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "peer_set": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}
