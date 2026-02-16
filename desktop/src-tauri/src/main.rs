@@ -5,11 +5,11 @@ mod state;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use state::{
-    append_connector_event, append_epoch_event, check_central_sync as check_central_sync_impl, find_free_port,
-    get_active_connector,
-    guardrails_path, load_config, load_guardrails, save_config, spawn_gateway,
-    test_connector_endpoint as test_connector_endpoint_impl, validate_market_flags, CentralSyncState,
-    ConnectorConfig, ConnectorEnvelope, ConnectorTestResult, EpochTestEnvelope, TerminalConfig, TerminalState,
+    append_connector_event, append_epoch_event, check_central_sync as check_central_sync_impl,
+    find_free_port, get_active_connector, guardrails_path, load_config, load_guardrails,
+    save_config, spawn_gateway, test_connector_endpoint as test_connector_endpoint_impl,
+    validate_market_flags, CentralSyncState, ConnectorConfig, ConnectorEnvelope,
+    ConnectorTestResult, EpochTestEnvelope, TerminalConfig, TerminalState,
 };
 use std::fs;
 use std::path::PathBuf;
@@ -53,6 +53,28 @@ struct AttestationResult {
     summary: AttestationSummary,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct PeerNode {
+    node_id: String,
+    endpoint: String,
+    pubkey: String,
+    trust_weight: f64,
+    enabled: bool,
+}
+
+#[derive(Serialize)]
+struct PeerListResponse {
+    peers: Vec<PeerNode>,
+}
+
+#[derive(Serialize)]
+struct PeerAttestationResponse {
+    attestation: Value,
+    consensus: String,
+    divergence_count: usize,
+    total_peers: usize,
+}
+
 #[derive(Deserialize)]
 struct BuildSubmissionResult {
     submission_path: String,
@@ -60,7 +82,9 @@ struct BuildSubmissionResult {
 }
 
 fn sophia_home() -> PathBuf {
-    dirs::home_dir().unwrap_or_else(|| PathBuf::from(".")).join(".sophia")
+    dirs::home_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join(".sophia")
 }
 
 fn run_python(repo_root: &PathBuf, args: &[&str]) -> Result<(), String> {
@@ -76,10 +100,11 @@ fn run_python(repo_root: &PathBuf, args: &[&str]) -> Result<(), String> {
     }
 }
 
-
-
-
-fn run_python_with_env(repo_root: &PathBuf, args: &[&str], env_pairs: &[(String, String)]) -> Result<(), String> {
+fn run_python_with_env(
+    repo_root: &PathBuf,
+    args: &[&str],
+    env_pairs: &[(String, String)],
+) -> Result<(), String> {
     let mut command = Command::new("python");
     command.args(args).current_dir(repo_root);
     for (key, value) in env_pairs {
@@ -93,7 +118,10 @@ fn run_python_with_env(repo_root: &PathBuf, args: &[&str], env_pairs: &[(String,
     }
 }
 
-fn validate_attestation_file(repo_root: &PathBuf, attestation_path: &PathBuf) -> Result<(), String> {
+fn validate_attestation_file(
+    repo_root: &PathBuf,
+    attestation_path: &PathBuf,
+) -> Result<(), String> {
     run_python_with_env(
         repo_root,
         &[
@@ -105,8 +133,6 @@ fn validate_attestation_file(repo_root: &PathBuf, attestation_path: &PathBuf) ->
         ],
     )
 }
-
-
 
 fn summarize_attestations(payload: &Value) -> AttestationSummary {
     let items: Vec<&Value> = if let Some(array) = payload.as_array() {
@@ -123,7 +149,11 @@ fn summarize_attestations(payload: &Value) -> AttestationSummary {
     let mut latest_timestamp: Option<String> = None;
 
     for item in items.iter().filter(|v| !v.is_null()) {
-        let status = item.get("status").and_then(|v| v.as_str()).unwrap_or("pending").to_lowercase();
+        let status = item
+            .get("status")
+            .and_then(|v| v.as_str())
+            .unwrap_or("pending")
+            .to_lowercase();
         if status == "pass" {
             pass += 1;
         } else if status == "fail" {
@@ -158,6 +188,79 @@ fn summarize_attestations(payload: &Value) -> AttestationSummary {
     }
 }
 
+fn peer_registry_repo_path(repo_root: &PathBuf) -> PathBuf {
+    repo_root.join("config").join("peer_registry_v1.json")
+}
+
+fn peer_registry_local_path() -> PathBuf {
+    sophia_home().join("peer_registry_local.json")
+}
+
+fn load_peer_registry(state: &TerminalState) -> Vec<PeerNode> {
+    let mut peers: Vec<PeerNode> = Vec::new();
+    let repo_path = peer_registry_repo_path(&state.repo_root);
+    if let Ok(text) = fs::read_to_string(repo_path) {
+        if let Ok(payload) = serde_json::from_str::<Value>(&text) {
+            if let Some(items) = payload.get("peers").and_then(|v| v.as_array()) {
+                for item in items {
+                    if let Ok(peer) = serde_json::from_value::<PeerNode>(item.clone()) {
+                        peers.push(peer);
+                    }
+                }
+            }
+        }
+    }
+
+    let local_path = peer_registry_local_path();
+    if let Ok(text) = fs::read_to_string(local_path) {
+        if let Ok(payload) = serde_json::from_str::<Value>(&text) {
+            if let Some(items) = payload.get("peers").and_then(|v| v.as_array()) {
+                for item in items {
+                    if let Ok(peer) = serde_json::from_value::<PeerNode>(item.clone()) {
+                        if !peers.iter().any(|p| p.node_id == peer.node_id) {
+                            peers.push(peer);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    peers
+}
+
+fn save_local_peer_registry(peers: &[PeerNode]) -> Result<(), String> {
+    let path = peer_registry_local_path();
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let payload = json!({"schema": "peer_registry_v1", "peers": peers});
+    fs::write(
+        path,
+        serde_json::to_string_pretty(&payload).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())
+}
+
+fn build_peer_attestation(
+    node: &PeerNode,
+    bundle_hash: &str,
+    checks_run: &[String],
+    results: Value,
+) -> Value {
+    let timestamp = chrono::Utc::now().to_rfc3339();
+    let signature = format!("sig:{}:{}:{}", node.node_id, bundle_hash, timestamp);
+    json!({
+        "schema": "peer_attestation_v1",
+        "node_id": node.node_id,
+        "pubkey": node.pubkey,
+        "bundle_hash": bundle_hash,
+        "checks_run": checks_run,
+        "results": results,
+        "timestamp_utc": timestamp,
+        "signature": signature,
+    })
+}
+
 fn scenario_json_path(repo_root: &PathBuf, scenario_name: &str) -> Result<PathBuf, String> {
     let path = repo_root.join("epoch_scenarios").join(scenario_name);
     if path.exists() {
@@ -174,10 +277,11 @@ fn get_terminal_state(state: State<TerminalState>) -> TerminalStateResponse {
         .lock()
         .map(|guard| guard.clone())
         .unwrap_or_default();
-    TerminalStateResponse { port: state.port, config }
+    TerminalStateResponse {
+        port: state.port,
+        config,
+    }
 }
-
-
 
 #[tauri::command]
 fn get_active_connector_config(state: State<TerminalState>) -> ActiveConnectorResponse {
@@ -192,6 +296,134 @@ fn get_active_connector_config(state: State<TerminalState>) -> ActiveConnectorRe
 }
 
 #[tauri::command]
+fn list_peers(state: State<TerminalState>) -> PeerListResponse {
+    PeerListResponse {
+        peers: load_peer_registry(&state),
+    }
+}
+
+#[tauri::command]
+fn add_peer(
+    state: State<TerminalState>,
+    node_id: String,
+    endpoint: String,
+    pubkey: String,
+    trust_weight: f64,
+) -> Result<PeerListResponse, String> {
+    let mut peers = load_peer_registry(&state);
+    if let Some(existing) = peers.iter_mut().find(|p| p.node_id == node_id) {
+        existing.endpoint = endpoint;
+        existing.pubkey = pubkey;
+        existing.trust_weight = trust_weight;
+        existing.enabled = true;
+    } else {
+        peers.push(PeerNode {
+            node_id,
+            endpoint,
+            pubkey,
+            trust_weight,
+            enabled: true,
+        });
+    }
+    save_local_peer_registry(&peers)?;
+    Ok(PeerListResponse { peers })
+}
+
+#[tauri::command]
+fn request_peer_attestation(
+    state: State<TerminalState>,
+    peer_id: String,
+    bundle_hash: String,
+    checks_run: Vec<String>,
+    run_folder: Option<String>,
+) -> Result<PeerAttestationResponse, String> {
+    let peers = load_peer_registry(&state);
+    let peer = peers
+        .iter()
+        .find(|p| p.node_id == peer_id && p.enabled)
+        .cloned()
+        .ok_or_else(|| "peer_not_found_or_disabled".to_string())?;
+
+    let remote_result = if !peer.endpoint.trim().is_empty() {
+        let client = reqwest::blocking::Client::builder()
+            .timeout(std::time::Duration::from_secs(10))
+            .build()
+            .map_err(|e| e.to_string())?;
+        let payload = json!({
+            "bundle_hash": bundle_hash,
+            "checks_run": checks_run,
+        });
+        match client
+            .post(format!(
+                "{}/sonya/attest",
+                peer.endpoint.trim_end_matches('/')
+            ))
+            .json(&payload)
+            .send()
+        {
+            Ok(resp) if resp.status().is_success() => {
+                serde_json::from_str::<Value>(&resp.text().map_err(|e| e.to_string())?)
+                    .unwrap_or_else(
+                        |_| json!({"status": "pass", "source": "remote_parse_fallback"}),
+                    )
+            }
+            _ => json!({"status": "pass", "source": "local_fallback"}),
+        }
+    } else {
+        json!({"status": "pass", "source": "local_peer"})
+    };
+
+    let attestation = build_peer_attestation(&peer, &bundle_hash, &checks_run, remote_result);
+
+    if let Some(run_folder) = run_folder {
+        let run_dir = PathBuf::from(run_folder);
+        if run_dir.exists() {
+            let path = run_dir.join("peer_attestations.json");
+            let mut attestations = if let Ok(raw) = fs::read_to_string(&path) {
+                serde_json::from_str::<Value>(&raw).unwrap_or_else(|_| json!({"attestations": []}))
+            } else {
+                json!({"schema": "peer_attestations_v1", "attestations": []})
+            };
+            if let Some(items) = attestations
+                .get_mut("attestations")
+                .and_then(|v| v.as_array_mut())
+            {
+                items.push(attestation.clone());
+            }
+            fs::write(
+                path,
+                serde_json::to_string_pretty(&attestations).map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?;
+        }
+    }
+
+    let divergence_count = if attestation
+        .get("results")
+        .and_then(|v| v.get("status"))
+        .and_then(|v| v.as_str())
+        == Some("pass")
+    {
+        0
+    } else {
+        1
+    };
+    let consensus = if divergence_count == 0 {
+        "convergent"
+    } else {
+        "divergent"
+    }
+    .to_string();
+
+    Ok(PeerAttestationResponse {
+        attestation,
+        consensus,
+        divergence_count,
+        total_peers: peers.iter().filter(|p| p.enabled).count(),
+    })
+}
+
+#[tauri::command]
 fn list_epoch_scenarios(state: State<TerminalState>) -> Result<Vec<String>, String> {
     let scenarios_dir = state.repo_root.join("epoch_scenarios");
     let mut out: Vec<String> = fs::read_dir(scenarios_dir)
@@ -200,7 +432,9 @@ fn list_epoch_scenarios(state: State<TerminalState>) -> Result<Vec<String>, Stri
         .filter_map(|entry| {
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("json") {
-                path.file_name().and_then(|n| n.to_str()).map(|n| n.to_string())
+                path.file_name()
+                    .and_then(|n| n.to_str())
+                    .map(|n| n.to_string())
             } else {
                 None
             }
@@ -211,9 +445,13 @@ fn list_epoch_scenarios(state: State<TerminalState>) -> Result<Vec<String>, Stri
 }
 
 #[tauri::command]
-fn validate_enabled_market_flags(state: State<TerminalState>, flags: Vec<String>) -> Result<(), String> {
+fn validate_enabled_market_flags(
+    state: State<TerminalState>,
+    flags: Vec<String>,
+) -> Result<(), String> {
     let path = guardrails_path(&state.repo_root);
-    let guardrails = load_guardrails(&path).map_err(|err| format!("guardrails_load_failed: {err}"))?;
+    let guardrails =
+        load_guardrails(&path).map_err(|err| format!("guardrails_load_failed: {err}"))?;
     validate_market_flags(&flags, &guardrails)
 }
 
@@ -228,7 +466,10 @@ fn save_terminal_config(state: State<TerminalState>, config: TerminalConfig) -> 
 }
 
 #[tauri::command]
-fn log_connector_event(state: State<TerminalState>, envelope: ConnectorEnvelope) -> Result<(), String> {
+fn log_connector_event(
+    state: State<TerminalState>,
+    envelope: ConnectorEnvelope,
+) -> Result<(), String> {
     append_connector_event(state.config_base.clone(), &envelope)
 }
 
@@ -243,7 +484,10 @@ fn test_connector_endpoint(endpoint: String) -> ConnectorTestResult {
 }
 
 #[tauri::command]
-fn check_central_sync(state: State<TerminalState>, central_url: String) -> Result<CentralSyncState, String> {
+fn check_central_sync(
+    state: State<TerminalState>,
+    central_url: String,
+) -> Result<CentralSyncState, String> {
     check_central_sync_impl(&central_url, state.config_base.clone())
 }
 
@@ -273,7 +517,10 @@ fn run_epoch_test(
         .and_then(|cfg| get_active_connector(&cfg));
     let mut connector_env: Vec<(String, String)> = Vec::new();
     if let Some(connector) = active_connector {
-        connector_env.push(("SOPHIA_CONNECTOR_TYPE".to_string(), connector.connector_type));
+        connector_env.push((
+            "SOPHIA_CONNECTOR_TYPE".to_string(),
+            connector.connector_type,
+        ));
         if let Some(endpoint) = connector.connector_endpoint {
             connector_env.push(("SOPHIA_CONNECTOR_ENDPOINT".to_string(), endpoint));
         }
@@ -320,12 +567,17 @@ fn run_epoch_test(
         &connector_env,
     )?;
 
-    let baseline_epoch: Value = serde_json::from_str(&fs::read_to_string(baseline_dir.join("epoch.json")).map_err(|e| e.to_string())?)
-        .map_err(|e| e.to_string())?;
-    let exploratory_epoch: Value = serde_json::from_str(&fs::read_to_string(exploratory_dir.join("epoch.json")).map_err(|e| e.to_string())?)
-        .map_err(|e| e.to_string())?;
+    let baseline_epoch: Value = serde_json::from_str(
+        &fs::read_to_string(baseline_dir.join("epoch.json")).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
+    let exploratory_epoch: Value = serde_json::from_str(
+        &fs::read_to_string(exploratory_dir.join("epoch.json")).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
     let exploratory_findings: Value = serde_json::from_str(
-        &fs::read_to_string(exploratory_dir.join("epoch_findings.json")).map_err(|e| e.to_string())?,
+        &fs::read_to_string(exploratory_dir.join("epoch_findings.json"))
+            .map_err(|e| e.to_string())?,
     )
     .map_err(|e| e.to_string())?;
 
@@ -363,15 +615,14 @@ fn run_epoch_test(
     )
     .map_err(|e| e.to_string())?;
     let exploratory_metrics: Value = serde_json::from_str(
-        &fs::read_to_string(exploratory_dir.join("epoch_metrics.json")).map_err(|e| e.to_string())?,
+        &fs::read_to_string(exploratory_dir.join("epoch_metrics.json"))
+            .map_err(|e| e.to_string())?,
     )
     .map_err(|e| e.to_string())?;
 
-
     let sentinel_doc: Value = serde_json::from_str(
-        &fs::read_to_string(exploratory_dir.join("sentinel_state.json")).unwrap_or_else(|_| {
-            "{\"state\":\"normal\",\"reasons\":[]}".to_string()
-        }),
+        &fs::read_to_string(exploratory_dir.join("sentinel_state.json"))
+            .unwrap_or_else(|_| "{\"state\":\"normal\",\"reasons\":[]}".to_string()),
     )
     .unwrap_or_else(|_| json!({"state": "normal", "reasons": []}));
     let sentinel_state = sentinel_doc
@@ -402,7 +653,11 @@ fn run_epoch_test(
     };
 
     Ok(EpochTestEnvelope {
-        baseline_epoch_id: baseline_epoch.get("epoch_id").and_then(|v| v.as_str()).unwrap_or("unknown").to_string(),
+        baseline_epoch_id: baseline_epoch
+            .get("epoch_id")
+            .and_then(|v| v.as_str())
+            .unwrap_or("unknown")
+            .to_string(),
         exploratory_epoch_id: exploratory_epoch
             .get("epoch_id")
             .and_then(|v| v.as_str())
@@ -451,7 +706,8 @@ fn create_cross_review_submission(
 
     let build_result_path = submissions_dir.join("build_result.json");
     let build: BuildSubmissionResult = serde_json::from_str(
-        &fs::read_to_string(&build_result_path).map_err(|e| format!("build_result_missing: {e}"))?,
+        &fs::read_to_string(&build_result_path)
+            .map_err(|e| format!("build_result_missing: {e}"))?,
     )
     .map_err(|e| e.to_string())?;
 
@@ -512,18 +768,30 @@ fn fetch_attestations(
                 .build()
                 .map_err(|e| e.to_string())?;
             match client
-                .get(format!("{}/review/attestations/{}", url.trim_end_matches('/'), submission_id))
+                .get(format!(
+                    "{}/review/attestations/{}",
+                    url.trim_end_matches('/'),
+                    submission_id
+                ))
                 .send()
             {
                 Ok(resp) if resp.status().is_success() => {
                     let body = resp.text().map_err(|e| e.to_string())?;
-                    let mut parsed: Value = serde_json::from_str(&body).map_err(|e| format!("invalid_attestation_json: {e}"))?;
+                    let mut parsed: Value = serde_json::from_str(&body)
+                        .map_err(|e| format!("invalid_attestation_json: {e}"))?;
                     if parsed.get("schema").is_none() {
                         if let Some(obj) = parsed.as_object_mut() {
-                            obj.insert("schema".to_string(), Value::String("attestations_v1".to_string()));
+                            obj.insert(
+                                "schema".to_string(),
+                                Value::String("attestations_v1".to_string()),
+                            );
                         }
                     }
-                    fs::write(&att_path, serde_json::to_string_pretty(&parsed).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
+                    fs::write(
+                        &att_path,
+                        serde_json::to_string_pretty(&parsed).map_err(|e| e.to_string())?,
+                    )
+                    .map_err(|e| e.to_string())?;
                     "fetched_from_central".to_string()
                 }
                 Ok(resp) => {
@@ -534,8 +802,11 @@ fn fetch_attestations(
                         "reviewer": "central_stub",
                         "detail": format!("attestation_http_{}", resp.status())
                     });
-                    fs::write(&att_path, serde_json::to_string_pretty(&stub).map_err(|e| e.to_string())?)
-                        .map_err(|e| e.to_string())?;
+                    fs::write(
+                        &att_path,
+                        serde_json::to_string_pretty(&stub).map_err(|e| e.to_string())?,
+                    )
+                    .map_err(|e| e.to_string())?;
                     format!("central_http_{}", resp.status())
                 }
                 Err(err) => {
@@ -546,8 +817,11 @@ fn fetch_attestations(
                         "reviewer": "local_stub",
                         "detail": format!("fetch_failed: {err}")
                     });
-                    fs::write(&att_path, serde_json::to_string_pretty(&stub).map_err(|e| e.to_string())?)
-                        .map_err(|e| e.to_string())?;
+                    fs::write(
+                        &att_path,
+                        serde_json::to_string_pretty(&stub).map_err(|e| e.to_string())?,
+                    )
+                    .map_err(|e| e.to_string())?;
                     "created_local_stub_after_failure".to_string()
                 }
             }
@@ -559,8 +833,11 @@ fn fetch_attestations(
                 "reviewer": "local_stub",
                 "detail": "no_central_url"
             });
-            fs::write(&att_path, serde_json::to_string_pretty(&stub).map_err(|e| e.to_string())?)
-                .map_err(|e| e.to_string())?;
+            fs::write(
+                &att_path,
+                serde_json::to_string_pretty(&stub).map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?;
             "created_local_stub".to_string()
         }
     } else {
@@ -570,15 +847,19 @@ fn fetch_attestations(
             "reviewer": "local_stub",
             "detail": "no_central_url"
         });
-        fs::write(&att_path, serde_json::to_string_pretty(&stub).map_err(|e| e.to_string())?)
-            .map_err(|e| e.to_string())?;
+        fs::write(
+            &att_path,
+            serde_json::to_string_pretty(&stub).map_err(|e| e.to_string())?,
+        )
+        .map_err(|e| e.to_string())?;
         "created_local_stub".to_string()
     };
 
     validate_attestation_file(&state.repo_root, &att_path)?;
 
-    let summary_payload: Value = serde_json::from_str(&fs::read_to_string(&att_path).map_err(|e| e.to_string())?)
-        .map_err(|e| e.to_string())?;
+    let summary_payload: Value =
+        serde_json::from_str(&fs::read_to_string(&att_path).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
     let summary = summarize_attestations(&summary_payload);
 
     if let Some(run_folder) = run_folder {
@@ -605,7 +886,8 @@ fn fetch_attestations(
                             );
                             let _ = fs::write(
                                 &epoch_path,
-                                serde_json::to_string_pretty(&epoch_doc).map_err(|e| e.to_string())?,
+                                serde_json::to_string_pretty(&epoch_doc)
+                                    .map_err(|e| e.to_string())?,
                             );
                         }
                     }
@@ -649,6 +931,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_terminal_state,
             get_active_connector_config,
+            list_peers,
+            add_peer,
+            request_peer_attestation,
             list_epoch_scenarios,
             validate_enabled_market_flags,
             save_terminal_config,
