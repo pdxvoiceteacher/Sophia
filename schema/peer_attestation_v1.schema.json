@@ -11,20 +11,49 @@
     "checks_run",
     "results",
     "timestamp_utc",
+    "signature_alg",
     "signature"
   ],
   "properties": {
-    "schema": { "type": "string", "const": "peer_attestation_v1" },
-    "node_id": { "type": "string" },
-    "pubkey": { "type": "string" },
-    "bundle_hash": { "type": "string" },
-    "checks_run": { "type": "array", "items": { "type": "string" } },
+    "schema": {
+      "type": "string",
+      "const": "peer_attestation_v1"
+    },
+    "node_id": {
+      "type": "string"
+    },
+    "pubkey": {
+      "type": "string"
+    },
+    "bundle_hash": {
+      "type": "string"
+    },
+    "checks_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "results": {
       "type": "object",
-      "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null"
+        ]
+      }
     },
-    "timestamp_utc": { "type": "string" },
-    "signature": { "type": "string" }
+    "timestamp_utc": {
+      "type": "string"
+    },
+    "signature": {
+      "type": "string"
+    },
+    "signature_alg": {
+      "type": "string"
+    }
   },
   "additionalProperties": true
 }

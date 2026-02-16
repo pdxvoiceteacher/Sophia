@@ -604,10 +604,16 @@ export function renderAttestations(container, data) {
   }
   const payload = data.attestations;
   const items = Array.isArray(payload) ? payload : payload?.attestations || (payload ? [payload] : []);
-  if (!items.length) {
+  const peerPayload = data.peerAttestations;
+  const peerItems = Array.isArray(peerPayload)
+    ? peerPayload
+    : peerPayload?.attestations || (peerPayload ? [peerPayload] : []);
+
+  if (!items.length && !peerItems.length) {
     container.innerHTML = "<p class='muted'>No attestations artifact found.</p>";
     return;
   }
+
   const summary = items.reduce(
     (acc, item) => {
       const status = String(item.status || "pending").toLowerCase();
@@ -620,8 +626,23 @@ export function renderAttestations(container, data) {
     },
     { pass: 0, fail: 0, pending: 0, latest: "" }
   );
+
+  const peerSummary = peerItems.reduce(
+    (acc, item) => {
+      const status = String(item?.results?.status || "pending").toLowerCase();
+      if (status === "pass") acc.pass += 1;
+      else if (status === "fail") acc.fail += 1;
+      else acc.pending += 1;
+      return acc;
+    },
+    { pass: 0, fail: 0, pending: 0 }
+  );
+  const peerDivergence = peerSummary.fail + peerSummary.pending;
+  const peerConsensus = peerDivergence === 0 && peerItems.length > 0 ? "convergent" : "divergent";
+
   container.innerHTML = `
-    <div class="summary-line"><strong>Summary:</strong> total ${items.length} • pass ${summary.pass} • fail ${summary.fail} • pending ${summary.pending} • latest ${summary.latest || "n/a"}</div>
+    <div class="summary-line"><strong>Central summary:</strong> total ${items.length} • pass ${summary.pass} • fail ${summary.fail} • pending ${summary.pending} • latest ${summary.latest || "n/a"}</div>
+    <div class="summary-line"><strong>Peer summary:</strong> total ${peerItems.length} • consensus ${peerConsensus} • divergence ${peerDivergence}</div>
   ` + items
     .map(
       (item) => `
@@ -631,7 +652,17 @@ export function renderAttestations(container, data) {
       </div>
     `
     )
-    .join("");
+    .join("")
+    + peerItems
+      .map(
+        (item) => `
+      <div class="summary-line">
+        <strong>${item.node_id || "peer-node"}</strong> — ${item?.results?.status || "pending"}
+        <div class="detail muted">Bundle: ${item.bundle_hash || "n/a"} • signature_alg: ${item.signature_alg || "n/a"}</div>
+      </div>
+    `
+      )
+      .join("");
 }
 
 

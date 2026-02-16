@@ -133,6 +133,7 @@ function buildNormalized(run) {
     "epoch_findings.json",
     "retrospection.json",
     "attestations.json",
+    "peer_attestations.json",
     "sentinel_state.json",
   ];
   const telemetryPath = findFilePath(run, "telemetry.json");
@@ -152,6 +153,7 @@ function buildNormalized(run) {
   const epochMetricsPath = findFilePath(run, "epoch_metrics.json");
   const epochFindingsPath = findFilePath(run, "epoch_findings.json");
   const attestationsPath = findFilePath(run, "attestations.json");
+  const peerAttestationsPath = findFilePath(run, "peer_attestations.json");
   const sentinelPath = findFilePath(run, "sentinel_state.json");
 
   const telemetry = telemetryPath ? decodeJson(telemetryPath) : null;
@@ -171,6 +173,7 @@ function buildNormalized(run) {
   const epochMetrics = epochMetricsPath ? decodeJson(epochMetricsPath) : null;
   const epochFindings = epochFindingsPath ? decodeJson(epochFindingsPath) : null;
   const attestations = attestationsPath ? decodeJson(attestationsPath) : null;
+  const peerAttestations = peerAttestationsPath ? decodeJson(peerAttestationsPath) : null;
   const sentinelState = sentinelPath ? decodeJson(sentinelPath) : null;
 
   const filesIndex = run.files.map((path) => ({
@@ -222,6 +225,7 @@ function buildNormalized(run) {
     epochFindings,
     epochFindingsPath,
     attestations,
+    peerAttestations,
     sentinelState,
     filesIndex,
     missingFiles,
@@ -340,6 +344,7 @@ async function loadGatewayRun(basePath, runName) {
     "epoch_findings.json",
     "retrospection.json",
     "attestations.json",
+    "peer_attestations.json",
     "sentinel_state.json",
   ];
   const files = {};

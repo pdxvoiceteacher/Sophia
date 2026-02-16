@@ -174,7 +174,7 @@ fn validate_attestation_file(
     repo_root: &PathBuf,
     attestation_path: &PathBuf,
 ) -> Result<(), String> {
-    run_python_with_env(
+    run_python(
         repo_root,
         &[
             "tools/telemetry/validate_attestations.py",
@@ -290,12 +290,21 @@ fn env_network_required() -> bool {
         .unwrap_or(false)
 }
 
+fn env_allow_witness_only_when_network_required() -> bool {
+    std::env::var("SOPHIA_ALLOW_WITNESS_ONLY_WHEN_REQUIRED")
+        .map(|value| {
+            let normalized = value.trim().to_ascii_lowercase();
+            normalized == "1" || normalized == "true" || normalized == "yes"
+        })
+        .unwrap_or(false)
+}
+
 fn evaluate_network_mode(state: &TerminalState) -> (bool, String) {
     let network_required = env_network_required();
     let peers = load_peer_registry(state);
     let enabled_peers = peers.iter().filter(|p| p.enabled).count();
     if network_required && enabled_peers == 0 {
-        return (false, "network_required_but_no_enabled_peers".to_string());
+        return (true, "network_required_but_no_enabled_peers".to_string());
     }
     if enabled_peers == 0 {
         return (true, "offline_local_mode".to_string());
@@ -359,7 +368,9 @@ fn build_peer_attestation(
     results: Value,
 ) -> Value {
     let timestamp = chrono::Utc::now().to_rfc3339();
-    let signature = format!("sig:{}:{}:{}", node.node_id, bundle_hash, timestamp);
+    // TODO(crypto): replace demo signature scaffold with real Ed25519 signing and key management.
+    let signature_alg = "demo-ed25519-placeholder";
+    let signature = format!("demo-sig:{}:{}:{}", node.node_id, bundle_hash, timestamp);
     json!({
         "schema": "peer_attestation_v1",
         "node_id": node.node_id,
@@ -368,6 +379,7 @@ fn build_peer_attestation(
         "checks_run": checks_run,
         "results": results,
         "timestamp_utc": timestamp,
+        "signature_alg": signature_alg,
         "signature": signature,
     })
 }
@@ -450,6 +462,11 @@ fn request_peer_attestation(
 ) -> Result<PeerAttestationResponse, String> {
     let peers = load_peer_registry(&state);
     let network_policy = load_network_policy(&state);
+    let network_required = env_network_required();
+    let (degraded_mode, reason) = evaluate_network_mode(&state);
+    if network_required && degraded_mode {
+        return Err(format!("network_required_blocked: {reason}"));
+    }
     let peer = peers
         .iter()
         .find(|p| p.node_id == peer_id && p.enabled)
@@ -522,10 +539,32 @@ fn request_peer_attestation(
                 items.push(attestation.clone());
             }
             fs::write(
-                path,
+                &path,
                 serde_json::to_string_pretty(&attestations).map_err(|e| e.to_string())?,
             )
             .map_err(|e| e.to_string())?;
+
+            let epoch_path = run_dir.join("epoch.json");
+            if epoch_path.exists() {
+                if let Ok(epoch_raw) = fs::read_to_string(&epoch_path) {
+                    if let Ok(mut epoch_doc) = serde_json::from_str::<Value>(&epoch_raw) {
+                        if let Some(outputs) = epoch_doc
+                            .get_mut("outputs_manifest")
+                            .and_then(|v| v.as_object_mut())
+                        {
+                            outputs.insert(
+                                "peer_attestations.json".to_string(),
+                                json!({"attached": true, "source": path.to_string_lossy()}),
+                            );
+                            let _ = fs::write(
+                                &epoch_path,
+                                serde_json::to_string_pretty(&epoch_doc)
+                                    .map_err(|e| e.to_string())?,
+                            );
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -579,11 +618,40 @@ fn save_network_policy(
     if !valid_profiles.iter().any(|item| item == &profile) {
         return Err("invalid_network_profile".to_string());
     }
+
+    let network_required = env_network_required();
+    if network_required
+        && profile == "witness_only"
+        && !env_allow_witness_only_when_network_required()
+    {
+        return Err("network_required_forbids_witness_only_profile".to_string());
+    }
+
+    if profile == "full_relay" && peer_set.is_empty() {
+        return Err("full_relay_requires_non_empty_peer_set".to_string());
+    }
+
+    if profile == "full_relay" {
+        let peers = load_peer_registry(&state);
+        let eligible = peers.iter().any(|peer| {
+            peer.enabled
+                && peer.trust_tier == "full_relay"
+                && (peer_set.is_empty() || peer_set.iter().any(|id| id == &peer.node_id))
+        });
+        if !eligible {
+            return Err("full_relay_requires_full_relay_eligible_peer".to_string());
+        }
+    }
+
+    let (degraded_mode, reason) = evaluate_network_mode(&state);
+    if network_required && degraded_mode && profile == "full_relay" {
+        return Err(format!("network_required_blocked: {reason}"));
+    }
+
     policy.profile = profile;
     policy.share_scopes = share_scopes;
     policy.peer_set = peer_set;
     save_local_network_policy(&policy)?;
-    let network_required = env_network_required();
     let (degraded_mode, reason) = evaluate_network_mode(&state);
     Ok(NetworkPolicyResponse {
         policy,

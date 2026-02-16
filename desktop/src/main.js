@@ -45,6 +45,7 @@ const elements = {
   peerPubkey: document.getElementById("peer-pubkey"),
   addPeer: document.getElementById("add-peer"),
   peerStatus: document.getElementById("peer-status"),
+  peerConsensusSummary: document.getElementById("peer-consensus-summary"),
   requestPeerAttestation: document.getElementById("request-peer-attestation"),
 };
 
@@ -296,6 +297,7 @@ async function checkCentralSyncStatus() {
 
 
 function csvToList(value) {
+  // TODO(p2p-ux): validate share scopes against allowlisted values before save.
   return String(value || "")
     .split(",")
     .map((item) => item.trim())
@@ -380,6 +382,7 @@ async function requestPeerAttestation() {
     elements.peerStatus.textContent = "Run an epoch test first.";
     return;
   }
+  // TODO(p2p-ux): replace free-text peer selection with a dropdown bound to configured peers.
   const peerId = elements.peerNodeId.value.trim() || state.peers.find((p) => p.enabled)?.node_id;
   if (!peerId) {
     elements.peerStatus.textContent = "No peer available for attestation.";
@@ -395,6 +398,7 @@ async function requestPeerAttestation() {
       runFolder: state.lastEpochResult.run_folder,
     });
     elements.peerStatus.textContent = `Attestation ${result.consensus} (divergence ${result.divergence_count}/${result.total_peers}).`;
+    elements.peerConsensusSummary.textContent = `consensus: ${result.consensus} • divergence: ${result.divergence_count}/${result.total_peers}`;
   } catch (error) {
     elements.peerStatus.textContent = `Attestation request failed: ${String(error)}`;
   }
