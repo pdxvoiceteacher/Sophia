@@ -137,6 +137,60 @@
       </div>
     </section>
 
+
+
+    <section class="connection-panel p2p-panel">
+      <div class="field">
+        <label for="network-policy-profile">Network policy profile</label>
+        <select id="network-policy-profile">
+          <option value="witness_only">Witness-only (default)</option>
+          <option value="reproducible_audit">Reproducible Audit</option>
+          <option value="full_relay">Full Relay (explicit opt-in)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="network-policy-scopes">Share scopes (comma-separated)</label>
+        <input id="network-policy-scopes" type="text" placeholder="hashes,metrics,attestations" />
+      </div>
+      <div class="field">
+        <label for="network-peer-set">Allowed peer set (node_id, comma-separated)</label>
+        <input id="network-peer-set" type="text" placeholder="sonya-local-demo" />
+      </div>
+      <div class="field actions">
+        <button id="save-network-policy" type="button">Save network policy</button>
+      </div>
+      <div class="field">
+        <label for="network-mode-status">Network mode</label>
+        <span id="network-mode-status" class="muted">n/a</span>
+      </div>
+      <div class="field">
+        <label for="peer-list">Peers</label>
+        <div id="peer-list" class="muted"></div>
+      </div>
+      <div class="field">
+        <label for="peer-node-id">Add/update peer node ID</label>
+        <input id="peer-node-id" type="text" placeholder="sonya-node-1" />
+      </div>
+      <div class="field">
+        <label for="peer-endpoint">Peer endpoint (optional)</label>
+        <input id="peer-endpoint" type="url" placeholder="http://127.0.0.1:9000" />
+      </div>
+      <div class="field">
+        <label for="peer-pubkey">Peer pubkey</label>
+        <input id="peer-pubkey" type="text" placeholder="base64-pubkey" />
+      </div>
+      <div class="field actions">
+        <button id="add-peer" type="button">Add peer</button>
+      </div>
+      <div class="field">
+        <label for="peer-status">Peer actions</label>
+        <span id="peer-status" class="muted">Idle</span>
+      </div>
+      <div class="field actions">
+        <button id="request-peer-attestation" type="button">Request peer attestation</button>
+      </div>
+    </section>
+
     <main class="viewer-shell">
       <iframe id="viewer-frame" title="Sophia Run Viewer"></iframe>
     </main>

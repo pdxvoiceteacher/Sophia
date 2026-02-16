@@ -121,3 +121,14 @@ button:hover {
   color: var(--muted);
   font-size: 0.8rem;
 }
+
+
+.summary-line {
+  font-size: 0.82rem;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.p2p-panel {
+  border-top: 1px solid var(--border);
+}

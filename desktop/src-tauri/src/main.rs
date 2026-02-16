@@ -59,7 +59,19 @@ struct PeerNode {
     endpoint: String,
     pubkey: String,
     trust_weight: f64,
+    #[serde(default = "default_peer_trust_tier")]
+    trust_tier: String,
+    #[serde(default = "default_allowed_policy_profiles")]
+    allowed_policy_profiles: Vec<String>,
     enabled: bool,
+}
+
+fn default_peer_trust_tier() -> String {
+    "witness".to_string()
+}
+
+fn default_allowed_policy_profiles() -> Vec<String> {
+    vec!["witness_only".to_string(), "reproducible_audit".to_string()]
 }
 
 #[derive(Serialize)]
@@ -73,6 +85,46 @@ struct PeerAttestationResponse {
     consensus: String,
     divergence_count: usize,
     total_peers: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct NetworkEncryption {
+    alg: String,
+    key_wrap: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct NetworkPolicy {
+    schema: String,
+    profile: String,
+    share_scopes: Vec<String>,
+    encryption: NetworkEncryption,
+    peer_set: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct NetworkPolicyResponse {
+    policy: NetworkPolicy,
+    network_required: bool,
+    degraded_mode: bool,
+    reason: String,
+}
+
+fn default_network_policy() -> NetworkPolicy {
+    NetworkPolicy {
+        schema: "network_policy_v1".to_string(),
+        profile: "witness_only".to_string(),
+        share_scopes: vec![
+            "hashes".to_string(),
+            "metrics".to_string(),
+            "attestations".to_string(),
+        ],
+        encryption: NetworkEncryption {
+            alg: "AES-256-GCM".to_string(),
+            key_wrap: "X25519-sealed-box".to_string(),
+        },
+        peer_set: vec![],
+    }
 }
 
 #[derive(Deserialize)]
@@ -190,6 +242,65 @@ fn summarize_attestations(payload: &Value) -> AttestationSummary {
 
 fn peer_registry_repo_path(repo_root: &PathBuf) -> PathBuf {
     repo_root.join("config").join("peer_registry_v1.json")
+}
+
+fn network_policy_repo_path(repo_root: &PathBuf) -> PathBuf {
+    repo_root.join("config").join("network_policy_v1.json")
+}
+
+fn network_policy_local_path() -> PathBuf {
+    sophia_home().join("network_policy_local.json")
+}
+
+fn load_network_policy(state: &TerminalState) -> NetworkPolicy {
+    let mut policy = default_network_policy();
+    let repo_path = network_policy_repo_path(&state.repo_root);
+    if let Ok(text) = fs::read_to_string(repo_path) {
+        if let Ok(parsed) = serde_json::from_str::<NetworkPolicy>(&text) {
+            policy = parsed;
+        }
+    }
+    let local_path = network_policy_local_path();
+    if let Ok(text) = fs::read_to_string(local_path) {
+        if let Ok(parsed) = serde_json::from_str::<NetworkPolicy>(&text) {
+            policy = parsed;
+        }
+    }
+    policy
+}
+
+fn save_local_network_policy(policy: &NetworkPolicy) -> Result<(), String> {
+    let path = network_policy_local_path();
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    fs::write(
+        path,
+        serde_json::to_string_pretty(policy).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())
+}
+
+fn env_network_required() -> bool {
+    std::env::var("SOPHIA_NETWORK_REQUIRED")
+        .map(|value| {
+            let normalized = value.trim().to_ascii_lowercase();
+            normalized == "1" || normalized == "true" || normalized == "yes"
+        })
+        .unwrap_or(false)
+}
+
+fn evaluate_network_mode(state: &TerminalState) -> (bool, String) {
+    let network_required = env_network_required();
+    let peers = load_peer_registry(state);
+    let enabled_peers = peers.iter().filter(|p| p.enabled).count();
+    if network_required && enabled_peers == 0 {
+        return (false, "network_required_but_no_enabled_peers".to_string());
+    }
+    if enabled_peers == 0 {
+        return (true, "offline_local_mode".to_string());
+    }
+    (false, "peer_network_available".to_string())
 }
 
 fn peer_registry_local_path() -> PathBuf {
@@ -338,11 +449,31 @@ fn request_peer_attestation(
     run_folder: Option<String>,
 ) -> Result<PeerAttestationResponse, String> {
     let peers = load_peer_registry(&state);
+    let network_policy = load_network_policy(&state);
     let peer = peers
         .iter()
         .find(|p| p.node_id == peer_id && p.enabled)
         .cloned()
         .ok_or_else(|| "peer_not_found_or_disabled".to_string())?;
+
+    if !network_policy.peer_set.is_empty()
+        && !network_policy
+            .peer_set
+            .iter()
+            .any(|item| item == &peer.node_id)
+    {
+        return Err("peer_not_authorized_by_network_policy".to_string());
+    }
+    if !peer
+        .allowed_policy_profiles
+        .iter()
+        .any(|item| item == &network_policy.profile)
+    {
+        return Err("peer_not_allowed_for_selected_network_profile".to_string());
+    }
+    if network_policy.profile == "full_relay" && peer.trust_tier != "full_relay" {
+        return Err("full_relay_requires_full_relay_trust_tier".to_string());
+    }
 
     let remote_result = if !peer.endpoint.trim().is_empty() {
         let client = reqwest::blocking::Client::builder()
@@ -420,6 +551,45 @@ fn request_peer_attestation(
         consensus,
         divergence_count,
         total_peers: peers.iter().filter(|p| p.enabled).count(),
+    })
+}
+
+#[tauri::command]
+fn get_network_policy(state: State<TerminalState>) -> NetworkPolicyResponse {
+    let policy = load_network_policy(&state);
+    let network_required = env_network_required();
+    let (degraded_mode, reason) = evaluate_network_mode(&state);
+    NetworkPolicyResponse {
+        policy,
+        network_required,
+        degraded_mode,
+        reason,
+    }
+}
+
+#[tauri::command]
+fn save_network_policy(
+    state: State<TerminalState>,
+    profile: String,
+    share_scopes: Vec<String>,
+    peer_set: Vec<String>,
+) -> Result<NetworkPolicyResponse, String> {
+    let mut policy = load_network_policy(&state);
+    let valid_profiles = ["witness_only", "reproducible_audit", "full_relay"];
+    if !valid_profiles.iter().any(|item| item == &profile) {
+        return Err("invalid_network_profile".to_string());
+    }
+    policy.profile = profile;
+    policy.share_scopes = share_scopes;
+    policy.peer_set = peer_set;
+    save_local_network_policy(&policy)?;
+    let network_required = env_network_required();
+    let (degraded_mode, reason) = evaluate_network_mode(&state);
+    Ok(NetworkPolicyResponse {
+        policy,
+        network_required,
+        degraded_mode,
+        reason,
     })
 }
 
@@ -931,6 +1101,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_terminal_state,
             get_active_connector_config,
+            get_network_policy,
+            save_network_policy,
             list_peers,
             add_peer,
             request_peer_attestation,

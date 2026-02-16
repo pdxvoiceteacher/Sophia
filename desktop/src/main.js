@@ -34,6 +34,18 @@ const elements = {
   reviewSubmissionId: document.getElementById("review-submission-id"),
   reviewAttestationPath: document.getElementById("review-attestation-path"),
   reviewAttestationSummary: document.getElementById("review-attestation-summary"),
+  networkPolicyProfile: document.getElementById("network-policy-profile"),
+  networkPolicyScopes: document.getElementById("network-policy-scopes"),
+  networkPeerSet: document.getElementById("network-peer-set"),
+  saveNetworkPolicy: document.getElementById("save-network-policy"),
+  networkModeStatus: document.getElementById("network-mode-status"),
+  peerList: document.getElementById("peer-list"),
+  peerNodeId: document.getElementById("peer-node-id"),
+  peerEndpoint: document.getElementById("peer-endpoint"),
+  peerPubkey: document.getElementById("peer-pubkey"),
+  addPeer: document.getElementById("add-peer"),
+  peerStatus: document.getElementById("peer-status"),
+  requestPeerAttestation: document.getElementById("request-peer-attestation"),
 };
 
 const state = {
@@ -43,6 +55,8 @@ const state = {
   lastEpochResult: null,
   lastSubmissionId: null,
   connectors: [],
+  peers: [],
+  networkPolicy: null,
 };
 
 
@@ -189,6 +203,7 @@ async function loadState() {
 
   state.scenarios = await invoke("list_epoch_scenarios");
   populateScenarioSelects(state.scenarios);
+  await refreshP2P();
 }
 
 async function saveConfig() {
@@ -278,6 +293,113 @@ async function checkCentralSyncStatus() {
     setChipStatus(elements.uccStatus, "UCC Sync", "down", false);
   }
 }
+
+
+function csvToList(value) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function renderPeers() {
+  if (!Array.isArray(state.peers) || state.peers.length === 0) {
+    elements.peerList.textContent = "No peers configured.";
+    return;
+  }
+  elements.peerList.innerHTML = "";
+  state.peers.forEach((peer) => {
+    const row = document.createElement("div");
+    row.className = "summary-line";
+    row.textContent = `${peer.node_id} • tier ${peer.trust_tier || "witness"} • endpoint ${peer.endpoint || "local"} • enabled ${peer.enabled !== false}`;
+    elements.peerList.appendChild(row);
+  });
+}
+
+function renderNetworkPolicyStatus(policyResult) {
+  if (!policyResult) return;
+  state.networkPolicy = policyResult.policy;
+  elements.networkPolicyProfile.value = policyResult.policy?.profile || "witness_only";
+  elements.networkPolicyScopes.value = (policyResult.policy?.share_scopes || []).join(",");
+  elements.networkPeerSet.value = (policyResult.policy?.peer_set || []).join(",");
+  const requiredTag = policyResult.network_required ? "required" : "optional";
+  const modeTag = policyResult.degraded_mode ? "degraded" : "online";
+  elements.networkModeStatus.textContent = `${modeTag} • network ${requiredTag} • ${policyResult.reason || "n/a"}`;
+}
+
+async function refreshP2P() {
+  const [peersResult, policyResult] = await Promise.all([
+    invoke("list_peers"),
+    invoke("get_network_policy"),
+  ]);
+  state.peers = peersResult.peers || [];
+  renderPeers();
+  renderNetworkPolicyStatus(policyResult);
+}
+
+async function saveNetworkPolicy() {
+  elements.peerStatus.textContent = "Saving network policy...";
+  try {
+    const result = await invoke("save_network_policy", {
+      profile: elements.networkPolicyProfile.value,
+      shareScopes: csvToList(elements.networkPolicyScopes.value),
+      peerSet: csvToList(elements.networkPeerSet.value),
+    });
+    renderNetworkPolicyStatus(result);
+    elements.peerStatus.textContent = "Network policy saved.";
+  } catch (error) {
+    elements.peerStatus.textContent = `Policy save failed: ${String(error)}`;
+  }
+}
+
+async function addPeer() {
+  const nodeId = elements.peerNodeId.value.trim();
+  const pubkey = elements.peerPubkey.value.trim();
+  if (!nodeId || !pubkey) {
+    elements.peerStatus.textContent = "node_id and pubkey are required.";
+    return;
+  }
+  elements.peerStatus.textContent = "Saving peer...";
+  try {
+    const result = await invoke("add_peer", {
+      nodeId,
+      endpoint: elements.peerEndpoint.value.trim(),
+      pubkey,
+      trustWeight: 1.0,
+    });
+    state.peers = result.peers || [];
+    renderPeers();
+    elements.peerStatus.textContent = `Peer ${nodeId} saved.`;
+  } catch (error) {
+    elements.peerStatus.textContent = `Add peer failed: ${String(error)}`;
+  }
+}
+
+async function requestPeerAttestation() {
+  if (!state.lastEpochResult?.run_folder) {
+    elements.peerStatus.textContent = "Run an epoch test first.";
+    return;
+  }
+  const peerId = elements.peerNodeId.value.trim() || state.peers.find((p) => p.enabled)?.node_id;
+  if (!peerId) {
+    elements.peerStatus.textContent = "No peer available for attestation.";
+    return;
+  }
+  const bundleHash = state.lastSubmissionId || `epoch:${runIdFromPath(state.lastEpochResult.run_folder) || "unknown"}`;
+  elements.peerStatus.textContent = `Requesting attestation from ${peerId}...`;
+  try {
+    const result = await invoke("request_peer_attestation", {
+      peerId,
+      bundleHash,
+      checksRun: ["epoch_replay", "sentinel_scan"],
+      runFolder: state.lastEpochResult.run_folder,
+    });
+    elements.peerStatus.textContent = `Attestation ${result.consensus} (divergence ${result.divergence_count}/${result.total_peers}).`;
+  } catch (error) {
+    elements.peerStatus.textContent = `Attestation request failed: ${String(error)}`;
+  }
+}
+
 
 async function runEpochTest() {
   const baselineScenario = elements.epochBaselineScenario.value;
@@ -392,6 +514,9 @@ function attachEvents() {
   elements.submitCrossReview.addEventListener("click", submitCrossReview);
   elements.createLocalBundle.addEventListener("click", createLocalBundle);
   elements.fetchAttestations.addEventListener("click", fetchAttestations);
+  elements.saveNetworkPolicy.addEventListener("click", saveNetworkPolicy);
+  elements.addPeer.addEventListener("click", addPeer);
+  elements.requestPeerAttestation.addEventListener("click", requestPeerAttestation);
 }
 
 async function start() {

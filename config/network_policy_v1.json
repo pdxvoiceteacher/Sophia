@@ -1,0 +1,14 @@
+{
+  "schema": "network_policy_v1",
+  "profile": "witness_only",
+  "share_scopes": [
+    "hashes",
+    "metrics",
+    "attestations"
+  ],
+  "encryption": {
+    "alg": "AES-256-GCM",
+    "key_wrap": "X25519-sealed-box"
+  },
+  "peer_set": []
+}
