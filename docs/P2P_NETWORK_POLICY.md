@@ -8,6 +8,13 @@ This document defines current P2P policy behavior and near-term milestones for c
 - It does **not** imply metaphysical secrecy on user-owned devices.
 - Full sharing is always policy-gated and auditable.
 
+## Prime directive invariant
+
+Vault never leaks by default.
+
+- If `profile != full_relay`, any scope containing `vault/full` is denied by runtime guardrails.
+- This is implemented as code-path enforcement (not documentation-only).
+
 ## Profile model
 
 ### `witness_only` (default)

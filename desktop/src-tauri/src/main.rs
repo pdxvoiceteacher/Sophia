@@ -153,6 +153,7 @@ fn allowed_share_scopes() -> &'static [&'static str] {
         "tel/*",
         "evidence/*",
         "vault/*",
+        "vault/full",
     ]
 }
 
@@ -699,6 +700,11 @@ fn save_network_policy(
     let valid_profiles = ["witness_only", "reproducible_audit", "full_relay"];
     if !valid_profiles.iter().any(|item| item == &profile) {
         return Err("invalid_network_profile".to_string());
+    }
+
+    // Prime directive guardrail: vault/full is never allowed unless full_relay profile is explicitly selected.
+    if profile != "full_relay" && has_scope(&share_scopes, "vault/full") {
+        return Err("prime_directive_vault_full_requires_full_relay".to_string());
     }
 
     for scope in &share_scopes {

@@ -12,10 +12,17 @@
     "relay_toggles"
   ],
   "properties": {
-    "schema": { "type": "string", "const": "network_policy_v1" },
+    "schema": {
+      "type": "string",
+      "const": "network_policy_v1"
+    },
     "profile": {
       "type": "string",
-      "enum": ["witness_only", "reproducible_audit", "full_relay"]
+      "enum": [
+        "witness_only",
+        "reproducible_audit",
+        "full_relay"
+      ]
     },
     "share_scopes": {
       "type": "array",
@@ -27,29 +34,46 @@
           "attestations/*",
           "tel/*",
           "evidence/*",
-          "vault/*"
+          "vault/*",
+          "vault/full"
         ]
       }
     },
     "encryption": {
       "type": "object",
-      "required": ["alg", "key_wrap"],
+      "required": [
+        "alg",
+        "key_wrap"
+      ],
       "properties": {
-        "alg": { "type": "string" },
-        "key_wrap": { "type": "string" }
+        "alg": {
+          "type": "string"
+        },
+        "key_wrap": {
+          "type": "string"
+        }
       },
       "additionalProperties": true
     },
     "peer_set": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "relay_toggles": {
       "type": "object",
-      "required": ["evidence_full_relay", "vault_relay"],
+      "required": [
+        "evidence_full_relay",
+        "vault_relay"
+      ],
       "properties": {
-        "evidence_full_relay": { "type": "boolean" },
-        "vault_relay": { "type": "boolean" }
+        "evidence_full_relay": {
+          "type": "boolean"
+        },
+        "vault_relay": {
+          "type": "boolean"
+        }
       },
       "additionalProperties": false
     }

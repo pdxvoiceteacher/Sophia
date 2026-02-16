@@ -84,3 +84,8 @@ def test_save_network_policy_enforces_scope_and_profile_constraints() -> None:
     assert "witness_only_disallows_vault_and_evidence_scopes" in main_rs
     assert "reproducible_audit_disallows_vault_scope" in main_rs
     assert "vault_scope_requires_full_relay_profile" in main_rs
+
+
+def test_prime_directive_vault_full_guard_present() -> None:
+    main_rs = (ROOT / "desktop" / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
+    assert "prime_directive_vault_full_requires_full_relay" in main_rs
