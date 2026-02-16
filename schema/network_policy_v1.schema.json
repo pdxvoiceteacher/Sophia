@@ -8,7 +8,8 @@
     "profile",
     "share_scopes",
     "encryption",
-    "peer_set"
+    "peer_set",
+    "relay_toggles"
   ],
   "properties": {
     "schema": { "type": "string", "const": "network_policy_v1" },
@@ -18,7 +19,17 @@
     },
     "share_scopes": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string",
+        "enum": [
+          "hashes/*",
+          "metrics/*",
+          "attestations/*",
+          "tel/*",
+          "evidence/*",
+          "vault/*"
+        ]
+      }
     },
     "encryption": {
       "type": "object",
@@ -32,6 +43,15 @@
     "peer_set": {
       "type": "array",
       "items": { "type": "string" }
+    },
+    "relay_toggles": {
+      "type": "object",
+      "required": ["evidence_full_relay", "vault_relay"],
+      "properties": {
+        "evidence_full_relay": { "type": "boolean" },
+        "vault_relay": { "type": "boolean" }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true

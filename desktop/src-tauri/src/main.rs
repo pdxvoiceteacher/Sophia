@@ -4,6 +4,7 @@ mod state;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use state::{
     append_connector_event, append_epoch_event, check_central_sync as check_central_sync_impl,
     find_free_port, get_active_connector, guardrails_path, load_config, load_guardrails,
@@ -11,6 +12,7 @@ use state::{
     validate_market_flags, CentralSyncState, ConnectorConfig, ConnectorEnvelope,
     ConnectorTestResult, EpochTestEnvelope, TerminalConfig, TerminalState,
 };
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
@@ -94,12 +96,27 @@ struct NetworkEncryption {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+struct NetworkRelayToggles {
+    evidence_full_relay: bool,
+    vault_relay: bool,
+}
+
+fn default_network_relay_toggles() -> NetworkRelayToggles {
+    NetworkRelayToggles {
+        evidence_full_relay: false,
+        vault_relay: false,
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct NetworkPolicy {
     schema: String,
     profile: String,
     share_scopes: Vec<String>,
     encryption: NetworkEncryption,
     peer_set: Vec<String>,
+    #[serde(default = "default_network_relay_toggles")]
+    relay_toggles: NetworkRelayToggles,
 }
 
 #[derive(Serialize)]
@@ -115,16 +132,68 @@ fn default_network_policy() -> NetworkPolicy {
         schema: "network_policy_v1".to_string(),
         profile: "witness_only".to_string(),
         share_scopes: vec![
-            "hashes".to_string(),
-            "metrics".to_string(),
-            "attestations".to_string(),
+            "hashes/*".to_string(),
+            "metrics/*".to_string(),
+            "attestations/*".to_string(),
         ],
         encryption: NetworkEncryption {
             alg: "AES-256-GCM".to_string(),
             key_wrap: "X25519-sealed-box".to_string(),
         },
         peer_set: vec![],
+        relay_toggles: default_network_relay_toggles(),
     }
+}
+
+fn allowed_share_scopes() -> &'static [&'static str] {
+    &[
+        "hashes/*",
+        "metrics/*",
+        "attestations/*",
+        "tel/*",
+        "evidence/*",
+        "vault/*",
+    ]
+}
+
+fn scope_in(scope: &str, prefix: &str) -> bool {
+    scope.trim().eq_ignore_ascii_case(prefix)
+}
+
+fn has_scope(scopes: &[String], prefix: &str) -> bool {
+    scopes.iter().any(|item| scope_in(item, prefix))
+}
+
+fn scope_allowed(scope: &str) -> bool {
+    allowed_share_scopes()
+        .iter()
+        .any(|allowed| scope_in(scope, allowed))
+}
+
+fn canonicalize_json(value: &Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let mut sorted: BTreeMap<String, Value> = BTreeMap::new();
+            for (key, nested) in map {
+                sorted.insert(key.clone(), canonicalize_json(nested));
+            }
+            let mut out = serde_json::Map::new();
+            for (key, nested) in sorted {
+                out.insert(key, nested);
+            }
+            Value::Object(out)
+        }
+        Value::Array(items) => Value::Array(items.iter().map(canonicalize_json).collect()),
+        _ => value.clone(),
+    }
+}
+
+fn canonical_sha256_hex(value: &Value) -> String {
+    let canonical = canonicalize_json(value);
+    let bytes = serde_json::to_vec(&canonical).unwrap_or_default();
+    let mut hasher = Sha256::new();
+    hasher.update(bytes);
+    format!("{:x}", hasher.finalize())
 }
 
 #[derive(Deserialize)]
@@ -369,19 +438,32 @@ fn build_peer_attestation(
 ) -> Value {
     let timestamp = chrono::Utc::now().to_rfc3339();
     // TODO(crypto): replace demo signature scaffold with real Ed25519 signing and key management.
+    // Signatures MUST be computed over canonical JSON (sorted keys + stable list ordering)
+    // or a stable hash derived from that canonical form.
     let signature_alg = "demo-ed25519-placeholder";
-    let signature = format!("demo-sig:{}:{}:{}", node.node_id, bundle_hash, timestamp);
-    json!({
+    let signing_preimage = json!({
         "schema": "peer_attestation_v1",
         "node_id": node.node_id,
         "pubkey": node.pubkey,
+        "pubkey_format": "base64",
         "bundle_hash": bundle_hash,
         "checks_run": checks_run,
         "results": results,
         "timestamp_utc": timestamp,
         "signature_alg": signature_alg,
-        "signature": signature,
-    })
+        "signature_format": "base64"
+    });
+    let signed_bytes_hash = canonical_sha256_hex(&signing_preimage);
+    let signature = format!("demo-sig:{}", signed_bytes_hash);
+    let mut attestation = signing_preimage;
+    if let Some(obj) = attestation.as_object_mut() {
+        obj.insert(
+            "signed_bytes_hash".to_string(),
+            Value::String(signed_bytes_hash),
+        );
+        obj.insert("signature".to_string(), Value::String(signature));
+    }
+    attestation
 }
 
 fn scenario_json_path(repo_root: &PathBuf, scenario_name: &str) -> Result<PathBuf, String> {
@@ -619,12 +701,28 @@ fn save_network_policy(
         return Err("invalid_network_profile".to_string());
     }
 
+    for scope in &share_scopes {
+        if !scope_allowed(scope) {
+            return Err(format!("invalid_share_scope: {scope}"));
+        }
+    }
+
     let network_required = env_network_required();
     if network_required
         && profile == "witness_only"
         && !env_allow_witness_only_when_network_required()
     {
         return Err("network_required_forbids_witness_only_profile".to_string());
+    }
+
+    if profile == "witness_only" {
+        if has_scope(&share_scopes, "vault/*") || has_scope(&share_scopes, "evidence/*") {
+            return Err("witness_only_disallows_vault_and_evidence_scopes".to_string());
+        }
+    }
+
+    if profile == "reproducible_audit" && has_scope(&share_scopes, "vault/*") {
+        return Err("reproducible_audit_disallows_vault_scope".to_string());
     }
 
     if profile == "full_relay" && peer_set.is_empty() {
@@ -643,6 +741,15 @@ fn save_network_policy(
         }
     }
 
+    let relay_toggles = NetworkRelayToggles {
+        evidence_full_relay: has_scope(&share_scopes, "evidence/*"),
+        vault_relay: has_scope(&share_scopes, "vault/*"),
+    };
+
+    if relay_toggles.vault_relay && profile != "full_relay" {
+        return Err("vault_scope_requires_full_relay_profile".to_string());
+    }
+
     let (degraded_mode, reason) = evaluate_network_mode(&state);
     if network_required && degraded_mode && profile == "full_relay" {
         return Err(format!("network_required_blocked: {reason}"));
@@ -651,6 +758,7 @@ fn save_network_policy(
     policy.profile = profile;
     policy.share_scopes = share_scopes;
     policy.peer_set = peer_set;
+    policy.relay_toggles = relay_toggles;
     save_local_network_policy(&policy)?;
     let (degraded_mode, reason) = evaluate_network_mode(&state);
     Ok(NetworkPolicyResponse {

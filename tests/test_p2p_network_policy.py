@@ -13,6 +13,8 @@ def test_network_policy_schema_validates_seed_config() -> None:
     schema = json.loads((ROOT / "schema" / "network_policy_v1.schema.json").read_text(encoding="utf-8-sig"))
     payload = json.loads((ROOT / "config" / "network_policy_v1.json").read_text(encoding="utf-8-sig"))
     Draft202012Validator(schema).validate(payload)
+    assert payload["relay_toggles"]["evidence_full_relay"] is False
+    assert payload["relay_toggles"]["vault_relay"] is False
 
 
 def test_peer_registry_seed_contains_policy_and_trust_fields() -> None:
@@ -24,6 +26,19 @@ def test_peer_registry_seed_contains_policy_and_trust_fields() -> None:
     allowed = first.get("allowed_policy_profiles")
     assert isinstance(allowed, list) and all(isinstance(item, str) for item in allowed)
 
+
+
+
+def test_network_policy_share_scope_allowlist_and_relay_terms_documented() -> None:
+    schema = json.loads((ROOT / "schema" / "network_policy_v1.schema.json").read_text(encoding="utf-8-sig"))
+    allowed = set(schema["properties"]["share_scopes"]["items"]["enum"])
+    assert {"hashes/*", "metrics/*", "attestations/*", "tel/*", "evidence/*", "vault/*"}.issubset(allowed)
+
+    policy_doc = (ROOT / "docs" / "P2P_NETWORK_POLICY.md").read_text(encoding="utf-8")
+    assert "AI-private by default" in policy_doc
+    assert "evidence_full_relay" in policy_doc
+    assert "vault_relay" in policy_doc
+    assert "Canonical JSON" in policy_doc
 
 def test_tauri_network_policy_commands_registered_and_response_shape_present() -> None:
     main_rs = (ROOT / "desktop" / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
@@ -51,6 +66,8 @@ def test_peer_attestation_demo_signature_is_marked_placeholder() -> None:
     main_rs = (ROOT / "desktop" / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
     assert "demo-ed25519-placeholder" in main_rs
     assert "demo-sig:" in main_rs
+    assert "signed_bytes_hash" in main_rs
+    assert "canonical JSON" in main_rs
     assert "TODO(crypto): replace demo signature scaffold" in main_rs
 
 
@@ -59,3 +76,11 @@ def test_request_peer_attestation_attaches_peer_attestations_to_epoch_manifest()
     assert 'run_dir.join("peer_attestations.json")' in main_rs
     assert '"peer_attestations.json".to_string()' in main_rs
     assert 'get_mut("outputs_manifest")' in main_rs
+
+
+def test_save_network_policy_enforces_scope_and_profile_constraints() -> None:
+    main_rs = (ROOT / "desktop" / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
+    assert "invalid_share_scope" in main_rs
+    assert "witness_only_disallows_vault_and_evidence_scopes" in main_rs
+    assert "reproducible_audit_disallows_vault_scope" in main_rs
+    assert "vault_scope_requires_full_relay_profile" in main_rs

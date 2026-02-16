@@ -113,6 +113,10 @@ Run the Windows doctor helper for actionable checks and next commands:
 & .\scripts\windows\doctor.ps1
 ```
 
+## P2P network policy
+
+P2P policy profiles, relay semantics (Evidence vs Vault), scope allowlist, and signature canonicalization rules are documented in `docs/P2P_NETWORK_POLICY.md`.
+
 ## Troubleshooting
 - **Port already in use**: the app will increment the port until it finds a free slot (8001 → 8002 → …). If all attempts fail, restart the app after freeing a port.
 - **Firewall prompts**: allow local loopback connections for `python` if prompted so the embedded viewer can reach `http://127.0.0.1:<PORT>/sophia/viewer`.

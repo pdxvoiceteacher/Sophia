@@ -60,6 +60,10 @@ python tools/sophia/mint_governance_bundle.py \
   --out-dir out/smoke
 ```
 
+## P2P policy and cryptographic attestation notes
+
+Governance-adjacent P2P policy constraints (network profiles, scope allowlist, canonical signing rules, and relay toggles) are defined in `docs/P2P_NETWORK_POLICY.md`.
+
 ## Accessibility & Language Justice Commitments
 
 Sophia governance is designed to meet international accessibility expectations:

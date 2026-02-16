@@ -7,11 +7,14 @@
     "schema",
     "node_id",
     "pubkey",
+    "pubkey_format",
     "bundle_hash",
     "checks_run",
     "results",
     "timestamp_utc",
+    "signed_bytes_hash",
     "signature_alg",
+    "signature_format",
     "signature"
   ],
   "properties": {
@@ -24,6 +27,10 @@
     },
     "pubkey": {
       "type": "string"
+    },
+    "pubkey_format": {
+      "type": "string",
+      "enum": ["base64", "hex"]
     },
     "bundle_hash": {
       "type": "string"
@@ -48,10 +55,18 @@
     "timestamp_utc": {
       "type": "string"
     },
-    "signature": {
+    "signed_bytes_hash": {
       "type": "string"
     },
     "signature_alg": {
+      "type": "string",
+      "enum": ["demo-ed25519-placeholder", "ed25519"]
+    },
+    "signature_format": {
+      "type": "string",
+      "enum": ["base64"]
+    },
+    "signature": {
       "type": "string"
     }
   },
