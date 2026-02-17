@@ -35,6 +35,12 @@
       "date": "2026-01-29",
       "summary": "Add due-process bundle flags, shutdown smoke script, and standards gateway headers.",
       "commit": "pending"
+    },
+    {
+      "version": "0.1.6",
+      "date": "2026-01-29",
+      "summary": "Secure Swarm v0.1 wire formats finalized (signed_message_v1, sealed_envelope_v1, evidence_bundle_v1, consensus_summary_v1); pipeline now emits evidence_bundle.json + consensus_summary.json with audit consensus gates.",
+      "commit": "pending"
     }
   ]
 }

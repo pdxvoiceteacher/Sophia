@@ -271,7 +271,7 @@ def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]])
     artifact_entries = []
     for art in artifacts:
         rel = art["path"]
-        p = (REPO / rel)
+        p = (outdir / rel)
         size = p.stat().st_size if p.exists() else 0
         artifact_entries.append(
             {
@@ -477,9 +477,9 @@ def main() -> int:
     metrics["Lambda"] = lam
 
     artifacts = [
-        {"path": _safe_relpath(base_summary, REPO), "sha256": sha256_file(base_summary)},
-        {"path": _safe_relpath(base_bundle, REPO), "sha256": sha256_file(base_bundle)},
-        {"path": _safe_relpath(pert_path, REPO), "sha256": sha256_file(pert_path)}
+        {"path": _safe_relpath(base_summary, outdir), "sha256": sha256_file(base_summary)},
+        {"path": _safe_relpath(base_bundle, outdir), "sha256": sha256_file(base_bundle)},
+        {"path": _safe_relpath(pert_path, outdir), "sha256": sha256_file(pert_path)}
     ]
 
     connector_override = {
