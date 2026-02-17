@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "detector_registry_v1.schema.json",
+  "type": "object",
+  "required": ["schema", "detectors"],
+  "properties": {
+    "schema": { "type": "string", "const": "detector_registry_v1" },
+    "detectors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["algorithm", "parameters"],
+        "properties": {
+          "algorithm": { "type": "string" },
+          "parameters": { "type": "object" }
+        }
+      }
+    }
+  }
+}

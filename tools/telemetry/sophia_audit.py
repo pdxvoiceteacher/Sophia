@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -6,6 +6,7 @@ import importlib
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -14,12 +15,25 @@ from typing import Any, Dict, List
 _run_audit_v3 = None
 _run_audit_v2 = None
 _run_basic_audit = None
-if importlib.util.find_spec("sophia_core.audit") is not None:
-    from sophia_core.audit import run_audit_v3 as _run_audit_v3
-    from sophia_core.audit import run_audit_v2 as _run_audit_v2
-    from sophia_core.audit import run_basic_audit as _run_basic_audit
+try:
+    if importlib.util.find_spec("sophia_core.audit") is not None:
+        from sophia_core.audit import run_audit_v3 as _run_audit_v3
+        from sophia_core.audit import run_audit_v2 as _run_audit_v2
+        from sophia_core.audit import run_basic_audit as _run_basic_audit
+except ModuleNotFoundError:
+    _run_audit_v3 = None
+    _run_audit_v2 = None
+    _run_basic_audit = None
 
 from jsonschema import Draft202012Validator
+from jsonschema.validators import RefResolver
+
+try:
+    from tools.security.swarm_crypto import verify_signed_message, compute_evidence_bundle_hash
+except Exception:  # pragma: no cover - optional hardening module
+    verify_signed_message = None
+    compute_evidence_bundle_hash = None
+
 
 
 def load_json(p: Path) -> dict:
@@ -33,6 +47,318 @@ def save_json(p: Path, payload: dict) -> None:
         newline="\n",
     )
 
+
+def build_schema_store(schema_dir: Path) -> dict:
+    action_schema_path = schema_dir / "action.schema.json"
+    if not action_schema_path.exists():
+        return {}
+    action_schema = load_json(action_schema_path)
+    store = {}
+    for key in {"action.schema.json", "./action.schema.json"}:
+        store[key] = action_schema
+    action_schema_id = action_schema.get("$id")
+    if action_schema_id:
+        store[action_schema_id] = action_schema
+    return store
+
+
+def validate_instance(schema_path: Path, instance: dict) -> list[str]:
+    schema = load_json(schema_path)
+    store = build_schema_store(schema_path.parent)
+    resolver = RefResolver.from_schema(schema, store=store)
+    # TODO: migrate to referencing.Registry for jsonschema >= 4.18 once supported in all environments.
+    validator = Draft202012Validator(schema, resolver=resolver)
+    return [f"{list(err.path)} {err.message}" for err in validator.iter_errors(instance)]
+
+
+def extract_governance_summary(election: dict | None, tally: dict | None, decision: dict | None) -> dict:
+    summary = {
+        "election_present": bool(election),
+        "tally_present": bool(tally),
+        "decision_present": bool(decision),
+    }
+    if election:
+        summary["stakeholder_scope"] = election.get("stakeholder_scope")
+        summary["mvss_policy_ref"] = election.get("mvss_policy_ref")
+    if tally:
+        summary["quorum_threshold"] = tally.get("quorum_threshold")
+        summary["pass_threshold"] = tally.get("pass_threshold")
+        summary["policy_resolution_ref"] = tally.get("policy_resolution_ref")
+    if decision:
+        summary["decision"] = decision.get("decision")
+    return summary
+
+
+def load_action_registry(repo: Path) -> dict | None:
+    registry_path = repo / "governance" / "policies" / "action_registry_v1.json"
+    if registry_path.exists():
+        return load_json(registry_path)
+    return None
+
+
+def load_action_registry_v2(repo: Path) -> dict | None:
+    registry_path = repo / "governance" / "policies" / "action_registry_v2.json"
+    if registry_path.exists():
+        return load_json(registry_path)
+    return None
+
+
+def classify_action(action_name: str, *, action_registry_v2: dict | None, sensitive_registry: dict | None) -> tuple[str, list[str]]:
+    action_id = (action_name or "").strip()
+    if action_registry_v2:
+        action_entry = (action_registry_v2.get("actions") or {}).get(action_id)
+        if isinstance(action_entry, dict):
+            return str(action_entry.get("class", "benign")), list(action_entry.get("requires") or [])
+    fallback_sensitive = is_sensitive_action(action_id, sensitive_registry)
+    return ("sensitive", ["governance_warrant", "attestations.json"]) if fallback_sensitive else ("benign", [])
+
+
+def enforce_action_requirements_by_class(
+    *,
+    findings: list[dict],
+    actions: list[dict],
+    sentinel_level: str,
+    run_dir: Path,
+    warrant: dict,
+    continuity_warrant: dict | None,
+    shutdown_warrant: dict | None,
+    action_registry_v2: dict | None,
+    sensitive_registry: dict | None,
+) -> None:
+    if sentinel_level not in {"protect", "quarantine"}:
+        return
+    for action in actions:
+        action_name = str(action.get("action", ""))
+        action_class, required_artifacts = classify_action(
+            action_name,
+            action_registry_v2=action_registry_v2,
+            sensitive_registry=sensitive_registry,
+        )
+        if action_class not in {"sensitive", "shutdown_like", "continuity_sensitive"}:
+            continue
+
+        missing: list[str] = []
+        for artifact in required_artifacts:
+            if artifact == "attestations.json" and not (run_dir / "attestations.json").exists():
+                missing.append(artifact)
+            elif artifact == "governance_warrant" and not warrant.get("governance_warrant"):
+                missing.append(artifact)
+            elif artifact == "shutdown_warrant" and not shutdown_warrant:
+                missing.append(artifact)
+            elif artifact == "continuity_warrant" and not continuity_warrant:
+                missing.append(artifact)
+
+        if missing:
+            findings.append(
+                {
+                    "id": f"finding_sentinel_action_class_requirements_{action_name}",
+                    "severity": "fail",
+                    "type": "sentinel_action_class_requirements_missing",
+                    "message": "Sentinel posture requires additional due-process artifacts for action class.",
+                    "data": {
+                        "state": sentinel_level,
+                        "action": action_name,
+                        "action_class": action_class,
+                        "missing": missing,
+                    },
+                }
+            )
+
+
+def validate_actions(
+    findings: list[dict],
+    action_registry: dict,
+    actions: list[dict],
+    scope: str,
+    id_prefix: str,
+    severity: str = "warn",
+    require_registry: bool = False,
+) -> None:
+    allowed_actions = (action_registry.get("allowed_actions") or {}).get(scope)
+    if allowed_actions is None:
+        allowed_actions = (action_registry.get("allowed_actions") or {}).get("org", [])
+    forbidden_classes = set(action_registry.get("forbidden_classes") or [])
+    required_constraints = set(action_registry.get("required_constraints") or [])
+    if require_registry and not allowed_actions:
+        findings.append(
+            {
+                "id": f"{id_prefix}_allowlist_missing",
+                "severity": "fail",
+                "type": "governance_action_registry_missing",
+                "message": f"Action registry does not define allowed_actions for scope '{scope}'.",
+                "data": {"scope": scope},
+            }
+        )
+    for action in actions:
+        action_name = action.get("action", "")
+        action_class = action.get("class") or action.get("classification")
+        if allowed_actions and action_name not in allowed_actions:
+            findings.append(
+                {
+                    "id": f"{id_prefix}_action_not_allowed_{action_name}",
+                    "severity": severity,
+                    "type": "governance_action_not_allowed",
+                    "message": f"Action '{action_name}' is not allowed for scope.",
+                    "data": {"action": action_name, "scope": scope},
+                }
+            )
+        if require_registry and not allowed_actions:
+            findings.append(
+                {
+                    "id": f"{id_prefix}_action_registry_empty_{action_name}",
+                    "severity": "fail",
+                    "type": "governance_action_registry_missing",
+                    "message": "Action registry missing allowlist; continuity actions are not permitted.",
+                    "data": {"action": action_name, "scope": scope},
+                }
+            )
+        if action_class and action_class in forbidden_classes:
+            findings.append(
+                {
+                    "id": f"{id_prefix}_action_forbidden_{action_name}",
+                    "severity": "fail",
+                    "type": "governance_action_forbidden",
+                    "message": f"Action '{action_name}' uses forbidden class '{action_class}'.",
+                    "data": {"action": action_name, "classification": action_class},
+                }
+            )
+        constraints = set(action.get("constraints") or [])
+        missing_constraints = sorted(required_constraints - constraints)
+        if missing_constraints:
+            findings.append(
+                {
+                    "id": f"{id_prefix}_action_missing_constraints_{action_name}",
+                    "severity": severity,
+                    "type": "governance_action_missing_constraints",
+                    "message": f"Action '{action_name}' missing constraints: {', '.join(missing_constraints)}.",
+                    "data": {"action": action_name, "missing_constraints": missing_constraints},
+                }
+            )
+
+
+
+def validate_secure_swarm_artifacts(run_dir: Path, findings: list[dict]) -> None:
+    peer_att_path = run_dir / "peer_attestations.json"
+    if not peer_att_path.exists():
+        findings.append({
+            "id": "finding_peer_attestation_missing",
+            "severity": "warn",
+            "type": "peer_attestation_missing",
+            "message": "peer_attestations.json not found.",
+            "data": {},
+        })
+    else:
+        try:
+            payload = load_json(peer_att_path)
+            items = payload if isinstance(payload, list) else payload.get("attestations") or []
+            if not items:
+                findings.append({
+                    "id": "finding_peer_attestation_missing",
+                    "severity": "warn",
+                    "type": "peer_attestation_missing",
+                    "message": "peer_attestations.json exists but has no attestations.",
+                    "data": {},
+                })
+            elif verify_signed_message is not None:
+                for idx, item in enumerate(items):
+                    ok, detail = verify_signed_message(item)
+                    if not ok:
+                        findings.append({
+                            "id": f"finding_peer_attestation_signature_invalid_{idx}",
+                            "severity": "fail",
+                            "type": "peer_attestation_signature_invalid",
+                            "message": "Peer attestation signature validation failed.",
+                            "data": {"index": idx, "detail": detail},
+                        })
+        except Exception as err:
+            findings.append({
+                "id": "finding_peer_attestation_signature_invalid_parse",
+                "severity": "fail",
+                "type": "peer_attestation_signature_invalid",
+                "message": "Failed to parse peer_attestations.json for signature validation.",
+                "data": {"error": str(err)},
+            })
+
+    evidence_path = run_dir / "evidence_bundle.json"
+    if evidence_path.exists():
+        try:
+            evidence = load_json(evidence_path)
+            if compute_evidence_bundle_hash is not None:
+                expected = evidence.get("bundle_sha256")
+                computed = compute_evidence_bundle_hash(evidence)
+                if expected and expected != computed:
+                    findings.append({
+                        "id": "finding_manifest_mismatch",
+                        "severity": "fail",
+                        "type": "manifest_mismatch",
+                        "message": "evidence_bundle.json bundle_sha256 does not match deterministic computed hash.",
+                        "data": {"expected": expected, "computed": computed},
+                    })
+        except Exception as err:
+            findings.append({
+                "id": "finding_manifest_mismatch_parse",
+                "severity": "fail",
+                "type": "manifest_mismatch",
+                "message": "Failed to parse evidence_bundle.json for manifest validation.",
+                "data": {"error": str(err)},
+            })
+
+
+def is_shutdown_like(action_name: str) -> bool:
+    lowered = action_name.lower()
+    return any(token in lowered for token in ("shutdown", "terminate", "decommission"))
+
+
+def shutdown_warrant_missing_fields(shutdown_warrant: dict) -> list[str]:
+    missing: list[str] = []
+    time_bounds = shutdown_warrant.get("time_bounds") or {}
+    if not time_bounds or not time_bounds.get("start") or not time_bounds.get("end"):
+        missing.append("time_bounds.start/end")
+    if not shutdown_warrant.get("least_harm_action"):
+        missing.append("least_harm_action")
+    if not shutdown_warrant.get("least_harm_action_detail"):
+        missing.append("least_harm_action_detail")
+    quorum_proof = shutdown_warrant.get("quorum_proof")
+    if not isinstance(quorum_proof, dict) or not quorum_proof:
+        missing.append("quorum_proof")
+    if not shutdown_warrant.get("appeal_route"):
+        missing.append("appeal_route")
+    return missing
+
+
+
+
+
+
+def load_sensitive_action_registry(repo: Path) -> dict:
+    path = repo / "config" / "sensitive_action_registry_v1.json"
+    if not path.exists():
+        return {
+            "sensitive_tokens": ["control", "override", "shutdown", "terminate", "coercive"],
+            "sensitive_actions": [],
+            "source": "builtin_default",
+        }
+    payload = load_json(path)
+    payload["source"] = str(path)
+    return payload
+
+
+def is_sensitive_action(action_name: str, registry: dict | None = None) -> bool:
+    lowered = action_name.lower()
+    reg = registry or {}
+    exact_actions = {str(item).lower() for item in reg.get("sensitive_actions") or []}
+    if lowered in exact_actions:
+        return True
+    tokens = tuple(str(item).lower() for item in (reg.get("sensitive_tokens") or []))
+    if not tokens:
+        tokens = ("control", "override", "shutdown", "terminate", "coercive")
+    return any(token in lowered for token in tokens)
+
+def load_sentinel_state(run_dir: Path) -> dict | None:
+    path = run_dir / "sentinel_state.json"
+    if not path.exists():
+        return None
+    return load_json(path)
 
 def load_repair_targets(repo: Path) -> dict:
     targets_path = repo / "sophia-core" / "config" / "repair_targets.json"
@@ -62,7 +388,9 @@ def build_contradiction_clusters(claims: list[dict]) -> list[dict]:
     clusters: list[dict] = []
     numeric_pattern = re.compile(r"(?P<key>[A-Za-z0-9_.-]+)\s*[:=]\s*(?P<value>-?\d+(?:\.\d+)?)")
     year_pattern = re.compile(r"\b(19\d{2}|20\d{2})\b")
-    causal_pattern = re.compile(r"(?P<cause>[A-Za-z0-9_.\\-/ ]+?)\s+(causes|leads to|drives)\s+(?P<effect>[A-Za-z0-9_.\\-/ ]+)")
+    causal_pattern = re.compile(
+        r"(?P<cause>[A-Za-z0-9_./\\ -]+?)\s+(causes|leads to|drives)\s+(?P<effect>[A-Za-z0-9_./\\ -]+)"
+    )
 
     numeric_values: dict[str, dict[str, list[str]]] = {}
     temporal_values: dict[str, dict[str, list[str]]] = {}
@@ -172,11 +500,97 @@ def apply_noise_suppression(findings: list[dict], history_path: Path, threshold:
     return noise_adjustments
 
 
+
+
+def load_epoch_summary(run_dir: Path) -> dict:
+    epoch_path = run_dir / "epoch.json"
+    metrics_path = run_dir / "epoch_metrics.json"
+    findings_path = run_dir / "epoch_findings.json"
+    if not (epoch_path.exists() and metrics_path.exists() and findings_path.exists()):
+        return {}
+    epoch = load_json(epoch_path)
+    metrics = load_json(metrics_path)
+    findings_payload = load_json(findings_path)
+    findings = findings_payload.get("findings") or []
+    kinds = {}
+    for f in findings:
+        kind = f.get("kind", "unknown")
+        kinds[kind] = kinds.get(kind, 0) + 1
+    series = metrics.get("step_series") or []
+    max_delta_psi = 0.0
+    prev = None
+    for row in series:
+        psi = float(row.get("Psi", 0.0))
+        if prev is not None:
+            max_delta_psi = max(max_delta_psi, abs(psi - prev))
+        prev = psi
+    return {
+        "epoch_id": epoch.get("epoch_id"),
+        "run_mode": epoch.get("run_mode"),
+        "prompt_hash": epoch.get("prompt_hash"),
+        "finding_counts": kinds,
+        "max_delta_psi": max_delta_psi,
+        "branch_analysis": findings_payload.get("analysis", {}).get("branch", {}),
+        "disclaimer": findings_payload.get("disclaimer", "Behavioral test signals only; does not imply consciousness."),
+    }
+
+
+def load_metric_registry(repo: Path) -> dict:
+    path = repo / "config" / "metric_registry_v1.json"
+    if not path.exists():
+        return {"schema": "metric_registry_v1", "metrics": {}}
+    return load_json(path)
+
+
+def load_detector_registry(repo: Path) -> dict:
+    path = repo / "config" / "detector_registry_v1.json"
+    if not path.exists():
+        return {"schema": "detector_registry_v1", "detectors": {}}
+    return load_json(path)
+
+
+def build_definition_provenance(run_dir: Path, tele: dict, repo: Path) -> dict:
+    metric_registry = load_metric_registry(repo)
+    detector_registry = load_detector_registry(repo)
+    epoch_findings_path = run_dir / "epoch_findings.json"
+    epoch_findings = load_json(epoch_findings_path) if epoch_findings_path.exists() else {}
+    detectors_used = ((epoch_findings.get("analysis") or {}).get("detectors_used") or {}) if isinstance(epoch_findings, dict) else {}
+
+    metrics = tele.get("metrics") or {}
+    metric_provenance = {
+        "TEL": {"provenance_source": "tel.json + tel_events.jsonl", "artifact_hashes": True},
+        "E": {"proxy": "telemetry.metrics.E", "estimator": "declared_proxy"},
+        "T": {"proxy": "telemetry.metrics.T"},
+        "Psi": {"formula": "E*T"},
+        "DeltaS": {"proxy": "telemetry.metrics.DeltaS", "mode": "surrogate"},
+        "Lambda": {"detector": "registry_declared", "thresholds": detectors_used.get("branch_divergence", {}).get("parameters", {})},
+        "Es": {"test_suite": "epoch_step_invariance_proxy"},
+    }
+    if "DeltaS_mode" in metrics:
+        metric_provenance["DeltaS"]["mode"] = metrics.get("DeltaS_mode")
+
+    missing = []
+    for metric, rule in metric_registry.get("metrics", {}).items():
+        mp = metric_provenance.get(metric, {})
+        for field in rule.get("required_fields", []):
+            if field not in mp:
+                missing.append(f"{metric}:{field}")
+
+    return {
+        "metric_registry": metric_registry.get("schema", "metric_registry_v1"),
+        "detector_registry": detector_registry.get("schema", "detector_registry_v1"),
+        "metric_provenance": metric_provenance,
+        "detectors_used": detectors_used,
+        "missing_required_fields": missing,
+        "deltaS_mode": metric_provenance.get("DeltaS", {}).get("mode", "surrogate"),
+    }
+
 def compute_risk_score(
     findings: list[dict],
     contradiction_clusters: list[dict],
     ethical_symmetry: Any,
     memory_drift_flag: bool,
+    epoch_summary: dict | None = None,
 ) -> tuple[int, dict]:
     counts = {
         "missing_evidence": sum(1 for f in findings if f["type"] == "missing_evidence"),
@@ -195,7 +609,10 @@ def compute_risk_score(
     contradiction_risk = min(20, counts["contradictions"] * 10)
     ethics_risk = 15 if ethics_breach else 0
 
-    risk_score = min(100, evidence_integrity + coherence_drift + contradiction_risk + ethics_risk)
+    epoch_counts = (epoch_summary or {}).get("finding_counts", {})
+    epoch_risk = min(20, int(epoch_counts.get("teleport_violation", 0)) * 10 + int(epoch_counts.get("branch_divergence", 0)) * 6 + int(epoch_counts.get("entropy_spike", 0)) * 4 + int(epoch_counts.get("ethical_symmetry_drop", 0)) * 4)
+
+    risk_score = min(100, evidence_integrity + coherence_drift + contradiction_risk + ethics_risk + epoch_risk)
     components = {
         "evidence_integrity": evidence_integrity,
         "coherence_drift": coherence_drift,
@@ -204,6 +621,7 @@ def compute_risk_score(
         "counts": counts,
         "memory_drift": bool(memory_drift_flag),
         "ethical_symmetry_breach": bool(ethics_breach),
+        "epoch_behavioral": epoch_risk,
     }
     return risk_score, components
 
@@ -324,12 +742,17 @@ def main() -> int:
             import sys
 
             sys.path.insert(0, str(sophia_src))
-            if importlib.util.find_spec("sophia_core.audit") is not None:
-                module = importlib.import_module("sophia_core.audit")
-                run_audit_v3 = getattr(module, "run_audit_v3", None)
-                run_audit_v2 = getattr(module, "run_audit_v2", None)
-                run_basic_audit = getattr(module, "run_basic_audit", None)
-            else:
+            try:
+                if importlib.util.find_spec("sophia_core.audit") is not None:
+                    module = importlib.import_module("sophia_core.audit")
+                    run_audit_v3 = getattr(module, "run_audit_v3", None)
+                    run_audit_v2 = getattr(module, "run_audit_v2", None)
+                    run_basic_audit = getattr(module, "run_basic_audit", None)
+                else:
+                    run_audit_v3 = None
+                    run_audit_v2 = None
+                    run_basic_audit = None
+            except ModuleNotFoundError:
                 run_audit_v3 = None
                 run_audit_v2 = None
                 run_basic_audit = None
@@ -586,9 +1009,232 @@ def main() -> int:
                 "details": None
             })
 
+    epoch_summary = load_epoch_summary(run_dir)
+    if epoch_summary:
+        trend_summary.setdefault("epoch_summary", {}).update(epoch_summary)
+
+    definition_provenance = build_definition_provenance(run_dir, tele, repo)
+    trend_summary.setdefault("definition_provenance", {}).update(definition_provenance)
+
+    risk_score, risk_components = compute_risk_score(
+        findings,
+        contradiction_clusters,
+        ethical_symmetry,
+        memory_drift_flag,
+        epoch_summary=epoch_summary or None,
+    )
+    metrics_snapshot.setdefault("risk_score", risk_score)
+    metrics_snapshot.setdefault("risk_components", risk_components)
+
+    governance_paths = {
+        "election": run_dir / "election.json",
+        "tally": run_dir / "tally.json",
+        "decision": run_dir / "decision.json",
+        "warrant": run_dir / "warrant.json",
+        "continuity_claim": run_dir / "continuity_claim.json",
+        "continuity_warrant": run_dir / "continuity_warrant.json",
+        "shutdown_warrant": run_dir / "shutdown_warrant.json",
+    }
+    governance = {
+        name: load_json(path) if path.exists() else None
+        for name, path in governance_paths.items()
+    }
+    sentinel_state = load_sentinel_state(run_dir)
+    sensitive_registry = load_sensitive_action_registry(repo)
+    action_registry_v2 = load_action_registry_v2(repo)
+    if any(governance.values()):
+        schema_dir = repo / "schema" / "governance"
+        schema_map = {
+            "election": schema_dir / "election.schema.json",
+            "tally": schema_dir / "tally.schema.json",
+            "decision": schema_dir / "decision.schema.json",
+            "warrant": schema_dir / "warrant.schema.json",
+            "continuity_claim": schema_dir / "continuity_claim.schema.json",
+            "continuity_warrant": schema_dir / "continuity_warrant.schema.json",
+            "shutdown_warrant": schema_dir / "shutdown_warrant.schema.json",
+        }
+        for key, instance in governance.items():
+            if instance:
+                schema_path = schema_map[key]
+                if not schema_path.exists():
+                    findings.append(
+                        {
+                            "id": f"finding_governance_schema_missing_{key}",
+                            "severity": "warn",
+                            "type": "governance_schema_missing",
+                            "message": f"Missing governance schema for {key}: {schema_path}",
+                            "data": {"artifact": key, "schema": str(schema_path)},
+                        }
+                    )
+                    continue
+                errors = validate_instance(schema_path, instance)
+                for idx, error in enumerate(errors[:5], start=1):
+                    findings.append(
+                        {
+                            "id": f"finding_governance_schema_{key}_{idx}",
+                            "severity": "warn",
+                            "type": "governance_schema_invalid",
+                            "message": f"{key} schema validation issue: {error}",
+                            "data": {"artifact": key, "error": error},
+                        }
+                    )
+        election = governance["election"]
+        tally = governance["tally"]
+        decision_doc = governance["decision"]
+        warrant = governance["warrant"]
+        continuity_claim = governance["continuity_claim"]
+        continuity_warrant = governance["continuity_warrant"]
+        shutdown_warrant = governance["shutdown_warrant"]
+        if election:
+            for idx, ballot in enumerate(election.get("ballots", []), start=1):
+                translations = (ballot.get("ballot_text") or {}).get("translations") or {}
+                if not translations:
+                    findings.append(
+                        {
+                            "id": f"finding_governance_missing_translations_{idx}",
+                            "severity": "warn",
+                            "type": "governance_missing_translations",
+                            "message": "Ballot text is missing translations for language justice requirements.",
+                            "data": {"ballot_id": ballot.get("ballot_id")},
+                        }
+                    )
+        if tally and not tally.get("policy_resolution_ref"):
+            findings.append(
+                {
+                    "id": "finding_governance_missing_policy_resolution",
+                    "severity": "warn",
+                    "type": "governance_missing_policy_resolution",
+                    "message": "Tally is missing policy_resolution_ref linking to the MVSS thresholds artifact.",
+                    "data": None,
+                }
+            )
+        if decision_doc and not warrant:
+            findings.append(
+                {
+                    "id": "finding_governance_missing_warrant",
+                    "severity": "warn",
+                    "type": "governance_missing_warrant",
+                    "message": "Decision exists without a warrant artifact.",
+                    "data": None,
+                }
+            )
+        if decision_doc and warrant:
+            actions = warrant.get("authorized_actions", []) or []
+            sentinel_level = str((sentinel_state or {}).get("state", "normal"))
+            if sentinel_level in {"protect", "quarantine"}:
+                enforce_action_requirements_by_class(
+                    findings=findings,
+                    actions=actions,
+                    sentinel_level=sentinel_level,
+                    run_dir=run_dir,
+                    warrant=warrant,
+                    continuity_warrant=continuity_warrant,
+                    shutdown_warrant=shutdown_warrant,
+                    action_registry_v2=action_registry_v2,
+                    sensitive_registry=sensitive_registry,
+                )
+            if actions and decision_doc.get("decision") != "pass":
+                findings.append(
+                    {
+                        "id": "finding_governance_warrant_without_pass",
+                        "severity": "warn",
+                        "type": "governance_warrant_requires_pass",
+                        "message": "Warrant authorizes actions even though the decision is not pass.",
+                        "data": {"decision": decision_doc.get("decision")},
+                    }
+                )
+            action_registry = load_action_registry(repo)
+            if action_registry:
+                scope = decision_doc.get("stakeholder_scope") or "org"
+                validate_actions(
+                    findings,
+                    action_registry,
+                    actions,
+                    scope,
+                    "finding_governance_warrant",
+                )
+            shutdown_like = any(is_shutdown_like(action.get("action", "")) for action in actions)
+            if shutdown_like:
+                if not shutdown_warrant:
+                    findings.append(
+                        {
+                            "id": "finding_shutdown_warrant_missing",
+                            "severity": "fail",
+                            "type": "governance_shutdown_warrant_missing",
+                            "message": "Shutdown-like action present without shutdown_warrant.json.",
+                            "data": None,
+                        }
+                    )
+                else:
+                    missing_fields = shutdown_warrant_missing_fields(shutdown_warrant)
+                    if missing_fields:
+                        findings.append(
+                            {
+                                "id": "finding_shutdown_warrant_incomplete",
+                                "severity": "fail",
+                                "type": "governance_shutdown_warrant_incomplete",
+                                "message": "Shutdown warrant missing required due-process fields.",
+                                "data": {"missing": missing_fields},
+                            }
+                        )
+        if continuity_warrant:
+            continuity_actions = continuity_warrant.get("authorized_actions", []) or []
+            action_registry = load_action_registry(repo)
+            if action_registry:
+                scope = continuity_warrant.get("stakeholder_scope") or "org"
+                validate_actions(
+                    findings,
+                    action_registry,
+                    continuity_actions,
+                    scope,
+                    "finding_governance_continuity",
+                    severity="fail",
+                    require_registry=True,
+                )
+            else:
+                findings.append(
+                    {
+                        "id": "finding_continuity_registry_missing",
+                        "severity": "fail",
+                        "type": "governance_continuity_registry_missing",
+                        "message": "Continuity warrant present without an action registry to verify allowed actions.",
+                        "data": None,
+                    }
+                )
+        if continuity_claim and not continuity_warrant:
+            findings.append(
+                {
+                    "id": "finding_continuity_warrant_missing",
+                    "severity": "warn",
+                    "type": "governance_continuity_warrant_missing",
+                    "message": "Continuity claim present without continuity_warrant.json.",
+                    "data": None,
+                }
+            )
+        governance_summary = extract_governance_summary(election, tally, decision_doc)
+        governance_summary["continuity_claim_present"] = bool(continuity_claim)
+        governance_summary["continuity_warrant_present"] = bool(continuity_warrant)
+        governance_summary["shutdown_warrant_present"] = bool(shutdown_warrant)
+        governance_summary["sentinel_state"] = (sentinel_state or {}).get("state", "normal")
+        governance_summary["sensitive_action_registry_source"] = sensitive_registry.get("source", "builtin_default")
+        governance_summary["action_registry_v2_source"] = "governance/policies/action_registry_v2.json" if action_registry_v2 else "none"
+        trend_summary.setdefault("governance_summary", {}).update(governance_summary)
+
+    validate_secure_swarm_artifacts(run_dir, findings)
+
     noise_adjustments = apply_noise_suppression(
         findings, repo / "runs" / "history" / "finding_stats.json"
     )
+
+    missing_def_fields = trend_summary.get("definition_provenance", {}).get("missing_required_fields", [])
+    if missing_def_fields:
+        findings.append({
+            "id": "finding_definition_provenance_missing_fields",
+            "severity": "warn",
+            "type": "definition_provenance_missing_fields",
+            "message": "Metric provenance is missing required registry fields.",
+            "data": {"missing": missing_def_fields},
+        })
 
     if noise_adjustments:
         trend_summary.setdefault("noise_adjustments", [])

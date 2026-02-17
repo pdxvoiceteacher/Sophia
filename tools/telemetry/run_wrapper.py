@@ -328,6 +328,12 @@ def main() -> int:
         {"path": _safe_relpath(pert_path, REPO), "sha256": sha256_file(pert_path)}
     ]
 
+    connector_override = {
+        "type": os.environ.get("SOPHIA_CONNECTOR_TYPE"),
+        "endpoint": os.environ.get("SOPHIA_CONNECTOR_ENDPOINT"),
+        "model": os.environ.get("SOPHIA_CONNECTOR_MODEL"),
+    }
+
     telemetry = {
         "schema_id": "coherencelattice.telemetry_run.v1",
         "version": 1,
@@ -336,7 +342,8 @@ def main() -> int:
         "environment": {
             "python": sys.version.replace("\\n", " "),
             "platform": platform.platform(),
-            "git_commit": git_commit()
+            "git_commit": git_commit(),
+            "connector_override": connector_override
         },
         "metrics": metrics,
         "flags": {
