@@ -63,11 +63,11 @@ if _OUT_ALWAYS:
 
 # --- TEL events flag pre-parse (parser-agnostic) ---
 _TEL_EVENTS_EMIT = False
+_out = None
 if "--emit-tel-events" in sys.argv:
     _TEL_EVENTS_EMIT = True
     sys.argv.remove("--emit-tel-events")
     # Auto-wire UCC step-event sink to <out>/ucc_tel_events.jsonl
-    _out = None
     for i, a in enumerate(sys.argv):
         if a == "--out" and i + 1 < len(sys.argv):
             _out = sys.argv[i + 1]
@@ -444,7 +444,7 @@ def main() -> int:
 
         pert_results.append({
             "i": i,
-            "audit_bundle_path": _safe_relpath(bundle_i, REPO),
+            "audit_bundle_path": _safe_relpath(bundle_i, outdir),
             "metrics": vec_i,
             "drift_from_base": d_i,
             "perf_index": perf_index_i,
@@ -460,7 +460,7 @@ def main() -> int:
     pert_doc = {
         "kind": "telemetry_perturbations.v1",
         "base": {
-            "audit_bundle_path": _safe_relpath(base_bundle, REPO),
+            "audit_bundle_path": _safe_relpath(base_bundle, outdir),
             "metrics": base_vec,
             "perf_index": perf_index_base,
             "perf_values_count": nvals_base
@@ -510,7 +510,7 @@ def main() -> int:
         },
         "artifacts": artifacts,
         "ucc": {
-            "audit_bundle_path": _safe_relpath(base_bundle, REPO),
+            "audit_bundle_path": _safe_relpath(base_bundle, outdir),
             "audit_bundle_sha256": sha256_file(base_bundle)
         },
         "notes": "Telemetry derived without telemetry_snapshot module. E from KONOMI CSV numeric substrings; T/Es from UCC coverage audit_bundle; Psi=E*T; ÃŽâ€S/ÃŽâ€º from perturbation drift."
