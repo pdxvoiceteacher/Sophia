@@ -237,30 +237,51 @@ def validate_actions(
 
 
 
-def validate_secure_swarm_artifacts(run_dir: Path, findings: list[dict]) -> None:
+def _network_profile_for_run(run_dir: Path, repo: Path) -> str:
+    candidate_paths = [run_dir / "network_policy_v1.json", repo / "config" / "network_policy_v1.json"]
+    for path in candidate_paths:
+        if not path.exists():
+            continue
+        try:
+            payload = load_json(path)
+        except Exception:
+            continue
+        profile = str(payload.get("profile") or payload.get("network_profile") or "").strip()
+        if profile in {"witness_only", "reproducible_audit", "full_relay"}:
+            return profile
+    return "witness_only"
+
+
+def validate_secure_swarm_artifacts(run_dir: Path, findings: list[dict], repo: Path, publish_actions: list[str]) -> None:
+    profile = _network_profile_for_run(run_dir, repo)
+    missing_severity = "warn" if profile == "witness_only" else "fail"
+
     peer_att_path = run_dir / "peer_attestations.json"
+    peer_items: list[dict] = []
+    peer_present = False
     if not peer_att_path.exists():
         findings.append({
             "id": "finding_peer_attestation_missing",
-            "severity": "warn",
+            "severity": missing_severity,
             "type": "peer_attestation_missing",
             "message": "peer_attestations.json not found.",
-            "data": {},
+            "data": {"network_profile": profile},
         })
     else:
         try:
             payload = load_json(peer_att_path)
-            items = payload if isinstance(payload, list) else payload.get("attestations") or []
-            if not items:
+            peer_items = payload if isinstance(payload, list) else payload.get("attestations") or []
+            peer_present = bool(peer_items)
+            if not peer_items:
                 findings.append({
                     "id": "finding_peer_attestation_missing",
-                    "severity": "warn",
+                    "severity": missing_severity,
                     "type": "peer_attestation_missing",
                     "message": "peer_attestations.json exists but has no attestations.",
-                    "data": {},
+                    "data": {"network_profile": profile},
                 })
             elif verify_signed_message is not None:
-                for idx, item in enumerate(items):
+                for idx, item in enumerate(peer_items):
                     ok, detail = verify_signed_message(item)
                     if not ok:
                         findings.append({
@@ -280,7 +301,16 @@ def validate_secure_swarm_artifacts(run_dir: Path, findings: list[dict]) -> None
             })
 
     evidence_path = run_dir / "evidence_bundle.json"
-    if evidence_path.exists():
+    evidence = None
+    if not evidence_path.exists():
+        findings.append({
+            "id": "finding_evidence_bundle_missing",
+            "severity": missing_severity,
+            "type": "evidence_bundle_missing",
+            "message": "evidence_bundle.json not found.",
+            "data": {"network_profile": profile},
+        })
+    else:
         try:
             evidence = load_json(evidence_path)
             if compute_evidence_bundle_hash is not None:
@@ -302,6 +332,55 @@ def validate_secure_swarm_artifacts(run_dir: Path, findings: list[dict]) -> None
                 "message": "Failed to parse evidence_bundle.json for manifest validation.",
                 "data": {"error": str(err)},
             })
+
+    consensus_path = run_dir / "consensus_summary.json"
+    consensus_doc = None
+    if not consensus_path.exists():
+        findings.append({
+            "id": "finding_consensus_summary_missing",
+            "severity": missing_severity,
+            "type": "consensus_summary_missing",
+            "message": "consensus_summary.json not found.",
+            "data": {"network_profile": profile},
+        })
+    else:
+        try:
+            consensus_doc = load_json(consensus_path)
+        except Exception as err:
+            findings.append({
+                "id": "finding_consensus_summary_parse",
+                "severity": "fail",
+                "type": "consensus_summary_invalid",
+                "message": "Failed to parse consensus_summary.json.",
+                "data": {"error": str(err)},
+            })
+
+    requires_gate = profile == "full_relay" or any(a in {"publish", "export"} for a in publish_actions)
+    if requires_gate:
+        if consensus_doc is None:
+            findings.append({
+                "id": "finding_consensus_gate_missing",
+                "severity": "fail",
+                "type": "consensus_gate_failed",
+                "message": "Consensus summary required for publish/export actions but missing.",
+                "data": {"network_profile": profile, "actions": publish_actions},
+            })
+        else:
+            consensus_state = str(consensus_doc.get("consensus") or "insufficient")
+            satisfied = bool((consensus_doc.get("policy_gate") or {}).get("satisfied"))
+            if consensus_state != "convergent" or not satisfied:
+                findings.append({
+                    "id": "finding_consensus_insufficient",
+                    "severity": "fail",
+                    "type": "consensus_gate_failed",
+                    "message": "Consensus is insufficient for publish/export actions.",
+                    "data": {
+                        "network_profile": profile,
+                        "actions": publish_actions,
+                        "consensus": consensus_state,
+                        "policy_gate_satisfied": satisfied,
+                    },
+                })
 
 
 def is_shutdown_like(action_name: str) -> bool:
@@ -1042,6 +1121,7 @@ def main() -> int:
     sentinel_state = load_sentinel_state(run_dir)
     sensitive_registry = load_sensitive_action_registry(repo)
     action_registry_v2 = load_action_registry_v2(repo)
+    publish_actions: list[str] = []
     if any(governance.values()):
         schema_dir = repo / "schema" / "governance"
         schema_map = {
@@ -1120,6 +1200,7 @@ def main() -> int:
             )
         if decision_doc and warrant:
             actions = warrant.get("authorized_actions", []) or []
+            publish_actions = [str(action.get("action", "")).lower() for action in actions if isinstance(action, dict)]
             sentinel_level = str((sentinel_state or {}).get("state", "normal"))
             if sentinel_level in {"protect", "quarantine"}:
                 enforce_action_requirements_by_class(
@@ -1220,7 +1301,7 @@ def main() -> int:
         governance_summary["action_registry_v2_source"] = "governance/policies/action_registry_v2.json" if action_registry_v2 else "none"
         trend_summary.setdefault("governance_summary", {}).update(governance_summary)
 
-    validate_secure_swarm_artifacts(run_dir, findings)
+    validate_secure_swarm_artifacts(run_dir, findings, repo, publish_actions)
 
     noise_adjustments = apply_noise_suppression(
         findings, repo / "runs" / "history" / "finding_stats.json"

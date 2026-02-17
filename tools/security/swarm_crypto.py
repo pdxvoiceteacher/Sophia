@@ -302,9 +302,6 @@ def open_envelope_for_recipient(
     recipient_private_key_b64u: str,
 ) -> bytes:
     aad_bytes = b64u_decode(envelope["crypto"]["aad_b64u"])
-    aad_struct_hash = canonical_sha256_hex(json.loads(aad_bytes.decode("utf-8")))
-    if aad_struct_hash != canonical_sha256_hex(json.loads(aad_bytes.decode("utf-8"))):
-        raise ValueError("aad_invalid")
 
     recipient_entry = next((r for r in envelope["recipients"] if r.get("recipient_kid") == recipient_kid), None)
     if recipient_entry is None:
@@ -339,14 +336,15 @@ def open_envelope_for_recipient(
 
 def compute_evidence_bundle_hash(bundle: dict[str, Any]) -> str:
     artifacts = bundle.get("artifacts") or []
-    lines: list[str] = []
-    for entry in sorted(artifacts, key=lambda e: str(e.get("path", ""))):
-        path = str(entry.get("path", ""))
-        sha = str(entry.get("sha256", ""))
-        size = int(entry.get("size_bytes", 0))
-        lines.append(f"{path}|{sha}|{size}")
-    payload = "\n".join(lines).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+    hash_payload = {
+        "bundle_hash_schema": "bundle_hash_v1",
+        "bundle_id": str(bundle.get("bundle_id", "")),
+        "artifacts": [
+            {"path": str(entry.get("path", "")), "sha256": str(entry.get("sha256", ""))}
+            for entry in sorted(artifacts, key=lambda e: str(e.get("path", "")))
+        ],
+    }
+    return hashlib.sha256(canonical_json_bytes(hash_payload)).hexdigest()
 
 
 # Backward-compatible wrappers used by previous tests/callers.

@@ -121,14 +121,26 @@ def test_sealed_envelope_v1_multi_recipient_and_tamper() -> None:
 
 def test_evidence_bundle_hash_is_deterministic_by_sorted_paths() -> None:
     bundle = {
+        "bundle_id": "bundle-1",
         "artifacts": [
             {"path": "z.txt", "sha256": "f" * 64, "size_bytes": 2},
             {"path": "a.txt", "sha256": "e" * 64, "size_bytes": 1},
         ]
     }
     h1 = compute_evidence_bundle_hash(bundle)
-    h2 = compute_evidence_bundle_hash({"artifacts": list(reversed(bundle["artifacts"]))})
+    h2 = compute_evidence_bundle_hash({"bundle_id": "bundle-1", "artifacts": list(reversed(bundle["artifacts"]))})
+    expected = canonical_sha256_hex(
+        {
+            "bundle_hash_schema": "bundle_hash_v1",
+            "bundle_id": "bundle-1",
+            "artifacts": [
+                {"path": "a.txt", "sha256": "e" * 64},
+                {"path": "z.txt", "sha256": "f" * 64},
+            ],
+        }
+    )
     assert h1 == h2
+    assert h1 == expected
     assert len(h1) == 64
 
 
