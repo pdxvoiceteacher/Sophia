@@ -100,3 +100,12 @@ For domain-shift trust resilience, future artifacts should include a Context Int
 - consent events when scope changes
 
 This is intentionally scoped for a follow-on milestone.
+
+
+## Normative wire-format alignment (v0.1)
+
+- Canonicalization: RFC 8785 JCS canonical JSON for signed/hashes and AAD structures.
+- Binary encoding in JSON: **base64url without padding**.
+- Signed artifacts are wrapped in `signed_message_v1` (`payload_schema`, `payload`, `signer`, `signature_alg`, `signature`).
+- Encrypted transport uses `sealed_envelope_v1` with multi-recipient wraps.
+

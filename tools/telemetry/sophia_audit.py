@@ -28,6 +28,13 @@ except ModuleNotFoundError:
 from jsonschema import Draft202012Validator
 from jsonschema.validators import RefResolver
 
+try:
+    from tools.security.swarm_crypto import verify_signed_message, compute_evidence_bundle_hash
+except Exception:  # pragma: no cover - optional hardening module
+    verify_signed_message = None
+    compute_evidence_bundle_hash = None
+
+
 
 def load_json(p: Path) -> dict:
     return json.loads(p.read_text(encoding="utf-8-sig"))
@@ -227,6 +234,74 @@ def validate_actions(
                     "data": {"action": action_name, "missing_constraints": missing_constraints},
                 }
             )
+
+
+
+def validate_secure_swarm_artifacts(run_dir: Path, findings: list[dict]) -> None:
+    peer_att_path = run_dir / "peer_attestations.json"
+    if not peer_att_path.exists():
+        findings.append({
+            "id": "finding_peer_attestation_missing",
+            "severity": "warn",
+            "type": "peer_attestation_missing",
+            "message": "peer_attestations.json not found.",
+            "data": {},
+        })
+    else:
+        try:
+            payload = load_json(peer_att_path)
+            items = payload if isinstance(payload, list) else payload.get("attestations") or []
+            if not items:
+                findings.append({
+                    "id": "finding_peer_attestation_missing",
+                    "severity": "warn",
+                    "type": "peer_attestation_missing",
+                    "message": "peer_attestations.json exists but has no attestations.",
+                    "data": {},
+                })
+            elif verify_signed_message is not None:
+                for idx, item in enumerate(items):
+                    ok, detail = verify_signed_message(item)
+                    if not ok:
+                        findings.append({
+                            "id": f"finding_peer_attestation_signature_invalid_{idx}",
+                            "severity": "fail",
+                            "type": "peer_attestation_signature_invalid",
+                            "message": "Peer attestation signature validation failed.",
+                            "data": {"index": idx, "detail": detail},
+                        })
+        except Exception as err:
+            findings.append({
+                "id": "finding_peer_attestation_signature_invalid_parse",
+                "severity": "fail",
+                "type": "peer_attestation_signature_invalid",
+                "message": "Failed to parse peer_attestations.json for signature validation.",
+                "data": {"error": str(err)},
+            })
+
+    evidence_path = run_dir / "evidence_bundle.json"
+    if evidence_path.exists():
+        try:
+            evidence = load_json(evidence_path)
+            if compute_evidence_bundle_hash is not None:
+                expected = evidence.get("bundle_sha256")
+                computed = compute_evidence_bundle_hash(evidence)
+                if expected and expected != computed:
+                    findings.append({
+                        "id": "finding_manifest_mismatch",
+                        "severity": "fail",
+                        "type": "manifest_mismatch",
+                        "message": "evidence_bundle.json bundle_sha256 does not match deterministic computed hash.",
+                        "data": {"expected": expected, "computed": computed},
+                    })
+        except Exception as err:
+            findings.append({
+                "id": "finding_manifest_mismatch_parse",
+                "severity": "fail",
+                "type": "manifest_mismatch",
+                "message": "Failed to parse evidence_bundle.json for manifest validation.",
+                "data": {"error": str(err)},
+            })
 
 
 def is_shutdown_like(action_name: str) -> bool:
@@ -1144,6 +1219,8 @@ def main() -> int:
         governance_summary["sensitive_action_registry_source"] = sensitive_registry.get("source", "builtin_default")
         governance_summary["action_registry_v2_source"] = "governance/policies/action_registry_v2.json" if action_registry_v2 else "none"
         trend_summary.setdefault("governance_summary", {}).update(governance_summary)
+
+    validate_secure_swarm_artifacts(run_dir, findings)
 
     noise_adjustments = apply_noise_suppression(
         findings, repo / "runs" / "history" / "finding_stats.json"

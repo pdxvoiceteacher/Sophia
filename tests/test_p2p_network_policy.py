@@ -32,7 +32,7 @@ def test_peer_registry_seed_contains_policy_and_trust_fields() -> None:
 def test_network_policy_share_scope_allowlist_and_relay_terms_documented() -> None:
     schema = json.loads((ROOT / "schema" / "network_policy_v1.schema.json").read_text(encoding="utf-8-sig"))
     allowed = set(schema["properties"]["share_scopes"]["items"]["enum"])
-    assert {"hashes/*", "metrics/*", "attestations/*", "tel/*", "evidence/*", "vault/*"}.issubset(allowed)
+    assert {"hashes/*", "metrics/*", "attestations/*", "tel/*", "evidence/*", "vault/*", "vault/full"}.issubset(allowed)
 
     policy_doc = (ROOT / "docs" / "P2P_NETWORK_POLICY.md").read_text(encoding="utf-8")
     assert "AI-private by default" in policy_doc
@@ -89,3 +89,46 @@ def test_save_network_policy_enforces_scope_and_profile_constraints() -> None:
 def test_prime_directive_vault_full_guard_present() -> None:
     main_rs = (ROOT / "desktop" / "src-tauri" / "src" / "main.rs").read_text(encoding="utf-8")
     assert "prime_directive_vault_full_requires_full_relay" in main_rs
+
+
+def test_secure_swarm_schemas_exist_and_validate_minimal_payloads() -> None:
+    signed_schema = json.loads((ROOT / "schema" / "signed_message_v1.schema.json").read_text(encoding="utf-8"))
+    sealed_schema = json.loads((ROOT / "schema" / "sealed_envelope_v1.schema.json").read_text(encoding="utf-8"))
+    Draft202012Validator(signed_schema).validate({
+        "schema": "signed_message_v1",
+        "payload_schema": "peer_attestation_v1",
+        "payload": {"schema": "peer_attestation_v1"},
+        "signer": {
+            "node_id": "node_abcdefgh",
+            "kid": "kid_abcdefghijkl",
+            "pubkey_alg": "ed25519",
+            "pubkey_b64u": "abc_DEF-123",
+        },
+        "signature_alg": "ed25519",
+        "signature": "abc_DEF-123",
+    })
+    Draft202012Validator(sealed_schema).validate({
+        "schema": "sealed_envelope_v1",
+        "version": 1,
+        "content": {
+            "content_schema": "vault_delta_v1",
+            "content_type": "application/json",
+            "plaintext_sha256": "a" * 64,
+            "plaintext_size_bytes": 1
+        },
+        "crypto": {
+            "cipher": "AES-256-GCM",
+            "kdf": "HKDF-SHA256",
+            "key_wrap": "X25519",
+            "nonce_b64u": "abc_DEF-123",
+            "aad_b64u": "abc_DEF-123"
+        },
+        "recipients": [{
+            "recipient_kid": "kid_abcdefghijkl",
+            "recipient_alg": "x25519",
+            "wrapped_key_b64u": "abc_DEF-123",
+            "wrap_info": {"ephemeral_pubkey_b64u": "abc_DEF-123"}
+        }],
+        "ciphertext_b64u": "abc_DEF-123",
+        "ciphertext_sha256": "b" * 64
+    })
