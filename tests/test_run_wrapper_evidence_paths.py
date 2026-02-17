@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 from tools.telemetry import run_wrapper
@@ -27,3 +29,19 @@ def test_write_evidence_and_consensus_uses_outdir_relative_artifacts(tmp_path: P
     assert entries["konomi_smoke_base/konomi_smoke_summary.json"]["size_bytes"] > 0
     assert "ucc_cov_out/audit_bundle.json" in entries
     assert entries["ucc_cov_out/audit_bundle.json"]["size_bytes"] > 0
+
+
+def test_emit_tel_events_flag_persists_after_preparse(tmp_path: Path) -> None:
+    outdir = tmp_path / "out"
+    cmd = [
+        sys.executable,
+        "-c",
+        (
+            "import sys;"
+            "sys.argv=['run_wrapper.py','--out','" + str(outdir).replace('\\','/') + "','--emit-tel-events'];"
+            "import tools.telemetry.run_wrapper as rw;"
+            "print('1' if rw._TEL_EVENTS_EMIT else '0')"
+        ),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    assert result.stdout.strip().endswith("1")

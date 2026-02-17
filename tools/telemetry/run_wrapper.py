@@ -77,12 +77,12 @@ if "--emit-tel-events" in sys.argv:
             break
 
 if _out and not os.environ.get("UCC_TEL_EVENTS_OUT"):
-        from pathlib import Path as _Path
-        os.environ["UCC_TEL_EVENTS_OUT"] = str(_Path(_out) / "ucc_tel_events.jsonl")
-        # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty)
-        _Path(_out).mkdir(parents=True, exist_ok=True)
-        (_Path(_out) / "tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
-        (_Path(_out) / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
+    from pathlib import Path as _Path
+    os.environ["UCC_TEL_EVENTS_OUT"] = str(_Path(_out) / "ucc_tel_events.jsonl")
+    # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty)
+    _Path(_out).mkdir(parents=True, exist_ok=True)
+    (_Path(_out) / "tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
+    (_Path(_out) / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
 # --- /TEL events flag pre-parse ---
 
 
@@ -98,10 +98,6 @@ _TEL_EMIT = False
 if "--emit-tel" in sys.argv:
     _TEL_EMIT = True
     sys.argv.remove("--emit-tel")
-_TEL_EVENTS_EMIT = False
-if "--emit-tel-events" in sys.argv:
-    _TEL_EVENTS_EMIT = True
-    sys.argv.remove("--emit-tel-events")
 
 # --- /TEL flag pre-parse ---
 
