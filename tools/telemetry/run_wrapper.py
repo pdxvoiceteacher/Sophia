@@ -67,22 +67,13 @@ _out = None
 if "--emit-tel-events" in sys.argv:
     _TEL_EVENTS_EMIT = True
     sys.argv.remove("--emit-tel-events")
-    # Auto-wire UCC step-event sink to <out>/ucc_tel_events.jsonl
-    for i, a in enumerate(sys.argv):
-        if a == "--out" and i + 1 < len(sys.argv):
-            _out = sys.argv[i + 1]
-            break
-        if a.startswith("--out="):
-            _out = a.split("=", 1)[1]
-            break
 
-if _out and not os.environ.get("UCC_TEL_EVENTS_OUT"):
+if _TEL_EVENTS_EMIT and _OUT_ALWAYS:
     from pathlib import Path as _Path
-    os.environ["UCC_TEL_EVENTS_OUT"] = str(_Path(_out) / "ucc_tel_events.jsonl")
-    # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty)
-    _Path(_out).mkdir(parents=True, exist_ok=True)
-    (_Path(_out) / "tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
-    (_Path(_out) / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
+    out_path = _Path(_OUT_ALWAYS)
+    out_path.mkdir(parents=True, exist_ok=True)
+    # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty).
+    (out_path / "tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
 # --- /TEL events flag pre-parse ---
 
 
