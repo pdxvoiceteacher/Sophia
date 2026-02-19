@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse, hashlib, json, platform, subprocess, sys, statistics, re, math
 from datetime import datetime, timezone
 from pathlib import Path
-import sys
 import os
 
 # --- TEL step events (module-level) ---
