@@ -68,9 +68,15 @@ if "--emit-tel-events" in sys.argv:
     _TEL_EVENTS_EMIT = True
     sys.argv.remove("--emit-tel-events")
 
-if _TEL_EVENTS_EMIT and _OUT_ALWAYS:
+_OUT_FOR_TEL_EVENTS = _OUT_ALWAYS
+if not _OUT_FOR_TEL_EVENTS:
+    _ucc_events_out = os.environ.get("UCC_TEL_EVENTS_OUT")
+    if _ucc_events_out:
+        _OUT_FOR_TEL_EVENTS = str(Path(_ucc_events_out).parent)
+
+if _TEL_EVENTS_EMIT and _OUT_FOR_TEL_EVENTS:
     from pathlib import Path as _Path
-    out_path = _Path(_OUT_ALWAYS)
+    out_path = _Path(_OUT_FOR_TEL_EVENTS)
     out_path.mkdir(parents=True, exist_ok=True)
     # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty).
     (out_path / "tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")

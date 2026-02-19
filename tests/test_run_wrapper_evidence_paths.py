@@ -45,3 +45,20 @@ def test_emit_tel_events_flag_persists_after_preparse(tmp_path: Path) -> None:
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     assert result.stdout.strip().endswith("1")
+
+
+def test_emit_tel_events_touches_file_from_ucc_env_when_out_not_in_argv(tmp_path: Path) -> None:
+    outdir = tmp_path / "env-out"
+    ucc_file = outdir / "ucc_tel_events.jsonl"
+    cmd = [
+        sys.executable,
+        "-c",
+        (
+            "import os,sys;"
+            "os.environ['UCC_TEL_EVENTS_OUT']='" + str(ucc_file).replace('\\','/') + "';"
+            "sys.argv=['run_wrapper.py','--emit-tel-events'];"
+            "import tools.telemetry.run_wrapper"
+        ),
+    ]
+    subprocess.run(cmd, capture_output=True, text=True, check=True)
+    assert (outdir / "tel_events.jsonl").exists()
