@@ -62,3 +62,37 @@ def test_emit_tel_events_touches_file_from_ucc_env_when_out_not_in_argv(tmp_path
     ]
     subprocess.run(cmd, capture_output=True, text=True, check=True)
     assert (outdir / "tel_events.jsonl").exists()
+
+
+def test_emit_tel_events_touch_does_not_truncate_existing_file(tmp_path: Path) -> None:
+    outdir = tmp_path / "touch-out"
+    outdir.mkdir(parents=True, exist_ok=True)
+    tel_file = outdir / "tel_events.jsonl"
+    tel_file.write_text('{\"preexisting\":true}\n', encoding="utf-8")
+    cmd = [
+        sys.executable,
+        "-c",
+        (
+            "import sys;"
+            "sys.argv=['run_wrapper.py','--out','" + str(outdir).replace('\\','/') + "','--emit-tel-events'];"
+            "import tools.telemetry.run_wrapper"
+        ),
+    ]
+    subprocess.run(cmd, capture_output=True, text=True, check=True)
+    assert tel_file.read_text(encoding="utf-8") == '{"preexisting":true}\n'
+
+
+def test_emit_tel_events_accepts_ucc_env_directory(tmp_path: Path) -> None:
+    outdir = tmp_path / "env-dir-out"
+    cmd = [
+        sys.executable,
+        "-c",
+        (
+            "import os,sys;"
+            "os.environ['UCC_TEL_EVENTS_OUT']='" + str(outdir).replace('\\','/') + "';"
+            "sys.argv=['run_wrapper.py','--emit-tel-events'];"
+            "import tools.telemetry.run_wrapper"
+        ),
+    ]
+    subprocess.run(cmd, capture_output=True, text=True, check=True)
+    assert (outdir / "tel_events.jsonl").exists()

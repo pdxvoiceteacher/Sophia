@@ -72,14 +72,15 @@ _OUT_FOR_TEL_EVENTS = _OUT_ALWAYS
 if not _OUT_FOR_TEL_EVENTS:
     _ucc_events_out = os.environ.get("UCC_TEL_EVENTS_OUT")
     if _ucc_events_out:
-        _OUT_FOR_TEL_EVENTS = str(Path(_ucc_events_out).parent)
+        ucc_out_path = Path(_ucc_events_out)
+        _OUT_FOR_TEL_EVENTS = str(ucc_out_path.parent if ucc_out_path.suffix == ".jsonl" else ucc_out_path)
 
 if _TEL_EVENTS_EMIT and _OUT_FOR_TEL_EVENTS:
     from pathlib import Path as _Path
     out_path = _Path(_OUT_FOR_TEL_EVENTS)
     out_path.mkdir(parents=True, exist_ok=True)
     # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty).
-    (out_path / "tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
+    (out_path / "tel_events.jsonl").touch(exist_ok=True)
 # --- /TEL events flag pre-parse ---
 
 
