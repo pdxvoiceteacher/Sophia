@@ -1,0 +1,46 @@
+{
+  "entries": [
+    {
+      "version": "0.1.0",
+      "date": "2026-01-28",
+      "summary": "Initial governance schemas, MVSS policy resolver, and standards gateway manifest.",
+      "commit": "b286be8"
+    },
+    {
+      "version": "0.1.1",
+      "date": "2026-01-28",
+      "summary": "Standards gateway run scripts, changelog schema/automation, and pass-first smoke updates.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.2",
+      "date": "2026-01-28",
+      "summary": "Serve viewer from gateway, add health check, and standardize changelog gate behavior.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.3",
+      "date": "2026-01-28",
+      "summary": "Add due process schemas, action registry checks, and rights standards endpoint.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.4",
+      "date": "2026-01-29",
+      "summary": "Unify action schema and harden standards gateway with index, cache headers, and rate limit.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.5",
+      "date": "2026-01-29",
+      "summary": "Add due-process bundle flags, shutdown smoke script, and standards gateway headers.",
+      "commit": "pending"
+    },
+    {
+      "version": "0.1.6",
+      "date": "2026-01-29",
+      "summary": "Secure Swarm v0.1 wire formats finalized (signed_message_v1, sealed_envelope_v1, evidence_bundle_v1, consensus_summary_v1); pipeline now emits evidence_bundle.json + consensus_summary.json with audit consensus gates.",
+      "commit": "pending"
+    }
+  ]
+}
