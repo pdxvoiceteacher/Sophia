@@ -1,13 +1,18 @@
 # Windows Setup (Python Tooling)
 
-This repository root is not a standalone Python package (no root `pyproject.toml` / `requirements.txt`).
+This repository root is not a standalone Python package (`pip install -e .` is not supported), but it now includes a root convenience requirements file for telemetry/python setup.
 
-Use the following bootstrap flow in PowerShell:
+Use either of the following bootstrap flows in PowerShell:
 
 ```powershell
 python -m pip install --upgrade pip
-python -m pip install -r python/tools/requirements-telemetry.txt
-python -m pip install -e python -e ucc -e sophia-core
+python -m pip install -r requirements.txt
+```
+
+Or use the helper script:
+
+```powershell
+./scripts/bootstrap_telemetry.ps1
 ```
 
 Optional developer extras:
