@@ -62,6 +62,7 @@ if _OUT_ALWAYS:
 
 # --- TEL events flag pre-parse (parser-agnostic) ---
 _TEL_EVENTS_EMIT = False
+_out = None
 if "--emit-tel-events" in sys.argv:
     _TEL_EVENTS_EMIT = True
     sys.argv.remove("--emit-tel-events")

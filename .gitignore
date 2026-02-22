@@ -107,3 +107,24 @@ desktop/src-tauri/icons/*.ico
 desktop/src-tauri/icons/*.icns
 
 
+
+runs/
+
+# --- Python packaging noise ---
+*.egg-info/
+# --- Desktop/Tauri build outputs ---
+desktop/node_modules/
+desktop/dist/
+desktop/src-tauri/target/
+desktop/src-tauri/bundle/
+
+# --- Rust ---
+target/
+# --- Desktop/Tauri build outputs ---
+desktop/node_modules/
+desktop/dist/
+desktop/src-tauri/target/
+desktop/src-tauri/bundle/
+
+# --- Rust ---
+target/
