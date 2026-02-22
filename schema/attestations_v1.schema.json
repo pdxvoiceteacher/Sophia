@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "attestations_v1.schema.json",
+  "title": "Cross Review Attestations v1",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["submission_id", "status", "reviewer", "detail"],
+      "properties": {
+        "schema": { "type": "string" },
+        "submission_id": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["pending", "accepted", "rejected", "error"] },
+        "reviewer": { "type": "string", "minLength": 1 },
+        "detail": { "type": "string" },
+        "signature": { "type": ["string", "null"] },
+        "timestamp_utc": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    {
+      "type": "object",
+      "required": ["attestations"],
+      "properties": {
+        "schema": { "type": "string" },
+        "attestations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["submission_id", "status", "reviewer", "detail"],
+            "properties": {
+              "submission_id": { "type": "string", "minLength": 1 },
+              "status": { "type": "string", "enum": ["pending", "accepted", "rejected", "error"] },
+              "reviewer": { "type": "string", "minLength": 1 },
+              "detail": { "type": "string" },
+              "signature": { "type": ["string", "null"] },
+              "timestamp_utc": { "type": ["string", "null"] }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  ]
+}

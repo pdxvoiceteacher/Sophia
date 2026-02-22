@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sonya_attest_request_v1.schema.json",
+  "title": "Sonya Attest Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "bundle_hash", "checks_run", "policy_profile", "timestamp_utc"],
+  "properties": {
+    "schema": { "type": "string", "const": "sonya_attest_request_v1" },
+    "bundle_hash": { "$ref": "#/$defs/sha256_hex" },
+    "checks_run": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "policy_profile": { "type": "string", "enum": ["witness_only", "reproducible_audit", "full_relay"] },
+    "timestamp_utc": { "$ref": "#/$defs/rfc3339_utc_z" }
+  },
+  "$defs": {
+    "sha256_hex": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "rfc3339_utc_z": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" }
+  }
+}

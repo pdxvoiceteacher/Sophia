@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:governance:tally:v1",
+  "title": "Governance Tally v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "election_id",
+    "created_at_utc",
+    "stakeholder_scope",
+    "mvss_policy_ref",
+    "registry_snapshot_ref",
+    "registry_federation",
+    "policy_resolution_ref",
+    "totals"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "tally_v1" },
+    "election_id": { "type": "string" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "stakeholder_scope": { "type": "string" },
+    "mvss_policy_ref": { "type": "string" },
+    "registry_snapshot_ref": { "type": "string" },
+    "registry_federation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "peers"],
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "peers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "policy_resolution_ref": { "type": "string" },
+    "totals": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "quorum_threshold": { "type": "number", "minimum": 0 },
+    "pass_threshold": { "type": "number", "minimum": 0 }
+  }
+}
