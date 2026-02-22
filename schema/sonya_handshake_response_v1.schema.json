@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sonya_handshake_response_v1.schema.json",
+  "title": "Sonya Handshake v1 Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "ok", "node_id", "pubkeys", "supported"],
+  "properties": {
+    "schema": { "type": "string", "const": "sonya_handshake_response_v1" },
+    "ok": { "type": "boolean" },
+    "node_id": { "$ref": "#/$defs/node_id" },
+    "pubkeys": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ed25519_b64u", "x25519_b64u"],
+      "properties": {
+        "ed25519_b64u": { "$ref": "#/$defs/base64url" },
+        "x25519_b64u": { "$ref": "#/$defs/base64url" }
+      }
+    },
+    "supported": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["envelopes", "signing", "hash"],
+      "properties": {
+        "envelopes": { "type": "array", "items": { "type": "string" } },
+        "signing": { "type": "array", "items": { "type": "string" } },
+        "hash": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "timestamp_utc": { "$ref": "#/$defs/rfc3339_utc_z" }
+  },
+  "$defs": {
+    "base64url": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+    "node_id": { "type": "string", "pattern": "^node_[A-Za-z0-9_-]{8,}$" },
+    "rfc3339_utc_z": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" }
+  }
+}
