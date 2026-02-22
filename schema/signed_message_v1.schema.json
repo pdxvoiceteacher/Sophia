@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "signed_message_v1.schema.json",
+  "title": "Signed Message v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "payload_schema",
+    "payload",
+    "signer",
+    "signature_alg",
+    "signature"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "signed_message_v1" },
+    "payload_schema": { "type": "string", "minLength": 1 },
+    "payload": { "type": "object" },
+    "signer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_id", "kid", "pubkey_alg", "pubkey_b64u"],
+      "properties": {
+        "node_id": { "type": "string", "pattern": "^node_[A-Za-z0-9_-]{8,}$" },
+        "kid": { "type": "string", "pattern": "^kid_[A-Za-z0-9_-]{8,}$" },
+        "pubkey_alg": { "type": "string", "const": "ed25519" },
+        "pubkey_b64u": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" }
+      }
+    },
+    "signature_alg": { "type": "string", "enum": ["ed25519"] },
+    "signature": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" }
+  }
+}

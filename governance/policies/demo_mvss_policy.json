@@ -1,0 +1,12 @@
+{
+  "schema": "mvss_policy_v1",
+  "policy_id": "mvss_demo_20260124",
+  "default": {
+    "quorum_ratio": 0.6,
+    "pass_ratio": 0.5
+  },
+  "scopes": {
+    "global": { "quorum_ratio": 0.7, "pass_ratio": 0.6 },
+    "national": { "quorum_ratio": 0.5, "pass_ratio": 0.5 }
+  }
+}
