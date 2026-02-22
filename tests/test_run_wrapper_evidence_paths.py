@@ -132,3 +132,25 @@ def test_simulate_peers_emits_peer_attestations_and_counts(monkeypatch, tmp_path
     assert consensus["peers"]["total"] == 2
     assert consensus["peers"]["pass"] == 2
     assert consensus["consensus"] == "convergent"
+
+
+def test_preparse_does_not_mutate_sys_argv(tmp_path: Path) -> None:
+    outdir = tmp_path / "argv-out"
+    cmd = [
+        sys.executable,
+        "-c",
+        (
+            "import sys;"
+            "sys.argv=['run_wrapper.py','--out','" + str(outdir).replace('\\','/') + "','--emit-tel','--emit-tel-events'];"
+            "import tools.telemetry.run_wrapper as rw;"
+            "print(' '.join(sys.argv));"
+            "print('1' if rw._TEL_EMIT else '0');"
+            "print('1' if rw._TEL_EVENTS_EMIT else '0')"
+        ),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    lines = [ln.strip() for ln in result.stdout.splitlines() if ln.strip()]
+    assert "--emit-tel" in lines[0]
+    assert "--emit-tel-events" in lines[0]
+    assert lines[-2] == "1"
+    assert lines[-1] == "1"

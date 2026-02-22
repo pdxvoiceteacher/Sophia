@@ -60,50 +60,54 @@ def _step_error(outdir: Path, name: str, t0: float, err: Exception) -> None:
 
 
 
-### UCC OUT PARSE (ALWAYS)
-# Always detect an output directory and always wire UCC_TEL_EVENTS_OUT.
-# Supports both --out and --outdir forms to avoid guided/unguided mismatch.
-_OUT_ALWAYS = None
-for i, a in enumerate(sys.argv):
-    if a in ("--out", "--outdir") and i + 1 < len(sys.argv):
-        _OUT_ALWAYS = sys.argv[i + 1]
-        break
-    if a.startswith("--out="):
-        _OUT_ALWAYS = a.split("=", 1)[1]
-        break
-    if a.startswith("--outdir="):
-        _OUT_ALWAYS = a.split("=", 1)[1]
-        break
-
-if _OUT_ALWAYS:
-    from pathlib import Path as _Path
-    os.environ["UCC_TEL_EVENTS_OUT"] = str(_Path(_OUT_ALWAYS) / "ucc_tel_events.jsonl")
-    _Path(_OUT_ALWAYS).mkdir(parents=True, exist_ok=True)
-    (_Path(_OUT_ALWAYS) / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
-### /UCC OUT PARSE (ALWAYS)
+def _find_out(argv: list[str]) -> str | None:
+    for i, a in enumerate(argv):
+        if a in ("--out", "--outdir") and i + 1 < len(argv):
+            return argv[i + 1]
+        if a.startswith("--out="):
+            return a.split("=", 1)[1]
+        if a.startswith("--outdir="):
+            return a.split("=", 1)[1]
+    return None
 
 
-# --- TEL events flag pre-parse (parser-agnostic) ---
-_TEL_EVENTS_EMIT = False
-_out = None
-if "--emit-tel-events" in sys.argv:
-    _TEL_EVENTS_EMIT = True
-    sys.argv.remove("--emit-tel-events")
+def _preparse_cli(argv: list[str]) -> dict[str, object]:
+    emit_tel_events = "--emit-tel-events" in argv
+    emit_tel = "--emit-tel" in argv
+    require_tel = "--require-tel" in argv
+    out_always = _find_out(argv)
 
-_OUT_FOR_TEL_EVENTS = _OUT_ALWAYS
-if not _OUT_FOR_TEL_EVENTS:
-    _ucc_events_out = os.environ.get("UCC_TEL_EVENTS_OUT")
-    if _ucc_events_out:
-        ucc_out_path = Path(_ucc_events_out)
-        _OUT_FOR_TEL_EVENTS = str(ucc_out_path.parent if ucc_out_path.suffix == ".jsonl" else ucc_out_path)
+    if out_always:
+        out_path = Path(out_always)
+        os.environ["UCC_TEL_EVENTS_OUT"] = str(out_path / "ucc_tel_events.jsonl")
+        out_path.mkdir(parents=True, exist_ok=True)
+        (out_path / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
 
-if _TEL_EVENTS_EMIT and _OUT_FOR_TEL_EVENTS:
-    from pathlib import Path as _Path
-    out_path = _Path(_OUT_FOR_TEL_EVENTS)
-    out_path.mkdir(parents=True, exist_ok=True)
-    # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty).
-    (out_path / "tel_events.jsonl").touch(exist_ok=True)
-# --- /TEL events flag pre-parse ---
+    out_for_tel_events = out_always
+    if not out_for_tel_events:
+        ucc_events_out = os.environ.get("UCC_TEL_EVENTS_OUT")
+        if ucc_events_out:
+            ucc_out_path = Path(ucc_events_out)
+            out_for_tel_events = str(ucc_out_path.parent if ucc_out_path.suffix == ".jsonl" else ucc_out_path)
+
+    if emit_tel_events and out_for_tel_events:
+        out_path = Path(out_for_tel_events)
+        out_path.mkdir(parents=True, exist_ok=True)
+        (out_path / "tel_events.jsonl").touch(exist_ok=True)
+
+    return {
+        "out": out_always,
+        "emit_tel": emit_tel,
+        "emit_tel_events": emit_tel_events,
+        "require_tel": require_tel,
+    }
+
+
+_PREPARSE = _preparse_cli(sys.argv[1:])
+_OUT_ALWAYS = _PREPARSE["out"]
+_TEL_EMIT = bool(_PREPARSE["emit_tel"])
+_TEL_EVENTS_EMIT = bool(_PREPARSE["emit_tel_events"])
+_REQUIRE_TEL = bool(_PREPARSE["require_tel"])
 
 
 def _safe_relpath(p: Path, base: Path) -> str:
@@ -111,20 +115,6 @@ def _safe_relpath(p: Path, base: Path) -> str:
         return str(p.relative_to(base)).replace('\\', '/')
     except Exception:
         return str(p.resolve()).replace('\\', '/')
-
-
-# --- TEL flag pre-parse (parser-agnostic) ---
-_REQUIRE_TEL = False
-if "--require-tel" in sys.argv:
-    _REQUIRE_TEL = True
-    sys.argv.remove("--require-tel")
-
-_TEL_EMIT = False
-if "--emit-tel" in sys.argv:
-    _TEL_EMIT = True
-    sys.argv.remove("--emit-tel")
-
-# --- /TEL flag pre-parse ---
 
 
 def sha256_file(p: Path) -> str:
@@ -283,6 +273,42 @@ def _load_network_profile() -> str:
     return profile
 
 
+
+
+def _load_policy_thresholds(network_profile: str) -> dict:
+    defaults = {
+        "consensus_requirements": {
+            "min_total_attestations": 1,
+            "min_weighted_pass": 1.0,
+            "block_on_any_fail": True,
+        },
+        "export_policy": {
+            "export_requires_policy_gate": True,
+            "export_requires_convergent_consensus": True,
+        },
+    }
+    policy_path = REPO / "config" / "policy_thresholds.json"
+    if not policy_path.exists():
+        return defaults
+    try:
+        payload = load_json_bom_safe(policy_path)
+    except Exception:
+        return defaults
+    if str(payload.get("network_profile") or network_profile) != network_profile:
+        return defaults
+    c = payload.get("consensus_requirements") or {}
+    e = payload.get("export_policy") or {}
+    return {
+        "consensus_requirements": {
+            "min_total_attestations": int(c.get("min_total_attestations", defaults["consensus_requirements"]["min_total_attestations"])),
+            "min_weighted_pass": float(c.get("min_weighted_pass", defaults["consensus_requirements"]["min_weighted_pass"])),
+            "block_on_any_fail": bool(c.get("block_on_any_fail", defaults["consensus_requirements"]["block_on_any_fail"])),
+        },
+        "export_policy": {
+            "export_requires_policy_gate": bool(e.get("export_requires_policy_gate", defaults["export_policy"]["export_requires_policy_gate"])),
+            "export_requires_convergent_consensus": bool(e.get("export_requires_convergent_consensus", defaults["export_policy"]["export_requires_convergent_consensus"])),
+        },
+    }
 
 
 def _load_or_create_local_attestation_identity() -> tuple[str, str, str, str]:
@@ -447,7 +473,11 @@ def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]],
 
     central_path = outdir / "attestations.json"
     central_present = central_path.exists()
-    consensus = "insufficient"
+    central_status = _status_from_signed_attestation(central_attestation) if central_present else "pending"
+    central_pass = 1 if central_status == "pass" else 0
+    central_fail = 1 if central_status == "fail" else 0
+    central_pending = 1 if central_status not in {"pass", "fail"} and central_present else 0
+
     peer_pass = 0
     peer_fail = 0
     for item in peer_items:
@@ -456,9 +486,17 @@ def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]],
             peer_pass += 1
         elif status == "fail":
             peer_fail += 1
-    if peer_fail > 0:
+
+    thresholds = _load_policy_thresholds(profile)
+    req = thresholds["consensus_requirements"]
+    total_attestations = int(central_present) + len(peer_items)
+    weighted_pass = float(central_pass + peer_pass)
+    weighted_fail = float(central_fail + peer_fail)
+
+    consensus = "insufficient"
+    if req["block_on_any_fail"] and weighted_fail > 0:
         consensus = "divergent"
-    elif central_present and peer_fail == 0:
+    elif total_attestations >= req["min_total_attestations"] and weighted_pass >= req["min_weighted_pass"] and central_pass > 0:
         consensus = "convergent"
 
     consensus_doc = {
@@ -471,38 +509,27 @@ def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]],
         },
         "central": {
             "total": 1 if central_present else 0,
-            "pass": 0,
-            "fail": 0,
-            "pending": 1 if central_present else 0,
+            "pass": central_pass,
+            "fail": central_fail,
+            "pending": central_pending,
         },
         "peers": {
             "total": len(peer_items),
-            "pass": 0,
-            "fail": 0,
-            "pending": len(peer_items),
-            "weighted_pass": 0.0,
-            "weighted_fail": 0.0,
-            "weighted_pending": float(len(peer_items)),
+            "pass": peer_pass,
+            "fail": peer_fail,
+            "pending": len(peer_items) - peer_pass - peer_fail,
+            "weighted_pass": float(peer_pass),
+            "weighted_fail": float(peer_fail),
+            "weighted_pending": float(len(peer_items) - peer_pass - peer_fail),
         },
         "consensus": consensus,
         "policy_gate": {
             "network_profile": profile,
             "required_for": ["publish", "export"],
-            "satisfied": bool(consensus == "convergent"),
+            "satisfied": bool(consensus == "convergent" and central_pass > 0),
         },
     }
-    if peer_items:
-        peer_pending = len(peer_items) - peer_pass - peer_fail
-        consensus_doc["peers"].update(
-            {
-                "pass": peer_pass,
-                "fail": peer_fail,
-                "pending": peer_pending,
-                "weighted_pass": float(peer_pass),
-                "weighted_fail": float(peer_fail),
-                "weighted_pending": float(peer_pending),
-            }
-        )
+
 
     (outdir / "consensus_summary.json").write_text(json.dumps(consensus_doc, indent=2, sort_keys=True), encoding="utf-8")
 
@@ -515,7 +542,7 @@ def main() -> int:
     ap.add_argument("--emit-tel-events", action="store_true", help="Emit tel_events.jsonl (parsed in pre-run flag handling).")
     ap.add_argument("--require-tel", action="store_true", help="Fail run if TEL builder import/build fails.")
     ap.add_argument("--simulate-peers", type=int, default=0, help="Generate deterministic local peer attestations.")
-    args = ap.parse_args()
+    args, _unknown = ap.parse_known_args()
 
     outdir = Path(args.out).resolve()
     outdir.mkdir(parents=True, exist_ok=True)
@@ -650,17 +677,7 @@ if __name__ == "__main__":
     # We separate TEL emission from UCC emission to avoid schema mixing.
     # TEL emission is optional. UCC event stream is always written when --out is present.
 
-    def _find_out(argv):
-        for i, a in enumerate(argv):
-            if a in ("--out", "--outdir") and i + 1 < len(argv):
-                return argv[i + 1]
-            if a.startswith("--out="):
-                return a.split("=", 1)[1]
-            if a.startswith("--outdir="):
-                return a.split("=", 1)[1]
-        return None
-
-    _out = _find_out(sys.argv)
+    _out = _find_out(sys.argv[1:])
     if not _out:
         raise SystemExit(_rc)
 

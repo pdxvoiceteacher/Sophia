@@ -48,7 +48,7 @@ python -m pip install -e ./python -e ./ucc -e ./sophia-core -e ./tools/coherence
 
 `consensus_summary.json` used to remain `insufficient` in single-node local runs because no peer attestations were present.
 
-Current behavior: `run_wrapper` emits a local central attestation (`attestations.json`) and marks consensus `convergent` when central attestation is present and no peer failures are detected.
+Current behavior: `run_wrapper` emits a local central attestation (`attestations.json`) with explicit status; policy gate satisfaction requires a convergent consensus outcome backed by a central `pass`.
 
 
 ## CLI smoke checks
@@ -58,4 +58,13 @@ Run both invocation forms to catch import-path regressions on Windows:
 ```powershell
 python tools/telemetry/run_wrapper.py -h
 python -m tools.telemetry.run_wrapper -h
+```
+
+
+## Search tooling note
+
+If `rg` (ripgrep) is not installed on Windows, use PowerShell `Select-String` as a fallback:
+
+```powershell
+Get-ChildItem -Recurse -File | Select-String -Pattern "run_wrapper"
 ```

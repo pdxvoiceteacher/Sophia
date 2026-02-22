@@ -28,3 +28,8 @@ def test_policy_thresholds_template_validates_against_schema() -> None:
     template = json.loads((REPO / "config" / "policy_thresholds.json").read_text(encoding="utf-8-sig"))
 
     Draft202012Validator(schema).validate(template)
+
+
+def test_policy_thresholds_template_requires_convergent_consensus() -> None:
+    template = json.loads((REPO / "config" / "policy_thresholds.json").read_text(encoding="utf-8-sig"))
+    assert template["export_policy"]["export_requires_convergent_consensus"] is True

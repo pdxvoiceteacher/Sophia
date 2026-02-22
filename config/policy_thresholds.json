@@ -8,7 +8,7 @@
   },
   "export_policy": {
     "export_requires_policy_gate": true,
-    "export_requires_convergent_consensus": false
+    "export_requires_convergent_consensus": true
   },
   "notes": "Template. Start conservative. Tighten on publish/export paths."
 }

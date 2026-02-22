@@ -16,7 +16,7 @@ sudo apt-get install -y pkg-config libglib2.0-dev libgtk-3-dev libwebkit2gtk-4.1
 
 ## Telemetry runner import-time behavior
 
-`tools/telemetry/run_wrapper.py` intentionally performs a small amount of argv/env pre-parse at module import time to support historical script entrypoints (`--out`/`--outdir`, `--emit-tel`, `--emit-tel-events`).
+`tools/telemetry/run_wrapper.py` performs lightweight argv/env discovery without mutating `sys.argv`, and main parsing uses `argparse.parse_known_args()` for safer wrapper/forwarding behavior.
 
 Current stance:
 - Keep import-time side effects minimal and deterministic (idempotent file touch, no network/process launch).
