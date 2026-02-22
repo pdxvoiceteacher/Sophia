@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:governance:registry_snapshot:v1",
+  "title": "Governance Registry Snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "snapshot_id", "created_at_utc", "stakeholders"],
+  "properties": {
+    "schema": { "type": "string", "const": "registry_snapshot_v1" },
+    "snapshot_id": { "type": "string" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "stakeholders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stakeholder_id",
+          "display_name",
+          "stakeholder_scope",
+          "weight",
+          "public_key",
+          "roles"
+        ],
+        "properties": {
+          "stakeholder_id": { "type": "string" },
+          "display_name": { "type": "string" },
+          "stakeholder_scope": {
+            "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+          },
+          "weight": { "type": "number", "minimum": 0 },
+          "public_key": { "type": "string" },
+          "roles": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "registry_federation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "peers"],
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "peers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    }
+  }
+}

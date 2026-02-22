@@ -1,0 +1,15 @@
+{
+  "schema": "sensitive_action_registry_v1",
+  "sensitive_tokens": [
+    "control",
+    "override",
+    "shutdown",
+    "terminate",
+    "coercive"
+  ],
+  "sensitive_actions": [
+    "emergency_shutdown",
+    "operator_override",
+    "force_control"
+  ]
+}
