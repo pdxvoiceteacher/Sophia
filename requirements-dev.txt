@@ -1,0 +1,3 @@
+-r python/tools/requirements-telemetry.txt
+numpy
+pytest

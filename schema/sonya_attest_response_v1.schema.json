@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sonya_attest_response_v1.schema.json",
+  "title": "Sonya Attest Response v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "detail", "evidence_refs", "timestamp_utc"],
+  "properties": {
+    "schema": { "type": "string", "const": "sonya_attest_response_v1" },
+    "status": { "type": "string", "enum": ["pass", "fail", "pending"] },
+    "detail": { "type": "string" },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "timestamp_utc": { "$ref": "#/$defs/rfc3339_utc_z" }
+  },
+  "$defs": {
+    "rfc3339_utc_z": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" }
+  }
+}

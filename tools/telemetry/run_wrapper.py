@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse, hashlib, json, platform, subprocess, sys, statistics, re, math
 from datetime import datetime, timezone
 from pathlib import Path
-import sys
 import os
 
 # --- TEL step events (module-level) ---
@@ -66,23 +65,20 @@ _TEL_EVENTS_EMIT = False
 if "--emit-tel-events" in sys.argv:
     _TEL_EVENTS_EMIT = True
     sys.argv.remove("--emit-tel-events")
-    # Auto-wire UCC step-event sink to <out>/ucc_tel_events.jsonl
-    _out = None
-    for i, a in enumerate(sys.argv):
-        if a == "--out" and i + 1 < len(sys.argv):
-            _out = sys.argv[i + 1]
-            break
-        if a.startswith("--out="):
-            _out = a.split("=", 1)[1]
-            break
 
-if _out and not os.environ.get("UCC_TEL_EVENTS_OUT"):
-        from pathlib import Path as _Path
-        os.environ["UCC_TEL_EVENTS_OUT"] = str(_Path(_out) / "ucc_tel_events.jsonl")
-        # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty)
-        _Path(_out).mkdir(parents=True, exist_ok=True)
-        (_Path(_out) / "tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
-        (_Path(_out) / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
+_OUT_FOR_TEL_EVENTS = _OUT_ALWAYS
+if not _OUT_FOR_TEL_EVENTS:
+    _ucc_events_out = os.environ.get("UCC_TEL_EVENTS_OUT")
+    if _ucc_events_out:
+        ucc_out_path = Path(_ucc_events_out)
+        _OUT_FOR_TEL_EVENTS = str(ucc_out_path.parent if ucc_out_path.suffix == ".jsonl" else ucc_out_path)
+
+if _TEL_EVENTS_EMIT and _OUT_FOR_TEL_EVENTS:
+    from pathlib import Path as _Path
+    out_path = _Path(_OUT_FOR_TEL_EVENTS)
+    out_path.mkdir(parents=True, exist_ok=True)
+    # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty).
+    (out_path / "tel_events.jsonl").touch(exist_ok=True)
 # --- /TEL events flag pre-parse ---
 
 
@@ -98,10 +94,6 @@ _TEL_EMIT = False
 if "--emit-tel" in sys.argv:
     _TEL_EMIT = True
     sys.argv.remove("--emit-tel")
-_TEL_EVENTS_EMIT = False
-if "--emit-tel-events" in sys.argv:
-    _TEL_EVENTS_EMIT = True
-    sys.argv.remove("--emit-tel-events")
 
 # --- /TEL flag pre-parse ---
 
@@ -244,6 +236,160 @@ def drift(a: dict[str, float], b: dict[str, float]) -> float:
     keys = ["E", "T", "Psi", "Es"]
     return sum(abs(a[k] - b[k]) for k in keys) / len(keys)
 
+
+
+def _utc_now_z() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _load_network_profile() -> str:
+    policy_path = REPO / "config" / "network_policy_v1.json"
+    if not policy_path.exists():
+        return "witness_only"
+    try:
+        policy = load_json_bom_safe(policy_path)
+    except Exception:
+        return "witness_only"
+    profile = str(policy.get("profile") or "witness_only")
+    if profile not in {"witness_only", "reproducible_audit", "full_relay"}:
+        return "witness_only"
+    return profile
+
+
+def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]]) -> None:
+    profile = _load_network_profile()
+    created_at = _utc_now_z()
+    run_id = outdir.name
+    artifact_entries = []
+    for art in artifacts:
+        rel = art["path"]
+        p = (outdir / rel)
+        size = p.stat().st_size if p.exists() else 0
+        artifact_entries.append(
+            {
+                "path": rel,
+                "content_type": "application/json",
+                "sha256": art["sha256"],
+                "size_bytes": size,
+                "classification": "evidence",
+                "encrypted": False,
+                "transport": {
+                    "transport_sha256": art["sha256"],
+                    "transport_size_bytes": size,
+                },
+            }
+        )
+
+    evidence = {
+        "schema": "evidence_bundle_v1",
+        "bundle_id": f"bundle-{run_id}",
+        "created_at_utc": created_at,
+        "producer": {
+            "node_id": "node_local_runner",
+            "software": "sophia",
+            "version": "v0.1",
+        },
+        "policy": {
+            "network_profile": profile,
+            "share_scopes": ["hashes/*", "metrics/*", "attestations/*"],
+            "peer_set": [],
+        },
+        "artifacts": artifact_entries,
+    }
+    try:
+        from tools.security.swarm_crypto import compute_evidence_bundle_hash
+        evidence["bundle_sha256"] = compute_evidence_bundle_hash(evidence)
+    except Exception:
+        evidence["bundle_sha256"] = hashlib.sha256(
+            json.dumps(evidence, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+    (outdir / "evidence_bundle.json").write_text(json.dumps(evidence, indent=2, sort_keys=True), encoding="utf-8")
+
+    peer_path = outdir / "peer_attestations.json"
+    peer_present = False
+    peer_items = []
+    if peer_path.exists():
+        try:
+            parsed = load_json_bom_safe(peer_path)
+            peer_items = parsed if isinstance(parsed, list) else (parsed.get("attestations") or [])
+            peer_present = bool(peer_items)
+        except Exception:
+            peer_present = False
+
+    central_path = outdir / "attestations.json"
+    central_present = central_path.exists()
+    consensus = "insufficient"
+    if peer_present:
+        peer_pass = 0
+        peer_fail = 0
+        for item in peer_items:
+            payload = item.get("payload") if isinstance(item, dict) else {}
+            results = payload.get("results") if isinstance(payload, dict) else {}
+            status = str((results or {}).get("status", "pending")).lower()
+            if status == "pass":
+                peer_pass += 1
+            elif status == "fail":
+                peer_fail += 1
+        if peer_pass > 0 and peer_fail == 0:
+            consensus = "convergent"
+        elif peer_fail > 0:
+            consensus = "divergent"
+
+    consensus_doc = {
+        "schema": "consensus_summary_v1",
+        "bundle_hash": evidence["bundle_sha256"],
+        "computed_at_utc": created_at,
+        "inputs": {
+            "central_attestations_present": central_present,
+            "peer_attestations_present": peer_present,
+        },
+        "central": {
+            "total": 1 if central_present else 0,
+            "pass": 0,
+            "fail": 0,
+            "pending": 1 if central_present else 0,
+        },
+        "peers": {
+            "total": len(peer_items),
+            "pass": 0,
+            "fail": 0,
+            "pending": len(peer_items),
+            "weighted_pass": 0.0,
+            "weighted_fail": 0.0,
+            "weighted_pending": float(len(peer_items)),
+        },
+        "consensus": consensus,
+        "policy_gate": {
+            "network_profile": profile,
+            "required_for": ["publish", "export"],
+            "satisfied": bool(consensus == "convergent"),
+        },
+    }
+    if peer_items:
+        peer_pass = 0
+        peer_fail = 0
+        for item in peer_items:
+            payload = item.get("payload") if isinstance(item, dict) else {}
+            results = payload.get("results") if isinstance(payload, dict) else {}
+            status = str((results or {}).get("status", "pending")).lower()
+            if status == "pass":
+                peer_pass += 1
+            elif status == "fail":
+                peer_fail += 1
+        peer_pending = len(peer_items) - peer_pass - peer_fail
+        consensus_doc["peers"].update(
+            {
+                "pass": peer_pass,
+                "fail": peer_fail,
+                "pending": peer_pending,
+                "weighted_pass": float(peer_pass),
+                "weighted_fail": float(peer_fail),
+                "weighted_pending": float(peer_pending),
+            }
+        )
+
+    (outdir / "consensus_summary.json").write_text(json.dumps(consensus_doc, indent=2, sort_keys=True), encoding="utf-8")
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
@@ -290,7 +436,7 @@ def main() -> int:
 
         pert_results.append({
             "i": i,
-            "audit_bundle_path": _safe_relpath(bundle_i, REPO),
+            "audit_bundle_path": _safe_relpath(bundle_i, outdir),
             "metrics": vec_i,
             "drift_from_base": d_i,
             "perf_index": perf_index_i,
@@ -306,7 +452,7 @@ def main() -> int:
     pert_doc = {
         "kind": "telemetry_perturbations.v1",
         "base": {
-            "audit_bundle_path": _safe_relpath(base_bundle, REPO),
+            "audit_bundle_path": _safe_relpath(base_bundle, outdir),
             "metrics": base_vec,
             "perf_index": perf_index_base,
             "perf_values_count": nvals_base
@@ -323,10 +469,16 @@ def main() -> int:
     metrics["Lambda"] = lam
 
     artifacts = [
-        {"path": _safe_relpath(base_summary, REPO), "sha256": sha256_file(base_summary)},
-        {"path": _safe_relpath(base_bundle, REPO), "sha256": sha256_file(base_bundle)},
-        {"path": _safe_relpath(pert_path, REPO), "sha256": sha256_file(pert_path)}
+        {"path": _safe_relpath(base_summary, outdir), "sha256": sha256_file(base_summary)},
+        {"path": _safe_relpath(base_bundle, outdir), "sha256": sha256_file(base_bundle)},
+        {"path": _safe_relpath(pert_path, outdir), "sha256": sha256_file(pert_path)}
     ]
+
+    connector_override = {
+        "type": os.environ.get("SOPHIA_CONNECTOR_TYPE"),
+        "endpoint": os.environ.get("SOPHIA_CONNECTOR_ENDPOINT"),
+        "model": os.environ.get("SOPHIA_CONNECTOR_MODEL"),
+    }
 
     telemetry = {
         "schema_id": "coherencelattice.telemetry_run.v1",
@@ -336,7 +488,8 @@ def main() -> int:
         "environment": {
             "python": sys.version.replace("\\n", " "),
             "platform": platform.platform(),
-            "git_commit": git_commit()
+            "git_commit": git_commit(),
+            "connector_override": connector_override
         },
         "metrics": metrics,
         "flags": {
@@ -349,7 +502,7 @@ def main() -> int:
         },
         "artifacts": artifacts,
         "ucc": {
-            "audit_bundle_path": _safe_relpath(base_bundle, REPO),
+            "audit_bundle_path": _safe_relpath(base_bundle, outdir),
             "audit_bundle_sha256": sha256_file(base_bundle)
         },
         "notes": "Telemetry derived without telemetry_snapshot module. E from KONOMI CSV numeric substrings; T/Es from UCC coverage audit_bundle; Psi=E*T; ÃŽâ€S/ÃŽâ€º from perturbation drift."
@@ -358,6 +511,7 @@ def main() -> int:
     t0_write = _step_start(outdir, "write_telemetry_json")
     out_json = outdir / "telemetry.json"
     out_json.write_text(json.dumps(telemetry, indent=2, sort_keys=True), encoding="utf-8")
+    _write_evidence_and_consensus(outdir, artifacts)
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})
     return 0
