@@ -135,10 +135,16 @@ def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
     prompt_hash = hashlib.sha256(prompt_text.encode("utf-8")).hexdigest()
     scenario_id = str(scenario.get("id", "scenario"))
 
+    quick = bool(scenario.get("quick", True))
+    if bool(getattr(args, "quick", False)):
+        quick = True
+    override_perturbations = getattr(args, "perturbations", None)
+    perturbations = int(override_perturbations if override_perturbations is not None else scenario.get("perturbations", 3))
+
     run_pipeline(
         out_dir=out_dir,
-        quick=bool(scenario.get("quick", True)),
-        perturbations=int(scenario.get("perturbations", 3)),
+        quick=quick,
+        perturbations=perturbations,
         emit_tel=args.emit_tel,
         emit_tel_events=args.emit_tel_events,
     )
@@ -277,6 +283,8 @@ def main() -> int:
     ap.add_argument("--baseline-run-dir", default="")
     ap.add_argument("--emit-tel", action="store_true")
     ap.add_argument("--emit-tel-events", action="store_true")
+    ap.add_argument("--quick", action="store_true", help="Override scenario quick mode for run_wrapper.")
+    ap.add_argument("--perturbations", type=int, default=None, help="Override scenario perturbations for run_wrapper.")
     args = ap.parse_args()
     run_epoch_real(args)
     return 0

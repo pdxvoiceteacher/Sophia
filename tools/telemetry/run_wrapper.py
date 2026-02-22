@@ -91,6 +91,11 @@ def _safe_relpath(p: Path, base: Path) -> str:
 
 
 # --- TEL flag pre-parse (parser-agnostic) ---
+_REQUIRE_TEL = False
+if "--require-tel" in sys.argv:
+    _REQUIRE_TEL = True
+    sys.argv.remove("--require-tel")
+
 _TEL_EMIT = False
 if "--emit-tel" in sys.argv:
     _TEL_EMIT = True
@@ -607,7 +612,16 @@ if __name__ == "__main__":
 
         except Exception as _e:
             print(f"[tel] failed: {_e}", file=sys.stderr)
-            raise
+            if globals().get("_TEL_EVENTS_EMIT", False):
+                warn_path = _out_dir / "tel_events.jsonl"
+                warn_path.parent.mkdir(parents=True, exist_ok=True)
+                with warn_path.open("a", encoding="utf-8", newline="\n") as f:
+                    f.write(
+                        json.dumps({"event": "tel_warning", "warning": str(_e)}, ensure_ascii=False, sort_keys=True)
+                        + "\n"
+                    )
+            if globals().get("_REQUIRE_TEL", False):
+                raise
 
     # --- /TEL/UCC post-run emission ---
     raise SystemExit(_rc)
