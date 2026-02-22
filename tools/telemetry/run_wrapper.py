@@ -8,6 +8,17 @@ import os
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519
 
+
+def _ensure_repo_on_sys_path() -> Path:
+    repo_root = Path(__file__).resolve().parents[2]
+    repo_root_s = str(repo_root)
+    if repo_root_s not in sys.path:
+        sys.path.insert(0, repo_root_s)
+    return repo_root
+
+
+REPO = _ensure_repo_on_sys_path()
+
 from tools.security.swarm_crypto import (
     b64u_encode,
     build_peer_attestation_payload,
@@ -115,8 +126,6 @@ if "--emit-tel" in sys.argv:
 
 # --- /TEL flag pre-parse ---
 
-
-REPO = Path(__file__).resolve().parents[2]
 
 def sha256_file(p: Path) -> str:
     h = hashlib.sha256()

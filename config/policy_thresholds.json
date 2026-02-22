@@ -1,0 +1,14 @@
+{
+  "schema": "policy_thresholds_v1",
+  "network_profile": "witness_only",
+  "consensus_requirements": {
+    "min_total_attestations": 1,
+    "min_weighted_pass": 1.0,
+    "block_on_any_fail": true
+  },
+  "export_policy": {
+    "export_requires_policy_gate": true,
+    "export_requires_convergent_consensus": false
+  },
+  "notes": "Template. Start conservative. Tighten on publish/export paths."
+}
