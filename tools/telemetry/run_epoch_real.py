@@ -274,7 +274,7 @@ def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(epilog="For full pipeline controls and TEL builder policy, see tools/telemetry/run_wrapper.py flags.")
     ap.add_argument("--scenario", default="")
     ap.add_argument("--prompt-text", default="")
     ap.add_argument("--mode", choices=["deterministic", "stochastic"], default="deterministic")

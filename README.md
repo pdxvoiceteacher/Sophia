@@ -412,3 +412,11 @@ git status
 git add CoherenceLattice/Coherence/*.lean paper/out/*.csv
 git commit -m "Add Lean proofs + eval CSV artifacts (Tree-of-Life, crop circles, music profiles)"
 git push
+
+
+### Python telemetry bootstrap note
+
+For telemetry tooling on Windows/PowerShell, use `docs/WINDOWS_SETUP.md`.
+
+- Root `pip install -e .` is **not** supported.
+- Use `pip install -r requirements.txt` (or `./scripts/bootstrap.ps1`) and editable installs for subpackages.

@@ -401,6 +401,9 @@ def main() -> int:
     ap.add_argument("--out", required=True)
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--perturbations", type=int, default=3)
+    ap.add_argument("--emit-tel", action="store_true", help="Emit tel.json and tel_summary metadata.")
+    ap.add_argument("--emit-tel-events", action="store_true", help="Emit tel_events.jsonl (parsed in pre-run flag handling).")
+    ap.add_argument("--require-tel", action="store_true", help="Fail run if TEL builder import/build fails.")
     args = ap.parse_args()
 
     outdir = Path(args.out).resolve()

@@ -13,6 +13,7 @@ Or use the helper script:
 
 ```powershell
 ./scripts/bootstrap_telemetry.ps1
+./scripts/bootstrap.ps1
 ```
 
 Optional developer extras:
@@ -32,3 +33,12 @@ python -m pip install -r requirements-dev.txt
 Recommended on Windows: Python 3.12 or 3.13.
 
 Newer interpreter versions can lag on binary wheel availability for some dependencies.
+
+
+## Editable package set
+
+For full telemetry/dev tooling, install editable subpackages:
+
+```powershell
+python -m pip install -e ./python -e ./ucc -e ./sophia-core -e ./tools/coherenceledger_bootstrap
+```
