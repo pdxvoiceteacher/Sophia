@@ -281,10 +281,12 @@ def _load_policy_thresholds(network_profile: str) -> dict:
             "min_total_attestations": 1,
             "min_weighted_pass": 1.0,
             "block_on_any_fail": True,
+            "allow_pending_to_satisfy": False,
         },
         "export_policy": {
-            "export_requires_policy_gate": True,
-            "export_requires_convergent_consensus": True,
+            "require_convergent": True,
+            "require_attestations": True,
+            "allowed_formats": ["json"],
         },
     }
     policy_path = REPO / "config" / "policy_thresholds.json"
@@ -303,10 +305,12 @@ def _load_policy_thresholds(network_profile: str) -> dict:
             "min_total_attestations": int(c.get("min_total_attestations", defaults["consensus_requirements"]["min_total_attestations"])),
             "min_weighted_pass": float(c.get("min_weighted_pass", defaults["consensus_requirements"]["min_weighted_pass"])),
             "block_on_any_fail": bool(c.get("block_on_any_fail", defaults["consensus_requirements"]["block_on_any_fail"])),
+            "allow_pending_to_satisfy": bool(c.get("allow_pending_to_satisfy", defaults["consensus_requirements"]["allow_pending_to_satisfy"])),
         },
         "export_policy": {
-            "export_requires_policy_gate": bool(e.get("export_requires_policy_gate", defaults["export_policy"]["export_requires_policy_gate"])),
-            "export_requires_convergent_consensus": bool(e.get("export_requires_convergent_consensus", defaults["export_policy"]["export_requires_convergent_consensus"])),
+            "require_convergent": bool(e.get("require_convergent", e.get("export_requires_convergent_consensus", defaults["export_policy"]["require_convergent"]))),
+            "require_attestations": bool(e.get("require_attestations", e.get("export_requires_policy_gate", defaults["export_policy"]["require_attestations"]))),
+            "allowed_formats": list(e.get("allowed_formats", defaults["export_policy"]["allowed_formats"])),
         },
     }
 
@@ -493,10 +497,13 @@ def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]],
     weighted_pass = float(central_pass + peer_pass)
     weighted_fail = float(central_fail + peer_fail)
 
+    pending_weight = float(central_pending + (len(peer_items) - peer_pass - peer_fail))
+    effective_pass = weighted_pass + (pending_weight if req["allow_pending_to_satisfy"] else 0.0)
+
     consensus = "insufficient"
     if req["block_on_any_fail"] and weighted_fail > 0:
         consensus = "divergent"
-    elif total_attestations >= req["min_total_attestations"] and weighted_pass >= req["min_weighted_pass"] and central_pass > 0:
+    elif total_attestations >= req["min_total_attestations"] and effective_pass >= req["min_weighted_pass"] and central_pass > 0:
         consensus = "convergent"
 
     consensus_doc = {
@@ -526,7 +533,12 @@ def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]],
         "policy_gate": {
             "network_profile": profile,
             "required_for": ["publish", "export"],
-            "satisfied": bool(consensus == "convergent" and central_pass > 0),
+            "satisfied": bool(
+                (consensus == "convergent" or not thresholds["export_policy"].get("require_convergent", True))
+                and ((total_attestations >= req["min_total_attestations"]) or not thresholds["export_policy"].get("require_attestations", True))
+                and central_pass > 0
+            ),
+            "allow_pending_to_satisfy": bool(req["allow_pending_to_satisfy"]),
         },
     }
 

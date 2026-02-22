@@ -68,3 +68,8 @@ If `rg` (ripgrep) is not installed on Windows, use PowerShell `Select-String` as
 ```powershell
 Get-ChildItem -Recurse -File | Select-String -Pattern "run_wrapper"
 ```
+
+
+## One-shot launcher
+
+Use `scripts/Run-Sophia-Telemetry.ps1` for venv setup, focused tests, and a telemetry run with artifact printout.

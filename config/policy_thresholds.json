@@ -4,11 +4,15 @@
   "consensus_requirements": {
     "min_total_attestations": 1,
     "min_weighted_pass": 1.0,
-    "block_on_any_fail": true
+    "block_on_any_fail": true,
+    "allow_pending_to_satisfy": false
   },
   "export_policy": {
-    "export_requires_policy_gate": true,
-    "export_requires_convergent_consensus": true
+    "require_convergent": true,
+    "require_attestations": true,
+    "allowed_formats": [
+      "json"
+    ]
   },
-  "notes": "Template. Start conservative. Tighten on publish/export paths."
+  "notes": "Conservative defaults: require at least one attestation and treat pending as non-satisfying."
 }

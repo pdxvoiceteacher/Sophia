@@ -29,7 +29,8 @@
       "required": [
         "min_total_attestations",
         "min_weighted_pass",
-        "block_on_any_fail"
+        "block_on_any_fail",
+        "allow_pending_to_satisfy"
       ],
       "properties": {
         "min_total_attestations": {
@@ -42,6 +43,9 @@
         },
         "block_on_any_fail": {
           "type": "boolean"
+        },
+        "allow_pending_to_satisfy": {
+          "type": "boolean"
         }
       }
     },
@@ -49,10 +53,24 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "export_requires_policy_gate",
-        "export_requires_convergent_consensus"
+        "require_convergent",
+        "require_attestations",
+        "allowed_formats"
       ],
       "properties": {
+        "require_convergent": {
+          "type": "boolean"
+        },
+        "require_attestations": {
+          "type": "boolean"
+        },
+        "allowed_formats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
         "export_requires_policy_gate": {
           "type": "boolean"
         },

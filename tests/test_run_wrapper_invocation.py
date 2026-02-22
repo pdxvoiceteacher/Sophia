@@ -32,4 +32,9 @@ def test_policy_thresholds_template_validates_against_schema() -> None:
 
 def test_policy_thresholds_template_requires_convergent_consensus() -> None:
     template = json.loads((REPO / "config" / "policy_thresholds.json").read_text(encoding="utf-8-sig"))
-    assert template["export_policy"]["export_requires_convergent_consensus"] is True
+    assert template["export_policy"]["require_convergent"] is True
+
+
+def test_policy_thresholds_template_pending_is_non_satisfying() -> None:
+    template = json.loads((REPO / "config" / "policy_thresholds.json").read_text(encoding="utf-8-sig"))
+    assert template["consensus_requirements"]["allow_pending_to_satisfy"] is False
