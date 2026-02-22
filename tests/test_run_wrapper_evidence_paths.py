@@ -8,7 +8,8 @@ from pathlib import Path
 from tools.telemetry import run_wrapper
 
 
-def test_write_evidence_and_consensus_uses_outdir_relative_artifacts(tmp_path: Path) -> None:
+def test_write_evidence_and_consensus_uses_outdir_relative_artifacts(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
     outdir = tmp_path / "portable-output"
     (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
     (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
@@ -96,3 +97,37 @@ def test_emit_tel_events_accepts_ucc_env_directory(tmp_path: Path) -> None:
     ]
     subprocess.run(cmd, capture_output=True, text=True, check=True)
     assert (outdir / "tel_events.jsonl").exists()
+
+
+def test_write_evidence_emits_central_attestation_and_convergent_consensus(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "central"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    f = outdir / "konomi_smoke_base" / "konomi_smoke_summary.json"
+    f.write_text('{\"ok\": true}\n', encoding="utf-8")
+
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts)
+
+    assert (outdir / "attestations.json").exists()
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["inputs"]["central_attestations_present"] is True
+    assert consensus["consensus"] == "convergent"
+
+
+def test_simulate_peers_emits_peer_attestations_and_counts(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "peers"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    f = outdir / "konomi_smoke_base" / "konomi_smoke_summary.json"
+    f.write_text('{\"ok\": true}\n', encoding="utf-8")
+
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=2)
+
+    peers_doc = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8"))
+    assert len(peers_doc.get("attestations") or []) == 2
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["peers"]["total"] == 2
+    assert consensus["peers"]["pass"] == 2
+    assert consensus["consensus"] == "convergent"

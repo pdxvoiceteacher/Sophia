@@ -76,6 +76,21 @@
         }
       },
       "additionalProperties": false
+    },
+    "consensus_requirements": {
+      "type": "object",
+      "properties": {
+        "min_total_attestations": {
+          "type": "integer"
+        },
+        "min_weighted_pass": {
+          "type": "number"
+        },
+        "block_on_any_fail": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true
