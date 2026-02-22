@@ -1,0 +1,12 @@
+{
+  "forbidden_need_markets": [
+    "housing",
+    "food",
+    "health"
+  ],
+  "allowed_want_markets": [
+    "enterprise_workflows",
+    "premium_connectors",
+    "compliance_dashboards"
+  ]
+}
