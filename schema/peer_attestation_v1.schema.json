@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "peer_attestation_v1.schema.json",
+  "title": "Peer Attestation v1 (unsigned payload, sign via signed_message_v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "suite_id",
+    "created_at_utc",
+    "pubkey_b64u",
+    "bundle_hash",
+    "checks_run",
+    "results"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "peer_attestation_v1" },
+    "suite_id": { "type": "string", "minLength": 1 },
+    "created_at_utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "pubkey_b64u": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+    "bundle_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "checks_run": { "type": "array", "items": { "type": "string" } },
+    "results": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["string", "number", "boolean", "null", "object", "array"]
+      }
+    }
+  }
+}
