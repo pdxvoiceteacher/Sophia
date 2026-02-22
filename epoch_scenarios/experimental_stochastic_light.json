@@ -1,0 +1,13 @@
+{
+  "id": "experimental_stochastic_light",
+  "description": "Mild stochastic perturbation for branch sensitivity.",
+  "mode": "stochastic",
+  "quick": true,
+  "perturbations": 3,
+  "prompt_text": "Run exploratory epoch with light stochastic perturbation.",
+  "scenario_knobs": {
+    "guidance_strength": 0.2,
+    "noise_injection": 0.15,
+    "memory_pressure": "medium"
+  }
+}
