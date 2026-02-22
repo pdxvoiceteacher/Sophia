@@ -415,15 +415,15 @@ def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]],
                 results={"status": "pass"},
                 created_at_utc=created_at,
             )
-            simulated.append(
-                sign_peer_attestation_payload(
-                    payload_without_signature=payload,
-                    private_key_b64u=p_priv,
-                    signer_node_id=p_node,
-                    signer_pubkey_b64u=p_pub,
-                    kid=p_kid,
-                )
+            signed = sign_peer_attestation_payload(
+                payload_without_signature=payload,
+                private_key_b64u=p_priv,
+                signer_node_id=p_node,
+                signer_pubkey_b64u=p_pub,
+                kid=p_kid,
             )
+            signed["simulated"] = True
+            simulated.append(signed)
         peer_path.write_text(json.dumps({"attestations": simulated}, indent=2, sort_keys=True), encoding="utf-8")
 
     peer_present = False

@@ -59,7 +59,7 @@ def canonicalize_tel_for_deterministic(tel_path: Path, scenario_id: str) -> None
     tel_path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool) -> None:
+def run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool, simulate_peers: int = 0) -> None:
     cmd = [sys.executable, "tools/telemetry/run_wrapper.py", "--out", str(out_dir), "--perturbations", str(perturbations)]
     if quick:
         cmd.append("--quick")
@@ -67,6 +67,8 @@ def run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool,
         cmd.append("--emit-tel")
     if emit_tel_events:
         cmd.append("--emit-tel-events")
+    if simulate_peers > 0:
+        cmd.extend(["--simulate-peers", str(simulate_peers)])
     subprocess.run(cmd, cwd=str(REPO), check=True)
 
 
@@ -147,6 +149,7 @@ def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
         perturbations=perturbations,
         emit_tel=args.emit_tel,
         emit_tel_events=args.emit_tel_events,
+        simulate_peers=int(getattr(args, "simulate_peers", 0) or 0),
     )
 
     tel_path = out_dir / "tel.json"
@@ -285,6 +288,7 @@ def main() -> int:
     ap.add_argument("--emit-tel-events", action="store_true")
     ap.add_argument("--quick", action="store_true", help="Override scenario quick mode for run_wrapper.")
     ap.add_argument("--perturbations", type=int, default=None, help="Override scenario perturbations for run_wrapper.")
+    ap.add_argument("--simulate-peers", type=int, default=0, help="Pass-through deterministic peer simulation count for run_wrapper.")
     args = ap.parse_args()
     run_epoch_real(args)
     return 0

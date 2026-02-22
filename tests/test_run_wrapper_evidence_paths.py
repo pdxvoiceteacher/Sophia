@@ -127,6 +127,7 @@ def test_simulate_peers_emits_peer_attestations_and_counts(monkeypatch, tmp_path
 
     peers_doc = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8"))
     assert len(peers_doc.get("attestations") or []) == 2
+    assert all(item.get("simulated") is True for item in (peers_doc.get("attestations") or []))
     consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
     assert consensus["peers"]["total"] == 2
     assert consensus["peers"]["pass"] == 2

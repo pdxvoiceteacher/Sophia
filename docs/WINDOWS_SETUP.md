@@ -42,3 +42,10 @@ For full telemetry/dev tooling, install editable subpackages:
 ```powershell
 python -m pip install -e ./python -e ./ucc -e ./sophia-core -e ./tools/coherenceledger_bootstrap
 ```
+
+
+## Consensus note
+
+`consensus_summary.json` used to remain `insufficient` in single-node local runs because no peer attestations were present.
+
+Current behavior: `run_wrapper` emits a local central attestation (`attestations.json`) and marks consensus `convergent` when central attestation is present and no peer failures are detected.

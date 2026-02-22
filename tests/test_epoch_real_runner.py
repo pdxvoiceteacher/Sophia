@@ -18,7 +18,7 @@ def test_epoch_scenarios_exist() -> None:
 
 
 def test_deterministic_tel_hash_replay(monkeypatch, tmp_path: Path) -> None:
-    def fake_run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool) -> None:
+    def fake_run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool, simulate_peers: int = 0) -> None:
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / "tel.json").write_text(
             json.dumps(
@@ -79,7 +79,7 @@ def test_deterministic_tel_hash_replay(monkeypatch, tmp_path: Path) -> None:
 
 
 def test_epoch_outputs_manifest_includes_attestations_when_present(monkeypatch, tmp_path: Path) -> None:
-    def fake_run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool) -> None:
+    def fake_run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool, simulate_peers: int = 0) -> None:
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / "tel.json").write_text('{"run_id":"x","created_at":"2026-01-01T00:00:00Z","environment":{"git_commit":"abc"}}\n', encoding="utf-8")
         (out_dir / "telemetry.json").write_text('{"metrics":{"E":0.1,"T":0.2,"Psi":0.02,"DeltaS":0.0,"Lambda":0.0,"Es":0.1}}\n', encoding="utf-8")
@@ -104,7 +104,7 @@ def test_epoch_outputs_manifest_includes_attestations_when_present(monkeypatch, 
 def test_run_epoch_real_passes_quick_and_perturbations_overrides(monkeypatch, tmp_path: Path) -> None:
     captured = {}
 
-    def fake_run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool) -> None:
+    def fake_run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool, simulate_peers: int = 0) -> None:
         captured["quick"] = quick
         captured["perturbations"] = perturbations
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -129,3 +129,33 @@ def test_run_epoch_real_passes_quick_and_perturbations_overrides(monkeypatch, tm
 
     assert captured["quick"] is True
     assert captured["perturbations"] == 9
+
+
+
+def test_run_epoch_real_passes_simulate_peers_override(monkeypatch, tmp_path: Path) -> None:
+    captured = {}
+
+    def fake_run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool, simulate_peers: int = 0) -> None:
+        captured["simulate_peers"] = simulate_peers
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "tel.json").write_text('{"run_id":"x","created_at":"2026-01-01T00:00:00Z","environment":{"git_commit":"abc"}}\n', encoding="utf-8")
+        (out_dir / "telemetry.json").write_text('{"metrics":{"E":0.1,"T":0.2,"Psi":0.02,"DeltaS":0.0,"Lambda":0.0,"Es":0.1}}\n', encoding="utf-8")
+
+    monkeypatch.setattr(run_epoch_real, "run_pipeline", fake_run_pipeline)
+
+    args = type("Args", (), {
+        "scenario": "epoch_scenarios/baseline_deterministic.json",
+        "prompt_text": "",
+        "mode": "deterministic",
+        "seed": 7,
+        "out": str(tmp_path / "run2"),
+        "baseline_run_dir": "",
+        "emit_tel": False,
+        "emit_tel_events": False,
+        "quick": False,
+        "perturbations": None,
+        "simulate_peers": 3,
+    })
+    run_epoch_real.run_epoch_real(args)
+
+    assert captured["simulate_peers"] == 3
