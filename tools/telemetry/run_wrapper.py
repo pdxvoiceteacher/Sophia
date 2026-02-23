@@ -360,9 +360,16 @@ def _status_from_signed_attestation(item: dict) -> str:
     return str((results or {}).get("status", "pending")).lower()
 
 
-def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]], simulate_peers: int = 0) -> None:
+def _write_evidence_and_consensus(
+    outdir: Path,
+    artifacts: list[dict[str, str]],
+    simulate_peers: int = 0,
+    *,
+    created_at_utc: str | None = None,
+    bundle_id: str | None = None,
+) -> None:
     profile = _load_network_profile()
-    created_at = _utc_now_z()
+    created_at = created_at_utc or _utc_now_z()
     run_id = outdir.name
     artifact_entries = []
     for art in artifacts:
@@ -386,7 +393,7 @@ def _write_evidence_and_consensus(outdir: Path, artifacts: list[dict[str, str]],
 
     evidence = {
         "schema": "evidence_bundle_v1",
-        "bundle_id": f"bundle-{run_id}",
+        "bundle_id": bundle_id or f"bundle-{run_id}",
         "created_at_utc": created_at,
         "producer": {
             "node_id": "node_local_runner",
@@ -554,6 +561,8 @@ def main() -> int:
     ap.add_argument("--emit-tel-events", action="store_true", help="Emit tel_events.jsonl (parsed in pre-run flag handling).")
     ap.add_argument("--require-tel", action="store_true", help="Fail run if TEL builder import/build fails.")
     ap.add_argument("--simulate-peers", type=int, default=0, help="Generate deterministic local peer attestations.")
+    ap.add_argument("--created-at-utc", default="", help="Override Secure Swarm artifact timestamps (RFC3339 UTC Z).")
+    ap.add_argument("--bundle-id", default="", help="Override evidence bundle_id for deterministic comparisons.")
     args, _unknown = ap.parse_known_args()
 
     outdir = Path(args.out).resolve()
@@ -670,7 +679,13 @@ def main() -> int:
     t0_write = _step_start(outdir, "write_telemetry_json")
     out_json = outdir / "telemetry.json"
     out_json.write_text(json.dumps(telemetry, indent=2, sort_keys=True), encoding="utf-8")
-    _write_evidence_and_consensus(outdir, artifacts, simulate_peers=max(0, int(args.simulate_peers)))
+    _write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=max(0, int(args.simulate_peers)),
+        created_at_utc=(args.created_at_utc.strip() or None),
+        bundle_id=(args.bundle_id.strip() or None),
+    )
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})
     return 0

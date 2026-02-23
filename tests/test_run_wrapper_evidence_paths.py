@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
 from tools.telemetry import run_wrapper
 
 
@@ -154,3 +156,34 @@ def test_preparse_does_not_mutate_sys_argv(tmp_path: Path) -> None:
     assert "--emit-tel-events" in lines[0]
     assert lines[-2] == "1"
     assert lines[-1] == "1"
+
+
+def test_consensus_summary_emitted_by_wrapper_validates_schema(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "schema-check"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    f = outdir / "konomi_smoke_base" / "konomi_smoke_summary.json"
+    f.write_text('{"ok": true}\n', encoding="utf-8")
+
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=1)
+
+    report = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    schema = json.loads((Path(__file__).resolve().parents[1] / "schema" / "consensus_summary_v1.schema.json").read_text(encoding="utf-8-sig"))
+    Draft202012Validator(schema).validate(report)
+
+
+def test_simulated_peer_attestations_are_byte_identical_in_deterministic_mode(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    out_a = tmp_path / "det-a"
+    out_b = tmp_path / "det-b"
+    for outdir in [out_a, out_b]:
+        (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+        (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    kwargs = {"simulate_peers": 2, "created_at_utc": "2026-01-01T00:00:00Z", "bundle_id": "bundle-fixed"}
+    run_wrapper._write_evidence_and_consensus(out_a, artifacts, **kwargs)
+    run_wrapper._write_evidence_and_consensus(out_b, artifacts, **kwargs)
+
+    assert (out_a / "peer_attestations.json").read_bytes() == (out_b / "peer_attestations.json").read_bytes()

@@ -73,3 +73,20 @@ Get-ChildItem -Recurse -File | Select-String -Pattern "run_wrapper"
 ## One-shot launcher
 
 Use `scripts/Run-Sophia-Telemetry.ps1` for venv setup, focused tests, and a telemetry run with artifact printout.
+
+
+## Deterministic artifact compare note
+
+PowerShell `fc` is an alias (`Format-Custom`), not file-compare. Use one of:
+
+```powershell
+cmd /c fc /b path\to\runA\peer_attestations.json path\to\runB\peer_attestations.json
+Compare-Object (Get-Content path\to\runA\peer_attestations.json) (Get-Content path\to\runB\peer_attestations.json)
+```
+
+For meaningful byte-identical comparisons across output directories, run with:
+
+```powershell
+python tools/telemetry/run_wrapper.py --out <runA> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed
+python tools/telemetry/run_wrapper.py --out <runB> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed
+```
