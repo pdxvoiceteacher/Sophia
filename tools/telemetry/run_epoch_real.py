@@ -59,7 +59,16 @@ def canonicalize_tel_for_deterministic(tel_path: Path, scenario_id: str) -> None
     tel_path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool, emit_tel_events: bool, simulate_peers: int = 0) -> None:
+def run_pipeline(
+    out_dir: Path,
+    quick: bool,
+    perturbations: int,
+    emit_tel: bool,
+    emit_tel_events: bool,
+    simulate_peers: int = 0,
+    created_at_utc: str = "",
+    bundle_id: str = "",
+) -> None:
     cmd = [sys.executable, "tools/telemetry/run_wrapper.py", "--out", str(out_dir), "--perturbations", str(perturbations)]
     if quick:
         cmd.append("--quick")
@@ -69,6 +78,10 @@ def run_pipeline(out_dir: Path, quick: bool, perturbations: int, emit_tel: bool,
         cmd.append("--emit-tel-events")
     if simulate_peers > 0:
         cmd.extend(["--simulate-peers", str(simulate_peers)])
+    if created_at_utc:
+        cmd.extend(["--created-at-utc", created_at_utc])
+    if bundle_id:
+        cmd.extend(["--bundle-id", bundle_id])
     subprocess.run(cmd, cwd=str(REPO), check=True)
 
 
@@ -150,6 +163,8 @@ def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
         emit_tel=args.emit_tel,
         emit_tel_events=args.emit_tel_events,
         simulate_peers=int(getattr(args, "simulate_peers", 0) or 0),
+        created_at_utc=str(getattr(args, "created_at_utc", "") or ""),
+        bundle_id=str(getattr(args, "bundle_id", "") or ""),
     )
 
     tel_path = out_dir / "tel.json"
@@ -289,6 +304,8 @@ def main() -> int:
     ap.add_argument("--quick", action="store_true", help="Override scenario quick mode for run_wrapper.")
     ap.add_argument("--perturbations", type=int, default=None, help="Override scenario perturbations for run_wrapper.")
     ap.add_argument("--simulate-peers", type=int, default=0, help="Pass-through deterministic peer simulation count for run_wrapper.")
+    ap.add_argument("--created-at-utc", default="", help="Pass-through timestamp override for deterministic Secure Swarm artifacts.")
+    ap.add_argument("--bundle-id", default="", help="Pass-through bundle_id override for deterministic Secure Swarm artifacts.")
     args = ap.parse_args()
     run_epoch_real(args)
     return 0

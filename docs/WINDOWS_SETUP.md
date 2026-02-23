@@ -26,7 +26,7 @@ python -m pip install -r requirements-dev.txt
 
 `tools/telemetry/run_epoch_real.py` orchestrates scenario + pipeline execution.
 
-- `--quick`, `--perturbations`, and `--simulate-peers` are pass-through overrides for `tools/telemetry/run_wrapper.py` pipeline settings.
+- `--quick`, `--perturbations`, `--simulate-peers`, `--created-at-utc`, and `--bundle-id` are pass-through overrides for `tools/telemetry/run_wrapper.py` pipeline settings.
 
 ## Python version guidance
 
