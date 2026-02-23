@@ -1,0 +1,14 @@
+{
+  "schema": "peer_registry_v1",
+  "peers": [
+    {
+      "node_id": "sonya-local-demo",
+      "endpoint": "",
+      "pubkey": "demo-pubkey",
+      "trust_weight": 1.0,
+      "trust_tier": "witness",
+      "allowed_policy_profiles": ["witness_only", "reproducible_audit"],
+      "enabled": true
+    }
+  ]
+}
