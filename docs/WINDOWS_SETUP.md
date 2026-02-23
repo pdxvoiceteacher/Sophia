@@ -84,9 +84,24 @@ cmd /c fc /b path\to\runA\peer_attestations.json path\to\runB\peer_attestations.
 Compare-Object (Get-Content path\to\runA\peer_attestations.json) (Get-Content path\to\runB\peer_attestations.json)
 ```
 
-For meaningful byte-identical comparisons across output directories, run with:
+For meaningful byte-identical comparisons across output directories, run with fixed deterministic overrides.
+
+`run_wrapper` direct:
 
 ```powershell
 python tools/telemetry/run_wrapper.py --out <runA> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed
 python tools/telemetry/run_wrapper.py --out <runB> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed
+```
+
+`run_epoch_real` entrypoint (pass-through):
+
+```powershell
+python tools/telemetry/run_epoch_real.py --scenario epoch_scenarios/baseline_deterministic.json --mode deterministic --out <runA> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --quick --perturbations 1
+python tools/telemetry/run_epoch_real.py --scenario epoch_scenarios/baseline_deterministic.json --mode deterministic --out <runB> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --quick --perturbations 1
+```
+
+Or run the automated verification script:
+
+```powershell
+python scripts/verify_secure_swarm_freeze.py --repo-root . --out-root out/freeze_verify
 ```

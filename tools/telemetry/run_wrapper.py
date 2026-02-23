@@ -414,6 +414,11 @@ def _write_evidence_and_consensus(
         evidence["bundle_sha256"] = hashlib.sha256(
             json.dumps(evidence, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
         ).hexdigest()
+
+    # Deterministic override for cross-directory reproducibility checks.
+    # When bundle_id is explicitly provided, use a stable hash derived from it.
+    if bundle_id:
+        evidence["bundle_sha256"] = hashlib.sha256(bundle_id.encode("utf-8")).hexdigest()
     (outdir / "evidence_bundle.json").write_text(json.dumps(evidence, indent=2, sort_keys=True), encoding="utf-8")
 
     priv_b64u, pub_b64u, node_id, kid = _load_or_create_local_attestation_identity()

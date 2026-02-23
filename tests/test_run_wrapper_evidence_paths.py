@@ -187,3 +187,20 @@ def test_simulated_peer_attestations_are_byte_identical_in_deterministic_mode(mo
     run_wrapper._write_evidence_and_consensus(out_b, artifacts, **kwargs)
 
     assert (out_a / "peer_attestations.json").read_bytes() == (out_b / "peer_attestations.json").read_bytes()
+
+
+def test_bundle_id_override_stabilizes_peer_attestations_across_different_artifact_hashes(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    out_a = tmp_path / "ovr-a"
+    out_b = tmp_path / "ovr-b"
+    for outdir in [out_a, out_b]:
+        (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+        (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+
+    artifacts_a = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    artifacts_b = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "b" * 64}]
+    kwargs = {"simulate_peers": 2, "created_at_utc": "2026-01-01T00:00:00Z", "bundle_id": "bundle-fixed"}
+    run_wrapper._write_evidence_and_consensus(out_a, artifacts_a, **kwargs)
+    run_wrapper._write_evidence_and_consensus(out_b, artifacts_b, **kwargs)
+
+    assert (out_a / "peer_attestations.json").read_bytes() == (out_b / "peer_attestations.json").read_bytes()

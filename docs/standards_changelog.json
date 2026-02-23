@@ -41,6 +41,12 @@
       "date": "2026-01-29",
       "summary": "Secure Swarm v0.1 wire formats finalized (signed_message_v1, sealed_envelope_v1, evidence_bundle_v1, consensus_summary_v1); pipeline now emits evidence_bundle.json + consensus_summary.json with audit consensus gates.",
       "commit": "pending"
+    },
+    {
+      "version": "0.1.7",
+      "date": "2026-02-23",
+      "summary": "Path A freeze contract notes: consensus_summary_v1 now includes policy_gate.allow_pending_to_satisfy; deterministic peer diffs require fixed --created-at-utc and --bundle-id; tests enforce producer/schema alignment and deterministic peer artifact output.",
+      "commit": "pending"
     }
   ]
 }
