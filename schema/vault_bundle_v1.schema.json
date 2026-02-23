@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vault_bundle_v1.schema.json",
+  "title": "Vault Bundle v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "suite_id",
+    "enc_alg",
+    "wrap_alg",
+    "aad_meta",
+    "ciphertext",
+    "payload_nonce",
+    "ephemeral_pubkey",
+    "wrapped_dek",
+    "wrapped_nonce"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "vault_bundle_v1" },
+    "suite_id": { "type": "string" },
+    "enc_alg": { "type": "string", "const": "AES-256-GCM" },
+    "wrap_alg": { "type": "string" },
+    "aad_meta": { "type": "object" },
+    "ciphertext": { "type": "string" },
+    "payload_nonce": { "type": "string" },
+    "ephemeral_pubkey": { "type": "string" },
+    "wrapped_dek": { "type": "string" },
+    "wrapped_nonce": { "type": "string" }
+  },
+  "additionalProperties": true
+}
