@@ -392,3 +392,73 @@ def test_weighted_profiles_require_explicit_weight_mode(monkeypatch, tmp_path: P
         assert False, "expected SystemExit when weight mode not explicit"
     except SystemExit as exc:
         assert "explicit --simulate-peer-weight-mode" in str(exc)
+
+
+def test_profile_witness_only_emits_v1_only(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "profile-witness"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=2, simulate_peer_weight_mode="adversarial")
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v1"
+
+
+def test_profile_reproducible_audit_emits_v2_only(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    outdir = tmp_path / "profile-repro"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear")
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v2"
+
+
+def test_profile_full_relay_emits_v2_only(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"full_relay"}\n', encoding="utf-8")
+
+    outdir = tmp_path / "profile-full"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=2, simulate_peer_weight_mode="adversarial")
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v2"
+
+
+def test_witness_only_central_fail_blocks_even_with_weighted_majority(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "witness-central-block"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    def fake_status(item: dict) -> str:
+        if isinstance(item, dict) and item.get("simulated") is True:
+            return "pass"
+        return "fail"
+
+    monkeypatch.setattr(run_wrapper, "_status_from_signed_attestation", fake_status)
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=5, simulate_peer_weight_mode="linear")
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v1"
+    assert consensus["peers"]["pass"] == 5
+    assert consensus["central"]["pass"] == 0
+    assert consensus["consensus"] != "convergent"
+
+
+
+def test_witness_only_central_fail_blocks_even_with_weighted_majority_under_witness_only(monkeypatch, tmp_path: Path) -> None:
+    test_witness_only_central_fail_blocks_even_with_weighted_majority(monkeypatch, tmp_path)

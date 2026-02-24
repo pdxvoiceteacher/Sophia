@@ -114,3 +114,9 @@ def test_consensus_summary_v2_schema_accepts_adversarial_weight_mode() -> None:
             },
         }
     )
+
+
+def test_v1_schema_unchanged_from_tag() -> None:
+    frozen = json.loads((ROOT / "tests" / "fixtures" / "consensus_summary_v1.freeze.json").read_text(encoding="utf-8"))
+    current = _load("consensus_summary_v1.schema.json")
+    assert current == frozen
