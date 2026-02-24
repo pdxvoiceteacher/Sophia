@@ -78,3 +78,25 @@ def test_witness_only_replay_scaffold_not_emitted(monkeypatch, tmp_path: Path) -
     assert peers
     assert all("replay_window_ok" not in p for p in peers)
     assert all("attestation_expired" not in p for p in peers)
+
+
+def test_replay_expiry_metadata_never_appears_under_witness_only_even_with_patterns(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "witness-never-metadata"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=3,
+        simulate_peer_weight_mode="adversarial",
+        adversarial_weight_pattern="borderline_threshold_case",
+        replay_window_s=120,
+        attestation_ttl_s=120,
+    )
+    peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all("replay_window_ok" not in p and "attestation_expired" not in p for p in peers)
+
