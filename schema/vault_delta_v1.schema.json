@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vault_delta_v1.schema.json",
+  "title": "Vault Delta v1 (PLAINTEXT inside sealed_envelope_v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "vault_id", "delta_id", "parent_delta_sha256", "created_at_utc", "scope", "retention", "entries"],
+  "properties": {
+    "schema": { "type": "string", "const": "vault_delta_v1" },
+    "vault_id": { "type": "string", "minLength": 1 },
+    "delta_id": { "type": "string", "minLength": 1 },
+    "parent_delta_sha256": { "anyOf": [{ "$ref": "#/$defs/sha256_hex" }, { "type": "null" }] },
+    "created_at_utc": { "$ref": "#/$defs/rfc3339_utc_z" },
+    "scope": { "type": "string", "const": "vault/full" },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min_days", "max_days", "tombstone_after_days"],
+      "properties": {
+        "min_days": { "type": "integer", "minimum": 0 },
+        "max_days": { "type": "integer", "minimum": 0 },
+        "tombstone_after_days": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "entries": { "type": "array", "items": { "$ref": "#/$defs/vault_entry_v1" } }
+  },
+  "$defs": {
+    "sha256_hex": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "base64url": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+    "rfc3339_utc_z": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
+    "vault_entry_kind": { "type": "string", "enum": ["raw_input", "embedding", "graph", "trace", "model_state", "note"] },
+    "compression": { "type": "string", "enum": ["none", "zstd"] },
+    "vault_entry_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_id", "kind", "content_type", "sha256", "size_bytes", "compression", "payload_b64u", "tags"],
+      "properties": {
+        "entry_id": { "type": "string", "minLength": 1 },
+        "kind": { "$ref": "#/$defs/vault_entry_kind" },
+        "content_type": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256_hex" },
+        "size_bytes": { "type": "integer", "minimum": 0 },
+        "compression": { "$ref": "#/$defs/compression" },
+        "payload_b64u": { "$ref": "#/$defs/base64url" },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
