@@ -28,6 +28,8 @@ from tools.security.swarm_crypto import (
     sign_peer_attestation_payload,
 )
 
+from tools.telemetry.weight_registry import WeightRegistry
+
 # --- TEL step events (module-level) ---
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -466,6 +468,12 @@ def _write_evidence_and_consensus(
     peer_path = outdir / "peer_attestations.json"
     if simulate_peers > 0:
         simulated = []
+        weighted_nodes: list[str] = []
+        for i in range(simulate_peers):
+            p_priv, p_pub = _deterministic_ed25519_keypair(f"{evidence['bundle_sha256']}:{i}")
+            p_node = node_id_from_signing_pubkey(p_pub)
+            weighted_nodes.append(p_node)
+        weight_registry = WeightRegistry.for_simulation(node_ids=weighted_nodes, mode=effective_weight_mode) if use_v2_consensus else None
         for i in range(simulate_peers):
             p_priv, p_pub = _deterministic_ed25519_keypair(f"{evidence['bundle_sha256']}:{i}")
             p_node = node_id_from_signing_pubkey(p_pub)
@@ -491,12 +499,10 @@ def _write_evidence_and_consensus(
                 kid=p_kid,
             )
             signed["simulated"] = True
-            if effective_weight_mode == "linear":
-                signed["simulated_weight"] = float(i + 1)
-            elif effective_weight_mode == "adversarial":
-                signed["simulated_weight"] = 5.0 if i < max(1, simulate_peers // 3) else 1.0
-            else:
+            if weight_registry is None:
                 signed["simulated_weight"] = 1.0
+            else:
+                signed["simulated_weight"] = float(weight_registry.get_weight(p_node))
             simulated.append(signed)
         peer_path.write_text(json.dumps({"attestations": simulated}, indent=2, sort_keys=True), encoding="utf-8")
 
