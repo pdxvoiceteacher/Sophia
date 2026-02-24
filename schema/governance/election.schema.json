@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:governance:election:v1",
+  "title": "Governance Election v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "election_id",
+    "created_at_utc",
+    "stakeholder_scope",
+    "mvss_policy_ref",
+    "registry_snapshot_ref",
+    "registry_federation",
+    "ballots"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "election_v1" },
+    "election_id": { "type": "string" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "stakeholder_scope": { "type": "string" },
+    "mvss_policy_ref": { "type": "string" },
+    "registry_snapshot_ref": { "type": "string" },
+    "registry_federation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "peers"],
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "peers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "ballots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ballot_id", "voter_id", "ballot_text", "choice"],
+        "properties": {
+          "ballot_id": { "type": "string" },
+          "voter_id": { "type": "string" },
+          "ballot_text": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["primary", "translations"],
+            "properties": {
+              "primary": { "type": "string" },
+              "translations": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          },
+          "choice": { "type": "string" }
+        }
+      }
+    }
+  }
+}
