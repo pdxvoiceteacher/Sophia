@@ -45,6 +45,41 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+
+
+def _parse_utc_z(ts: str) -> datetime:
+    text = str(ts).strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    dt = datetime.fromisoformat(text)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def is_within_replay_window(*, created_at_utc: str, reference_utc: str, replay_window_s: int) -> bool:
+    if replay_window_s <= 0:
+        return True
+    try:
+        created = _parse_utc_z(created_at_utc)
+        reference = _parse_utc_z(reference_utc)
+    except Exception:
+        return False
+    delta = abs((reference - created).total_seconds())
+    return delta <= float(replay_window_s)
+
+
+def is_attestation_expired(*, created_at_utc: str, reference_utc: str, ttl_s: int) -> bool:
+    if ttl_s <= 0:
+        return False
+    try:
+        created = _parse_utc_z(created_at_utc)
+        reference = _parse_utc_z(reference_utc)
+    except Exception:
+        return True
+    age = (reference - created).total_seconds()
+    return age > float(ttl_s)
+
 def b64u_encode(raw: bytes) -> str:
     return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
 

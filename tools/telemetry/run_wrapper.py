@@ -26,6 +26,8 @@ from tools.security.swarm_crypto import (
     kid_from_signing_pubkey,
     node_id_from_signing_pubkey,
     sign_peer_attestation_payload,
+    is_attestation_expired,
+    is_within_replay_window,
 )
 
 from tools.telemetry.weight_registry import WeightRegistry
@@ -397,6 +399,8 @@ def _write_evidence_and_consensus(
     bundle_id: str | None = None,
     simulate_peer_weight_mode: str = "uniform",
     adversarial_weight_pattern: str = "minority_high_weight_fail",
+    replay_window_s: int = 0,
+    attestation_ttl_s: int = 0,
 ) -> None:
     profile = _load_network_profile()
     use_v2_consensus = profile in {"reproducible_audit", "full_relay"}
@@ -521,6 +525,22 @@ def _write_evidence_and_consensus(
                 signed["simulated_weight"] = 1.0
             else:
                 signed["simulated_weight"] = float(weight_registry.get_weight(p_node))
+            if use_v2_consensus and (replay_window_s > 0 or attestation_ttl_s > 0):
+                peer_created = str((signed.get("payload") or {}).get("created_at_utc") or created_at)
+                signed["replay_window_ok"] = bool(
+                    is_within_replay_window(
+                        created_at_utc=peer_created,
+                        reference_utc=created_at,
+                        replay_window_s=int(replay_window_s),
+                    )
+                )
+                signed["attestation_expired"] = bool(
+                    is_attestation_expired(
+                        created_at_utc=peer_created,
+                        reference_utc=created_at,
+                        ttl_s=int(attestation_ttl_s),
+                    )
+                )
             simulated.append(signed)
         peer_path.write_text(json.dumps({"attestations": simulated}, indent=2, sort_keys=True), encoding="utf-8")
 
@@ -633,6 +653,8 @@ def main() -> int:
     ap.add_argument("--bundle-id", default="", help="Override evidence bundle_id for deterministic comparisons.")
     ap.add_argument("--simulate-peer-weight-mode", choices=["uniform", "linear", "adversarial"], default="uniform", help="Weight mode for simulated peers (Path B1 simulation).")
     ap.add_argument("--adversarial-weight-pattern", choices=["minority_high_weight_fail", "majority_low_weight_pass", "borderline_threshold_case"], default="minority_high_weight_fail", help="Deterministic adversarial weight pattern for Path B drift harness.")
+    ap.add_argument("--replay-window-s", type=int, default=0, help="Path B2 scaffold: optional replay window check in seconds for weighted profiles.")
+    ap.add_argument("--attestation-ttl-s", type=int, default=0, help="Path B2 scaffold: optional attestation TTL check in seconds for weighted profiles.")
     args, _unknown = ap.parse_known_args()
 
     has_explicit_weight_mode = "--simulate-peer-weight-mode" in sys.argv[1:]
@@ -761,6 +783,8 @@ def main() -> int:
         bundle_id=(args.bundle_id.strip() or None),
         simulate_peer_weight_mode=str(args.simulate_peer_weight_mode),
         adversarial_weight_pattern=str(args.adversarial_weight_pattern),
+        replay_window_s=int(args.replay_window_s),
+        attestation_ttl_s=int(args.attestation_ttl_s),
     )
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})
