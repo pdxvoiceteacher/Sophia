@@ -4,6 +4,7 @@ import base64
 import hashlib
 import json
 import os
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
@@ -14,6 +15,110 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
 SUITE_ID = "secure_swarm_v1"
+
+
+@dataclass(frozen=True)
+class TrustedKey:
+    """Normalized trusted signer identity metadata."""
+
+    node_id: str
+    kid: str
+    pubkey_b64u: str
+
+
+class TrustedKeySet:
+    """In-memory trusted signing key collection.
+
+    This abstraction is intentionally standalone and currently not wired to verification
+    call paths. It provides normalization, deterministic duplicate handling, and cheap
+    membership checks for future integration.
+    """
+
+    def __init__(self, keys: list[dict[str, str] | TrustedKey] | None = None) -> None:
+        self._by_kid: dict[str, TrustedKey] = {}
+        self._by_node_id: dict[str, TrustedKey] = {}
+        self._by_pubkey: dict[str, TrustedKey] = {}
+        for entry in keys or []:
+            self.add(entry)
+
+    @staticmethod
+    def _normalize(entry: dict[str, str] | TrustedKey) -> TrustedKey:
+        if isinstance(entry, TrustedKey):
+            candidate = entry
+        else:
+            node_id = str(entry.get("node_id", "")).strip()
+            kid = str(entry.get("kid", "")).strip()
+            pubkey_b64u = str(entry.get("pubkey_b64u", "")).strip()
+            candidate = TrustedKey(node_id=node_id, kid=kid, pubkey_b64u=pubkey_b64u)
+
+        if not candidate.pubkey_b64u:
+            raise ValueError("trusted_key_missing_pubkey")
+
+        derived_node_id = node_id_from_signing_pubkey(candidate.pubkey_b64u)
+        if candidate.node_id and candidate.node_id != derived_node_id:
+            raise ValueError("trusted_key_node_id_mismatch")
+
+        derived_kid = kid_from_signing_pubkey(candidate.pubkey_b64u)
+        if candidate.kid and candidate.kid != derived_kid:
+            raise ValueError("trusted_key_kid_mismatch")
+
+        return TrustedKey(node_id=derived_node_id, kid=derived_kid, pubkey_b64u=candidate.pubkey_b64u)
+
+    def add(self, entry: dict[str, str] | TrustedKey) -> TrustedKey:
+        trusted = self._normalize(entry)
+        existing = self._by_pubkey.get(trusted.pubkey_b64u)
+        if existing is not None:
+            return existing
+        if trusted.kid in self._by_kid:
+            raise ValueError("trusted_key_conflict_kid")
+        if trusted.node_id in self._by_node_id:
+            raise ValueError("trusted_key_conflict_node_id")
+        self._by_kid[trusted.kid] = trusted
+        self._by_node_id[trusted.node_id] = trusted
+        self._by_pubkey[trusted.pubkey_b64u] = trusted
+        return trusted
+
+    def remove_by_kid(self, kid: str) -> bool:
+        key = self._by_kid.pop(kid, None)
+        if key is None:
+            return False
+        self._by_node_id.pop(key.node_id, None)
+        self._by_pubkey.pop(key.pubkey_b64u, None)
+        return True
+
+    def get_by_kid(self, kid: str) -> TrustedKey | None:
+        return self._by_kid.get(kid)
+
+    def is_trusted_signer(
+        self,
+        *,
+        node_id: str | None = None,
+        kid: str | None = None,
+        pubkey_b64u: str | None = None,
+    ) -> bool:
+        if pubkey_b64u:
+            key = self._by_pubkey.get(pubkey_b64u)
+        elif kid:
+            key = self._by_kid.get(kid)
+        elif node_id:
+            key = self._by_node_id.get(node_id)
+        else:
+            return False
+        if key is None:
+            return False
+        if kid and kid != key.kid:
+            return False
+        if node_id and node_id != key.node_id:
+            return False
+        if pubkey_b64u and pubkey_b64u != key.pubkey_b64u:
+            return False
+        return True
+
+    def to_list(self) -> list[dict[str, str]]:
+        return [
+            {"node_id": key.node_id, "kid": key.kid, "pubkey_b64u": key.pubkey_b64u}
+            for key in sorted(self._by_kid.values(), key=lambda item: item.kid)
+        ]
 
 
 # NOTE: this encoder is a strict RFC8785/JCS-compatible subset used by Secure Swarm payloads.
