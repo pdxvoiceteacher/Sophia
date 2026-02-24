@@ -1,0 +1,13 @@
+{
+  "id": "experimental_stochastic_high_branch",
+  "description": "Higher perturbation for branch divergence diagnostics.",
+  "mode": "stochastic",
+  "quick": true,
+  "perturbations": 4,
+  "prompt_text": "Run exploratory epoch with branch-focused perturbations.",
+  "scenario_knobs": {
+    "guidance_strength": 0.35,
+    "noise_injection": 0.25,
+    "memory_pressure": "high"
+  }
+}
