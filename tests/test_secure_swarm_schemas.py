@@ -51,15 +51,15 @@ def test_consensus_summary_schema_validates_minimal_example() -> None:
                 "weighted_pending": 0.0,
             },
             "consensus": "convergent",
-            "policy_gate": {"network_profile": "witness_only", "required_for": ["attest"], "satisfied": True, "allow_pending_to_satisfy": False, "bundle_hash_source": "evidence_content", "peer_weight_mode": "uniform"},
+            "policy_gate": {"network_profile": "witness_only", "required_for": ["attest"], "satisfied": True, "allow_pending_to_satisfy": False},
         }
     )
 
 
-def test_consensus_summary_schema_validates_producer_shaped_example() -> None:
-    Draft202012Validator(_load("consensus_summary_v1.schema.json")).validate(
+def test_consensus_summary_v2_schema_validates_weighted_profile_example() -> None:
+    Draft202012Validator(_load("consensus_summary_v2.schema.json")).validate(
         {
-            "schema": "consensus_summary_v1",
+            "schema": "consensus_summary_v2",
             "bundle_hash": "b" * 64,
             "computed_at_utc": "2026-01-01T00:00:00Z",
             "inputs": {"central_attestations_present": True, "peer_attestations_present": True},
@@ -75,7 +75,7 @@ def test_consensus_summary_schema_validates_producer_shaped_example() -> None:
             },
             "consensus": "convergent",
             "policy_gate": {
-                "network_profile": "witness_only",
+                "network_profile": "reproducible_audit",
                 "required_for": ["publish", "export"],
                 "satisfied": True,
                 "allow_pending_to_satisfy": False,

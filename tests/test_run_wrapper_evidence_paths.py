@@ -213,8 +213,52 @@ def test_simulate_peers_linear_weight_mode_updates_weighted_counts(monkeypatch, 
     (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
 
     artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
     run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear")
 
     consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v2"
     assert consensus["peers"]["weighted_pass"] == 3.0
     assert consensus["policy_gate"]["peer_weight_mode"] == "linear"
+
+
+def test_witness_only_emits_consensus_v1_without_path_b_fields(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "witness"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=1, bundle_id="bundle-fixed")
+
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v1"
+    assert "bundle_hash_source" not in consensus["policy_gate"]
+    assert "peer_weight_mode" not in consensus["policy_gate"]
+
+
+def test_central_dominance_blocks_convergent_without_central_pass(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "central-dominance"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    original = run_wrapper._status_from_signed_attestation
+
+    def fake_status(item: dict) -> str:
+        if isinstance(item, dict) and item.get("simulated") is True:
+            return "pass"
+        return "fail"
+
+    monkeypatch.setattr(run_wrapper, "_status_from_signed_attestation", fake_status)
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=3)
+    monkeypatch.setattr(run_wrapper, "_status_from_signed_attestation", original)
+
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["central"]["pass"] == 0
+    assert consensus["peers"]["pass"] == 3
+    assert consensus["consensus"] != "convergent"
+    assert consensus["policy_gate"]["satisfied"] is False

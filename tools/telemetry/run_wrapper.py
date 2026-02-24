@@ -530,8 +530,23 @@ def _write_evidence_and_consensus(
     elif total_attestations >= req["min_total_attestations"] and effective_pass >= req["min_weighted_pass"] and central_pass > 0:
         consensus = "convergent"
 
+    use_v2_consensus = profile in {"reproducible_audit", "full_relay"}
+    policy_gate = {
+        "network_profile": profile,
+        "required_for": ["publish", "export"],
+        "satisfied": bool(
+            (consensus == "convergent" or not thresholds["export_policy"].get("require_convergent", True))
+            and ((total_attestations >= req["min_total_attestations"]) or not thresholds["export_policy"].get("require_attestations", True))
+            and central_pass > 0
+        ),
+        "allow_pending_to_satisfy": bool(req["allow_pending_to_satisfy"]),
+    }
+    if use_v2_consensus:
+        policy_gate["bundle_hash_source"] = bundle_hash_source
+        policy_gate["peer_weight_mode"] = simulate_peer_weight_mode
+
     consensus_doc = {
-        "schema": "consensus_summary_v1",
+        "schema": "consensus_summary_v2" if use_v2_consensus else "consensus_summary_v1",
         "bundle_hash": evidence["bundle_sha256"],
         "computed_at_utc": created_at,
         "inputs": {
@@ -554,18 +569,7 @@ def _write_evidence_and_consensus(
             "weighted_pending": float(peer_weighted_pending),
         },
         "consensus": consensus,
-        "policy_gate": {
-            "network_profile": profile,
-            "required_for": ["publish", "export"],
-            "satisfied": bool(
-                (consensus == "convergent" or not thresholds["export_policy"].get("require_convergent", True))
-                and ((total_attestations >= req["min_total_attestations"]) or not thresholds["export_policy"].get("require_attestations", True))
-                and central_pass > 0
-            ),
-            "allow_pending_to_satisfy": bool(req["allow_pending_to_satisfy"]),
-            "bundle_hash_source": bundle_hash_source,
-            "peer_weight_mode": simulate_peer_weight_mode,
-        },
+        "policy_gate": policy_gate,
     }
 
 
