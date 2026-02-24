@@ -1,0 +1,40 @@
+{
+  "schema": "metric_registry_v1",
+  "metrics": {
+    "TEL": {
+      "definition": "Provenance-only telemetry and event lineage.",
+      "boundary": "Not a consciousness or agency signal.",
+      "required_fields": ["provenance_source", "artifact_hashes"]
+    },
+    "E": {
+      "definition": "Informational coupling proxy (MI-based or equivalent declared estimator).",
+      "boundary": "Diagnostic coupling estimate, not affect or agency.",
+      "required_fields": ["proxy", "estimator"]
+    },
+    "T": {
+      "definition": "Provenance completeness and reconstructability score.",
+      "boundary": "Auditability metric only.",
+      "required_fields": ["proxy"]
+    },
+    "Psi": {
+      "definition": "Composite diagnostic metric Psi = E * T.",
+      "boundary": "Composite stability diagnostic.",
+      "required_fields": ["formula"]
+    },
+    "DeltaS": {
+      "definition": "Distribution shift indicator.",
+      "boundary": "Must declare true vs surrogate computation status.",
+      "required_fields": ["proxy", "mode"]
+    },
+    "Lambda": {
+      "definition": "Volatility/change-point flag.",
+      "boundary": "Not an agency signal.",
+      "required_fields": ["detector", "thresholds"]
+    },
+    "Es": {
+      "definition": "Counterfactual invariance test-suite score.",
+      "boundary": "Behavioral invariance diagnostic.",
+      "required_fields": ["test_suite"]
+    }
+  }
+}
