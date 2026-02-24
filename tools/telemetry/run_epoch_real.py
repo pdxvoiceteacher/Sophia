@@ -310,7 +310,7 @@ def main() -> int:
     ap.add_argument("--simulate-peers", type=int, default=0, help="Pass-through deterministic peer simulation count for run_wrapper.")
     ap.add_argument("--created-at-utc", default="", help="Pass-through timestamp override for deterministic Secure Swarm artifacts.")
     ap.add_argument("--bundle-id", default="", help="Pass-through bundle_id override for deterministic Secure Swarm artifacts.")
-    ap.add_argument("--simulate-peer-weight-mode", choices=["uniform", "linear"], default="uniform", help="Pass-through simulated peer weighting mode for run_wrapper.")
+    ap.add_argument("--simulate-peer-weight-mode", choices=["uniform", "linear", "adversarial"], default="uniform", help="Pass-through simulated peer weighting mode for run_wrapper.")
     args = ap.parse_args()
     run_epoch_real(args)
     return 0
