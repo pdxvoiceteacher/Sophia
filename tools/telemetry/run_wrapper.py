@@ -362,6 +362,26 @@ def _deterministic_ed25519_keypair(seed_material: str) -> tuple[str, str]:
     )
 
 
+
+
+def _simulated_peer_status(i: int, total: int, mode: str, adversarial_pattern: str) -> str:
+    if mode != "adversarial":
+        return "pass"
+    fail_count = max(1, total // 3)
+    if adversarial_pattern in {"minority_high_weight_fail", "majority_low_weight_pass"}:
+        return "fail" if i < fail_count else "pass"
+    if adversarial_pattern == "borderline_threshold_case":
+        return "fail" if (total > 0 and i == 0) else "pass"
+    return "fail" if i < fail_count else "pass"
+
+
+def _adversarial_node_order(node_ids: list[str], pattern: str) -> list[str]:
+    if pattern == "majority_low_weight_pass":
+        return sorted(node_ids)
+    if pattern == "borderline_threshold_case":
+        return list(reversed(sorted(node_ids)))
+    return node_ids
+
 def _status_from_signed_attestation(item: dict) -> str:
     payload = item.get("payload") if isinstance(item, dict) else {}
     results = payload.get("results") if isinstance(payload, dict) else {}
@@ -376,6 +396,7 @@ def _write_evidence_and_consensus(
     created_at_utc: str | None = None,
     bundle_id: str | None = None,
     simulate_peer_weight_mode: str = "uniform",
+    adversarial_weight_pattern: str = "minority_high_weight_fail",
 ) -> None:
     profile = _load_network_profile()
     use_v2_consensus = profile in {"reproducible_audit", "full_relay"}
@@ -473,6 +494,7 @@ def _write_evidence_and_consensus(
             p_priv, p_pub = _deterministic_ed25519_keypair(f"{evidence['bundle_sha256']}:{i}")
             p_node = node_id_from_signing_pubkey(p_pub)
             weighted_nodes.append(p_node)
+        weighted_nodes = _adversarial_node_order(weighted_nodes, adversarial_weight_pattern) if effective_weight_mode == "adversarial" else weighted_nodes
         weight_registry = WeightRegistry.for_simulation(node_ids=weighted_nodes, mode=effective_weight_mode) if use_v2_consensus else None
         for i in range(simulate_peers):
             p_priv, p_pub = _deterministic_ed25519_keypair(f"{evidence['bundle_sha256']}:{i}")
@@ -483,11 +505,7 @@ def _write_evidence_and_consensus(
                 bundle_hash=evidence["bundle_sha256"],
                 checks_run=["epoch_replay"],
                 results={
-                    "status": (
-                        "fail"
-                        if effective_weight_mode == "adversarial" and i < max(1, simulate_peers // 3)
-                        else "pass"
-                    )
+                    "status": _simulated_peer_status(i, simulate_peers, effective_weight_mode, adversarial_weight_pattern)
                 },
                 created_at_utc=created_at,
             )
@@ -614,6 +632,7 @@ def main() -> int:
     ap.add_argument("--created-at-utc", default="", help="Override Secure Swarm artifact timestamps (RFC3339 UTC Z).")
     ap.add_argument("--bundle-id", default="", help="Override evidence bundle_id for deterministic comparisons.")
     ap.add_argument("--simulate-peer-weight-mode", choices=["uniform", "linear", "adversarial"], default="uniform", help="Weight mode for simulated peers (Path B1 simulation).")
+    ap.add_argument("--adversarial-weight-pattern", choices=["minority_high_weight_fail", "majority_low_weight_pass", "borderline_threshold_case"], default="minority_high_weight_fail", help="Deterministic adversarial weight pattern for Path B drift harness.")
     args, _unknown = ap.parse_known_args()
 
     has_explicit_weight_mode = "--simulate-peer-weight-mode" in sys.argv[1:]
@@ -741,6 +760,7 @@ def main() -> int:
         created_at_utc=(args.created_at_utc.strip() or None),
         bundle_id=(args.bundle_id.strip() or None),
         simulate_peer_weight_mode=str(args.simulate_peer_weight_mode),
+        adversarial_weight_pattern=str(args.adversarial_weight_pattern),
     )
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})
