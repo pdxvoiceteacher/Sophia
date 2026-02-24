@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:governance:mvss_policy:v1",
+  "title": "MVSS Policy v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "policy_id", "default"],
+  "properties": {
+    "schema": { "type": "string", "const": "mvss_policy_v1" },
+    "policy_id": { "type": "string" },
+    "default": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["quorum_ratio", "pass_ratio"],
+      "properties": {
+        "quorum_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "pass_ratio": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "scopes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["quorum_ratio", "pass_ratio"],
+        "properties": {
+          "quorum_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+          "pass_ratio": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}

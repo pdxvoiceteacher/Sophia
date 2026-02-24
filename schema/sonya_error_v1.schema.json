@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sonya_error_v1.schema.json",
+  "title": "Sonya Error v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "error_code", "detail", "retryable"],
+  "properties": {
+    "schema": { "type": "string", "const": "sonya_error_v1" },
+    "error_code": {
+      "type": "string",
+      "enum": [
+        "peer_not_authorized",
+        "invalid_signature",
+        "unsupported_schema",
+        "network_required_blocked",
+        "invalid_request",
+        "rate_limited",
+        "internal_error"
+      ]
+    },
+    "detail": { "type": "string" },
+    "retryable": { "type": "boolean" }
+  }
+}
