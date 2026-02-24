@@ -23,3 +23,13 @@ Consensus weighted metrics (`peers.weighted_pass`, `weighted_fail`, `weighted_pe
 
 ## Governance note
 Bundle-id-derived `bundle_sha256` is permitted for deterministic verification workflows and is explicitly signaled via `policy_gate.bundle_hash_source = "bundle_id_override"`.
+
+## Operations runbook baseline
+1. Witness-only freeze gate (tag-defense gate):
+   - `./scripts/release_gate_secure_swarm.sh`
+2. Weighted-profile verification (Path B baseline):
+   - set `config/network_policy_v1.json` profile to `reproducible_audit`.
+   - run `python tools/telemetry/run_wrapper.py --out out/pathb_weighted --simulate-peers 3 --simulate-peer-weight-mode linear --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed`.
+   - validate `out/pathb_weighted/consensus_summary.json` against `schema/consensus_summary_v2.schema.json`.
+
+Weight authority note: `simulated_weight` is for deterministic simulation/testing. Production weight authority should come from trusted policy/registry sources, not untrusted peer envelopes.

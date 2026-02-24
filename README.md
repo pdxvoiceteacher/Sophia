@@ -14,6 +14,12 @@ This repository is a working lab for cross-domain coherence modeling and formal 
 
 **Status: ✅ Everything referenced below is building green under Lean 4.27.0-rc1.**
 
+## Secure Swarm release contract semantics
+
+- `network_profile = witness_only` emits `consensus_summary_v1` (Path A freeze contract).
+- `network_profile in {reproducible_audit, full_relay}` emits `consensus_summary_v2` (Path B weighted-profile contract).
+- Deterministic freeze verification is performed on the witness-only path with uniform peer weights (see `scripts/release_gate_secure_swarm.sh`).
+
 ## Repo Structure (high level)
 
 CoherenceLattice/Coherence/
