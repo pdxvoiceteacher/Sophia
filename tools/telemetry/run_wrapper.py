@@ -371,28 +371,41 @@ def _load_trusted_key_set() -> TrustedKeySet:
     return key_set
 
 
-def _apply_key_validation_flag_non_rejecting(attestation: dict[str, object], trusted: TrustedKeySet) -> None:
+def _is_malformed_key_id(key_id: object) -> bool:
+    if not isinstance(key_id, str):
+        return True
+    key_id_clean = key_id.strip()
+    if not key_id_clean:
+        return True
+    return re.fullmatch(r"kid_[A-Za-z0-9_-]{6,}", key_id_clean) is None
+
+
+def _apply_key_enforcement_weighted_only(attestation: dict[str, object], trusted: TrustedKeySet, *, enforce: bool) -> bool:
+    if not enforce:
+        return True
     payload = attestation.get("payload") if isinstance(attestation, dict) else None
-    key_id = None
-    if isinstance(payload, dict):
-        raw = payload.get("key_id")
-        if isinstance(raw, str):
-            key_id = raw.strip()
+    key_id = (payload or {}).get("key_id") if isinstance(payload, dict) else None
     signer = attestation.get("signer") if isinstance(attestation, dict) else None
     signer_node = signer.get("node_id") if isinstance(signer, dict) else None
     signer_pub = signer.get("pubkey_b64u") if isinstance(signer, dict) else None
 
-    if not key_id:
-        attestation["key_validation_ok"] = False
-        return
-
-    attestation["key_validation_ok"] = bool(
-        trusted.is_trusted_signer(
-            kid=key_id,
+    malformed = _is_malformed_key_id(key_id)
+    key_id_clean = key_id.strip() if isinstance(key_id, str) else ""
+    in_trusted = (
+        (not malformed)
+        and trusted.is_trusted_signer(
+            kid=key_id_clean,
             node_id=str(signer_node) if isinstance(signer_node, str) else None,
             pubkey_b64u=str(signer_pub) if isinstance(signer_pub, str) else None,
         )
     )
+
+    attestation["key_validation_ok"] = bool(in_trusted)
+    attestation["key_enforced"] = True
+    attestation["attestation_valid"] = bool(in_trusted)
+    if not in_trusted:
+        attestation["attestation_invalid_reason"] = "malformed_key_id" if malformed else "unknown_key_id"
+    return bool(in_trusted)
 
 def _deterministic_ed25519_keypair(seed_material: str) -> tuple[str, str]:
     seed = hashlib.sha256(seed_material.encode("utf-8")).digest()
@@ -529,7 +542,7 @@ def _write_evidence_and_consensus(
         kid=kid,
     )
     if use_v2_consensus:
-        _apply_key_validation_flag_non_rejecting(central_attestation, trusted_key_set)
+        _apply_key_enforcement_weighted_only(central_attestation, trusted_key_set, enforce=use_v2_consensus)
     (outdir / "attestations.json").write_text(
         json.dumps({
             "schema": "attestations_v1",
@@ -584,7 +597,7 @@ def _write_evidence_and_consensus(
             else:
                 signed["simulated_weight"] = float(weight_registry.get_weight(p_node))
             if use_v2_consensus:
-                _apply_key_validation_flag_non_rejecting(signed, trusted_key_set)
+                _apply_key_enforcement_weighted_only(signed, trusted_key_set, enforce=use_v2_consensus)
             if use_v2_consensus and (replay_window_s > 0 or attestation_ttl_s > 0):
                 peer_created = str((signed.get("payload") or {}).get("created_at_utc") or created_at)
                 signed["replay_window_ok"] = bool(
@@ -617,6 +630,10 @@ def _write_evidence_and_consensus(
     central_path = outdir / "attestations.json"
     central_present = central_path.exists()
     central_status = _status_from_signed_attestation(central_attestation) if central_present else "pending"
+    if use_v2_consensus and central_present:
+        central_valid = bool(central_attestation.get("attestation_valid", central_attestation.get("key_validation_ok", True)))
+        if not central_valid:
+            central_status = "invalid"
     central_pass = 1 if central_status == "pass" else 0
     central_fail = 1 if central_status == "fail" else 0
     central_pending = 1 if central_status not in {"pass", "fail"} and central_present else 0
@@ -629,6 +646,11 @@ def _write_evidence_and_consensus(
     for idx, item in enumerate(peer_items):
         status = _status_from_signed_attestation(item)
         item_weight = float((item or {}).get("simulated_weight", 1.0)) if isinstance(item, dict) else 1.0
+        item_valid = True
+        if use_v2_consensus and isinstance(item, dict):
+            item_valid = bool(item.get("attestation_valid", item.get("key_validation_ok", True)))
+        if use_v2_consensus and not item_valid:
+            continue
         if status == "pass":
             peer_pass += 1
             peer_weighted_pass += item_weight

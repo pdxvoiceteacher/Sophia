@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import subprocess
 import sys
 from pathlib import Path
@@ -8,6 +9,24 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from tools.telemetry import run_wrapper
+
+
+def _seed_trusted_simulated_peers(tmp_path: Path, bundle_id: str, count: int, *, include_local: bool = True) -> None:
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    bundle_hash = hashlib.sha256(bundle_id.encode("utf-8")).hexdigest()
+    peers: list[dict[str, str]] = []
+    if include_local:
+        local_priv, local_pub = run_wrapper._deterministic_ed25519_keypair("local-attestation-seed")
+        (cfg / "local_attestation_key.json").write_text(
+            json.dumps({"private_key_b64": local_priv, "public_key_b64": local_pub}) + "\n",
+            encoding="utf-8",
+        )
+        peers.append({"pubkey_b64u": local_pub})
+    for i in range(count):
+        _priv, pub = run_wrapper._deterministic_ed25519_keypair(f"{bundle_hash}:{i}")
+        peers.append({"pubkey_b64u": pub})
+    (cfg / "peer_registry_v1.json").write_text(json.dumps({"schema": "peer_registry_v1", "peers": peers}) + "\n", encoding="utf-8")
 
 
 def test_write_evidence_and_consensus_uses_outdir_relative_artifacts(monkeypatch, tmp_path: Path) -> None:
@@ -216,8 +235,15 @@ def test_simulate_peers_linear_weight_mode_updates_weighted_counts(monkeypatch, 
     cfg = tmp_path / "config"
     cfg.mkdir(parents=True, exist_ok=True)
     (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+    bundle_id = "weighted-linear-trusted"
+    bundle_hash = hashlib.sha256(bundle_id.encode("utf-8")).hexdigest()
+    peers = []
+    for i in range(2):
+        _priv, pub = run_wrapper._deterministic_ed25519_keypair(f"{bundle_hash}:{i}")
+        peers.append({"pubkey_b64u": pub})
+    (cfg / "peer_registry_v1.json").write_text(json.dumps({"schema": "peer_registry_v1", "peers": peers}) + "\n", encoding="utf-8")
 
-    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear")
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear", bundle_id=bundle_id)
 
     consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
     assert consensus["schema"] == "consensus_summary_v2"
@@ -293,7 +319,9 @@ def test_central_pass_with_weighted_majority_fail_is_divergent(monkeypatch, tmp_
         return "pass"
 
     monkeypatch.setattr(run_wrapper, "_status_from_signed_attestation", fake_status)
-    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=3, simulate_peer_weight_mode="linear")
+    bundle_id = "weighted-majority-fail"
+    _seed_trusted_simulated_peers(tmp_path, bundle_id, 3)
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=3, simulate_peer_weight_mode="linear", bundle_id=bundle_id)
     consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
     assert consensus["consensus"] == "divergent"
 
@@ -373,7 +401,9 @@ def test_adversarial_weight_distribution_math(monkeypatch, tmp_path: Path) -> No
     (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
     artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
 
-    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=6, simulate_peer_weight_mode="adversarial")
+    bundle_id = "adversarial-weight-math"
+    _seed_trusted_simulated_peers(tmp_path, bundle_id, 6)
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=6, simulate_peer_weight_mode="adversarial", bundle_id=bundle_id)
     consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
     assert consensus["peers"]["fail"] >= 1
     assert consensus["peers"]["weighted_fail"] > consensus["peers"]["weighted_pass"] / 3
@@ -510,3 +540,63 @@ def test_key_id_not_emitted_under_witness_only(monkeypatch, tmp_path: Path) -> N
     peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
     assert peers
     assert all("key_id" not in (p.get("payload") or {}) for p in peers)
+
+
+def test_unknown_key_rejected_under_weighted(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+    (cfg / "peer_registry_v1.json").write_text('{"schema":"peer_registry_v1","peers":[]}\n', encoding="utf-8")
+
+    outdir = tmp_path / "weighted-unknown-key"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=3,
+        simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z",
+        bundle_id="weighted-unknown-key",
+    )
+
+    peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all(p.get("key_enforced") is True for p in peers)
+    assert all(p.get("key_validation_ok") is False for p in peers)
+    assert all(p.get("attestation_valid") is False for p in peers)
+
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v2"
+    assert consensus["peers"]["weighted_pass"] == 0.0
+    assert consensus["peers"]["pass"] == 0
+
+
+def test_witness_only_ignores_key_enforcement(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+
+    outdir = tmp_path / "witness-ignores-key-enforcement"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=2,
+        simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z",
+        bundle_id="witness-ignores-key-enforcement",
+    )
+
+    peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all("key_enforced" not in p for p in peers)
+    assert all("attestation_valid" not in p for p in peers)
+
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v1"
+    assert consensus["peers"]["pass"] == 2
