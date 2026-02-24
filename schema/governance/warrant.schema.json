@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coherencelattice:schema:governance:warrant:v1",
+  "title": "Governance Warrant v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "warrant_id",
+    "decision_id",
+    "created_at_utc",
+    "stakeholder_scope",
+    "mvss_policy_ref",
+    "registry_snapshot_ref",
+    "registry_federation",
+    "authorized_actions"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "warrant_v1" },
+    "warrant_id": { "type": "string" },
+    "decision_id": { "type": "string" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "stakeholder_scope": { "type": "string" },
+    "mvss_policy_ref": { "type": "string" },
+    "registry_snapshot_ref": { "type": "string" },
+    "registry_federation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "peers"],
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "peers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "authorized_actions": {
+      "type": "array",
+      "items": {
+        "$ref": "action.schema.json"
+      }
+    }
+  }
+}
