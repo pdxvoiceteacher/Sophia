@@ -47,6 +47,8 @@ def main() -> int:
         str(args.seed),
         "--simulate-peers",
         str(args.simulate_peers),
+        "--simulate-peer-weight-mode",
+        "uniform",
         "--created-at-utc",
         args.created_at_utc,
         "--bundle-id",

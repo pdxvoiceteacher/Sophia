@@ -68,6 +68,7 @@ def run_pipeline(
     simulate_peers: int = 0,
     created_at_utc: str = "",
     bundle_id: str = "",
+    simulate_peer_weight_mode: str = "uniform",
 ) -> None:
     cmd = [sys.executable, "tools/telemetry/run_wrapper.py", "--out", str(out_dir), "--perturbations", str(perturbations)]
     if quick:
@@ -78,6 +79,8 @@ def run_pipeline(
         cmd.append("--emit-tel-events")
     if simulate_peers > 0:
         cmd.extend(["--simulate-peers", str(simulate_peers)])
+    if simulate_peer_weight_mode:
+        cmd.extend(["--simulate-peer-weight-mode", simulate_peer_weight_mode])
     if created_at_utc:
         cmd.extend(["--created-at-utc", created_at_utc])
     if bundle_id:
@@ -165,6 +168,7 @@ def run_epoch_real(args: argparse.Namespace) -> dict[str, Any]:
         simulate_peers=int(getattr(args, "simulate_peers", 0) or 0),
         created_at_utc=str(getattr(args, "created_at_utc", "") or ""),
         bundle_id=str(getattr(args, "bundle_id", "") or ""),
+        simulate_peer_weight_mode=str(getattr(args, "simulate_peer_weight_mode", "uniform") or "uniform"),
     )
 
     tel_path = out_dir / "tel.json"
@@ -306,6 +310,7 @@ def main() -> int:
     ap.add_argument("--simulate-peers", type=int, default=0, help="Pass-through deterministic peer simulation count for run_wrapper.")
     ap.add_argument("--created-at-utc", default="", help="Pass-through timestamp override for deterministic Secure Swarm artifacts.")
     ap.add_argument("--bundle-id", default="", help="Pass-through bundle_id override for deterministic Secure Swarm artifacts.")
+    ap.add_argument("--simulate-peer-weight-mode", choices=["uniform", "linear"], default="uniform", help="Pass-through simulated peer weighting mode for run_wrapper.")
     args = ap.parse_args()
     run_epoch_real(args)
     return 0

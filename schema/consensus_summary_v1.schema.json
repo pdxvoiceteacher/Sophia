@@ -120,6 +120,20 @@
         },
         "allow_pending_to_satisfy": {
           "type": "boolean"
+        },
+        "bundle_hash_source": {
+          "type": "string",
+          "enum": [
+            "evidence_content",
+            "bundle_id_override"
+          ]
+        },
+        "peer_weight_mode": {
+          "type": "string",
+          "enum": [
+            "uniform",
+            "linear"
+          ]
         }
       }
     }

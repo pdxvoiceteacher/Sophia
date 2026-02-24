@@ -204,3 +204,17 @@ def test_bundle_id_override_stabilizes_peer_attestations_across_different_artifa
     run_wrapper._write_evidence_and_consensus(out_b, artifacts_b, **kwargs)
 
     assert (out_a / "peer_attestations.json").read_bytes() == (out_b / "peer_attestations.json").read_bytes()
+
+
+def test_simulate_peers_linear_weight_mode_updates_weighted_counts(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "weighted"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear")
+
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["peers"]["weighted_pass"] == 3.0
+    assert consensus["policy_gate"]["peer_weight_mode"] == "linear"

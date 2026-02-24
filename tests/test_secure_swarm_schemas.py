@@ -51,7 +51,7 @@ def test_consensus_summary_schema_validates_minimal_example() -> None:
                 "weighted_pending": 0.0,
             },
             "consensus": "convergent",
-            "policy_gate": {"network_profile": "witness_only", "required_for": ["attest"], "satisfied": True, "allow_pending_to_satisfy": False},
+            "policy_gate": {"network_profile": "witness_only", "required_for": ["attest"], "satisfied": True, "allow_pending_to_satisfy": False, "bundle_hash_source": "evidence_content", "peer_weight_mode": "uniform"},
         }
     )
 
@@ -79,6 +79,8 @@ def test_consensus_summary_schema_validates_producer_shaped_example() -> None:
                 "required_for": ["publish", "export"],
                 "satisfied": True,
                 "allow_pending_to_satisfy": False,
+                "bundle_hash_source": "bundle_id_override",
+                "peer_weight_mode": "linear",
             },
         }
     )

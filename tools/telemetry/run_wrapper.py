@@ -367,6 +367,7 @@ def _write_evidence_and_consensus(
     *,
     created_at_utc: str | None = None,
     bundle_id: str | None = None,
+    simulate_peer_weight_mode: str = "uniform",
 ) -> None:
     profile = _load_network_profile()
     created_at = created_at_utc or _utc_now_z()
@@ -417,8 +418,10 @@ def _write_evidence_and_consensus(
 
     # Deterministic override for cross-directory reproducibility checks.
     # When bundle_id is explicitly provided, use a stable hash derived from it.
+    bundle_hash_source = "evidence_content"
     if bundle_id:
         evidence["bundle_sha256"] = hashlib.sha256(bundle_id.encode("utf-8")).hexdigest()
+        bundle_hash_source = "bundle_id_override"
     (outdir / "evidence_bundle.json").write_text(json.dumps(evidence, indent=2, sort_keys=True), encoding="utf-8")
 
     priv_b64u, pub_b64u, node_id, kid = _load_or_create_local_attestation_identity()
@@ -474,6 +477,7 @@ def _write_evidence_and_consensus(
                 kid=p_kid,
             )
             signed["simulated"] = True
+            signed["simulated_weight"] = float(i + 1) if simulate_peer_weight_mode == "linear" else 1.0
             simulated.append(signed)
         peer_path.write_text(json.dumps({"attestations": simulated}, indent=2, sort_keys=True), encoding="utf-8")
 
@@ -496,20 +500,28 @@ def _write_evidence_and_consensus(
 
     peer_pass = 0
     peer_fail = 0
-    for item in peer_items:
+    peer_weighted_pass = 0.0
+    peer_weighted_fail = 0.0
+    peer_weighted_pending = 0.0
+    for idx, item in enumerate(peer_items):
         status = _status_from_signed_attestation(item)
+        item_weight = float((item or {}).get("simulated_weight", 1.0)) if isinstance(item, dict) else 1.0
         if status == "pass":
             peer_pass += 1
+            peer_weighted_pass += item_weight
         elif status == "fail":
             peer_fail += 1
+            peer_weighted_fail += item_weight
+        else:
+            peer_weighted_pending += item_weight
 
     thresholds = _load_policy_thresholds(profile)
     req = thresholds["consensus_requirements"]
     total_attestations = int(central_present) + len(peer_items)
-    weighted_pass = float(central_pass + peer_pass)
-    weighted_fail = float(central_fail + peer_fail)
+    weighted_pass = float(central_pass) + peer_weighted_pass
+    weighted_fail = float(central_fail) + peer_weighted_fail
 
-    pending_weight = float(central_pending + (len(peer_items) - peer_pass - peer_fail))
+    pending_weight = float(central_pending) + peer_weighted_pending
     effective_pass = weighted_pass + (pending_weight if req["allow_pending_to_satisfy"] else 0.0)
 
     consensus = "insufficient"
@@ -537,9 +549,9 @@ def _write_evidence_and_consensus(
             "pass": peer_pass,
             "fail": peer_fail,
             "pending": len(peer_items) - peer_pass - peer_fail,
-            "weighted_pass": float(peer_pass),
-            "weighted_fail": float(peer_fail),
-            "weighted_pending": float(len(peer_items) - peer_pass - peer_fail),
+            "weighted_pass": float(peer_weighted_pass),
+            "weighted_fail": float(peer_weighted_fail),
+            "weighted_pending": float(peer_weighted_pending),
         },
         "consensus": consensus,
         "policy_gate": {
@@ -551,6 +563,8 @@ def _write_evidence_and_consensus(
                 and central_pass > 0
             ),
             "allow_pending_to_satisfy": bool(req["allow_pending_to_satisfy"]),
+            "bundle_hash_source": bundle_hash_source,
+            "peer_weight_mode": simulate_peer_weight_mode,
         },
     }
 
@@ -568,6 +582,7 @@ def main() -> int:
     ap.add_argument("--simulate-peers", type=int, default=0, help="Generate deterministic local peer attestations.")
     ap.add_argument("--created-at-utc", default="", help="Override Secure Swarm artifact timestamps (RFC3339 UTC Z).")
     ap.add_argument("--bundle-id", default="", help="Override evidence bundle_id for deterministic comparisons.")
+    ap.add_argument("--simulate-peer-weight-mode", choices=["uniform", "linear"], default="uniform", help="Weight mode for simulated peers (Path B initialization).")
     args, _unknown = ap.parse_known_args()
 
     outdir = Path(args.out).resolve()
@@ -690,6 +705,7 @@ def main() -> int:
         simulate_peers=max(0, int(args.simulate_peers)),
         created_at_utc=(args.created_at_utc.strip() or None),
         bundle_id=(args.bundle_id.strip() or None),
+        simulate_peer_weight_mode=str(args.simulate_peer_weight_mode),
     )
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})

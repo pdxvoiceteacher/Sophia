@@ -26,7 +26,7 @@ python -m pip install -r requirements-dev.txt
 
 `tools/telemetry/run_epoch_real.py` orchestrates scenario + pipeline execution.
 
-- `--quick`, `--perturbations`, `--simulate-peers`, `--created-at-utc`, and `--bundle-id` are pass-through overrides for `tools/telemetry/run_wrapper.py` pipeline settings.
+- `--quick`, `--perturbations`, `--simulate-peers`, `--simulate-peer-weight-mode`, `--created-at-utc`, and `--bundle-id` are pass-through overrides for `tools/telemetry/run_wrapper.py` pipeline settings.
 
 ## Python version guidance
 
@@ -89,19 +89,23 @@ For meaningful byte-identical comparisons across output directories, run with fi
 `run_wrapper` direct:
 
 ```powershell
-python tools/telemetry/run_wrapper.py --out <runA> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed
-python tools/telemetry/run_wrapper.py --out <runB> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed
+python tools/telemetry/run_wrapper.py --out <runA> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --simulate-peer-weight-mode uniform
+python tools/telemetry/run_wrapper.py --out <runB> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --simulate-peer-weight-mode uniform
 ```
 
 `run_epoch_real` entrypoint (pass-through):
 
 ```powershell
-python tools/telemetry/run_epoch_real.py --scenario epoch_scenarios/baseline_deterministic.json --mode deterministic --out <runA> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --quick --perturbations 1
-python tools/telemetry/run_epoch_real.py --scenario epoch_scenarios/baseline_deterministic.json --mode deterministic --out <runB> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --quick --perturbations 1
+python tools/telemetry/run_epoch_real.py --scenario epoch_scenarios/baseline_deterministic.json --mode deterministic --out <runA> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --simulate-peer-weight-mode uniform --quick --perturbations 1
+python tools/telemetry/run_epoch_real.py --scenario epoch_scenarios/baseline_deterministic.json --mode deterministic --out <runB> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --simulate-peer-weight-mode uniform --quick --perturbations 1
 ```
 
 Or run the automated verification script:
 
 ```powershell
 python scripts/verify_secure_swarm_freeze.py --repo-root . --out-root out/freeze_verify
+# (uses deterministic uniform peer weights)
 ```
+
+
+See `docs/PATH_B_SPEC.md` for weighted-peer initialization semantics and invariants.
