@@ -1,0 +1,5 @@
+# Sophia telemetry/python workspace bootstrap (root convenience entrypoint)
+-r ./python/tools/requirements-telemetry.txt
+-e ./python
+-e ./ucc
+-e ./sophia-core
