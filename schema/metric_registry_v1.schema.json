@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "metric_registry_v1.schema.json",
+  "type": "object",
+  "required": ["schema", "metrics"],
+  "properties": {
+    "schema": { "type": "string", "const": "metric_registry_v1" },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["definition", "boundary", "required_fields"],
+        "properties": {
+          "definition": { "type": "string" },
+          "boundary": { "type": "string" },
+          "required_fields": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
