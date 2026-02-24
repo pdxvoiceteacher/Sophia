@@ -34,6 +34,7 @@ JSON
 
 echo "[release_gate] running focused pytest governance gate"
 python -m pytest -q \
+  tests/test_path_a_freeze_invariants.py \
   tests/test_run_wrapper_evidence_paths.py \
   tests/test_secure_swarm_schemas.py \
   tests/test_epoch_real_runner.py \

@@ -262,3 +262,133 @@ def test_central_dominance_blocks_convergent_without_central_pass(monkeypatch, t
     assert consensus["peers"]["pass"] == 3
     assert consensus["consensus"] != "convergent"
     assert consensus["policy_gate"]["satisfied"] is False
+
+
+def test_witness_only_cannot_emit_v2(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    outdir = tmp_path / "witness-cannot-v2"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear")
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v1"
+
+
+def test_central_pass_with_weighted_majority_fail_is_divergent(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    outdir = tmp_path / "weighted-majority-fail"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    def fake_status(item: dict) -> str:
+        if isinstance(item, dict) and item.get("simulated") is True:
+            return "fail"
+        return "pass"
+
+    monkeypatch.setattr(run_wrapper, "_status_from_signed_attestation", fake_status)
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=3, simulate_peer_weight_mode="linear")
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["consensus"] == "divergent"
+
+
+def test_central_pass_borderline_weighted_threshold_is_deterministic(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+    (cfg / "policy_thresholds.json").write_text(
+        json.dumps(
+            {
+                "network_profile": "reproducible_audit",
+                "consensus_requirements": {
+                    "min_total_attestations": 3,
+                    "min_weighted_pass": 3.0,
+                    "max_weighted_fail": 1.0,
+                    "block_on_any_fail": False,
+                    "allow_pending_to_satisfy": False,
+                },
+                "export_policy": {"require_convergent": True, "require_attestations": True, "allowed_formats": ["json"]},
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    for d in [tmp_path / "t1", tmp_path / "t2"]:
+        (d / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+        (d / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+        run_wrapper._write_evidence_and_consensus(
+            d,
+            artifacts,
+            simulate_peers=2,
+            simulate_peer_weight_mode="linear",
+            created_at_utc="2026-01-01T00:00:00Z",
+            bundle_id="borderline-fixed",
+        )
+
+    c1 = (tmp_path / "t1" / "consensus_summary.json").read_bytes()
+    c2 = (tmp_path / "t2" / "consensus_summary.json").read_bytes()
+    assert c1 == c2
+
+
+def test_weighted_profile_deterministic_replay(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+    for d in [tmp_path / "r1", tmp_path / "r2"]:
+        (d / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+        (d / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+        run_wrapper._write_evidence_and_consensus(
+            d,
+            artifacts,
+            simulate_peers=5,
+            simulate_peer_weight_mode="adversarial",
+            created_at_utc="2026-01-01T00:00:00Z",
+            bundle_id="pathb-replay",
+        )
+
+    assert (tmp_path / "r1" / "peer_attestations.json").read_bytes() == (tmp_path / "r2" / "peer_attestations.json").read_bytes()
+    assert (tmp_path / "r1" / "consensus_summary.json").read_bytes() == (tmp_path / "r2" / "consensus_summary.json").read_bytes()
+
+
+def test_adversarial_weight_distribution_math(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    outdir = tmp_path / "adversarial"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=6, simulate_peer_weight_mode="adversarial")
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["peers"]["fail"] >= 1
+    assert consensus["peers"]["weighted_fail"] > consensus["peers"]["weighted_pass"] / 3
+    assert consensus["consensus"] == "divergent"
+
+
+def test_weighted_profiles_require_explicit_weight_mode(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    monkeypatch.setattr(sys, "argv", ["run_wrapper.py", "--out", str(tmp_path / "o")])
+    try:
+        run_wrapper.main()
+        assert False, "expected SystemExit when weight mode not explicit"
+    except SystemExit as exc:
+        assert "explicit --simulate-peer-weight-mode" in str(exc)

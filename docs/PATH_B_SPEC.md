@@ -33,3 +33,15 @@ Bundle-id-derived `bundle_sha256` is permitted for deterministic verification wo
    - validate `out/pathb_weighted/consensus_summary.json` against `schema/consensus_summary_v2.schema.json`.
 
 Weight authority note: `simulated_weight` is for deterministic simulation/testing. Production weight authority should come from trusted policy/registry sources, not untrusted peer envelopes.
+
+## Path B1 governance scope guard
+- Path A freeze contract remains untouched.
+- Path B1 is a simulation layer only (weighted math and drift/adversarial replay testing).
+- No real weight registry yet.
+- No consumer enforcement parity yet.
+- No threshold-shift behavior in `witness_only`.
+
+
+See also:
+- `docs/PATH_B1_WEIGHTED_CONSENSUS_SPEC.md` for formal Path B1 weighted math.
+- `docs/PATH_B1_ACCEPTANCE_CRITERIA.md` for merge gates and required checks.

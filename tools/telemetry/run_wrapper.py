@@ -280,6 +280,7 @@ def _load_policy_thresholds(network_profile: str) -> dict:
         "consensus_requirements": {
             "min_total_attestations": 1,
             "min_weighted_pass": 1.0,
+            "max_weighted_fail": None,
             "block_on_any_fail": True,
             "allow_pending_to_satisfy": False,
         },
@@ -304,6 +305,11 @@ def _load_policy_thresholds(network_profile: str) -> dict:
         "consensus_requirements": {
             "min_total_attestations": int(c.get("min_total_attestations", defaults["consensus_requirements"]["min_total_attestations"])),
             "min_weighted_pass": float(c.get("min_weighted_pass", defaults["consensus_requirements"]["min_weighted_pass"])),
+            "max_weighted_fail": (
+                None
+                if c.get("max_weighted_fail", None) is None
+                else float(c.get("max_weighted_fail"))
+            ),
             "block_on_any_fail": bool(c.get("block_on_any_fail", defaults["consensus_requirements"]["block_on_any_fail"])),
             "allow_pending_to_satisfy": bool(c.get("allow_pending_to_satisfy", defaults["consensus_requirements"]["allow_pending_to_satisfy"])),
         },
@@ -370,6 +376,8 @@ def _write_evidence_and_consensus(
     simulate_peer_weight_mode: str = "uniform",
 ) -> None:
     profile = _load_network_profile()
+    use_v2_consensus = profile in {"reproducible_audit", "full_relay"}
+    effective_weight_mode = simulate_peer_weight_mode if use_v2_consensus else "uniform"
     created_at = created_at_utc or _utc_now_z()
     run_id = outdir.name
     artifact_entries = []
@@ -466,7 +474,13 @@ def _write_evidence_and_consensus(
                 pubkey_b64u=p_pub,
                 bundle_hash=evidence["bundle_sha256"],
                 checks_run=["epoch_replay"],
-                results={"status": "pass"},
+                results={
+                    "status": (
+                        "fail"
+                        if effective_weight_mode == "adversarial" and i < max(1, simulate_peers // 3)
+                        else "pass"
+                    )
+                },
                 created_at_utc=created_at,
             )
             signed = sign_peer_attestation_payload(
@@ -477,7 +491,12 @@ def _write_evidence_and_consensus(
                 kid=p_kid,
             )
             signed["simulated"] = True
-            signed["simulated_weight"] = float(i + 1) if simulate_peer_weight_mode == "linear" else 1.0
+            if effective_weight_mode == "linear":
+                signed["simulated_weight"] = float(i + 1)
+            elif effective_weight_mode == "adversarial":
+                signed["simulated_weight"] = 5.0 if i < max(1, simulate_peers // 3) else 1.0
+            else:
+                signed["simulated_weight"] = 1.0
             simulated.append(signed)
         peer_path.write_text(json.dumps({"attestations": simulated}, indent=2, sort_keys=True), encoding="utf-8")
 
@@ -525,12 +544,14 @@ def _write_evidence_and_consensus(
     effective_pass = weighted_pass + (pending_weight if req["allow_pending_to_satisfy"] else 0.0)
 
     consensus = "insufficient"
+    max_weighted_fail = req.get("max_weighted_fail")
     if req["block_on_any_fail"] and weighted_fail > 0:
+        consensus = "divergent"
+    elif max_weighted_fail is not None and weighted_fail > float(max_weighted_fail):
         consensus = "divergent"
     elif total_attestations >= req["min_total_attestations"] and effective_pass >= req["min_weighted_pass"] and central_pass > 0:
         consensus = "convergent"
 
-    use_v2_consensus = profile in {"reproducible_audit", "full_relay"}
     policy_gate = {
         "network_profile": profile,
         "required_for": ["publish", "export"],
@@ -543,7 +564,7 @@ def _write_evidence_and_consensus(
     }
     if use_v2_consensus:
         policy_gate["bundle_hash_source"] = bundle_hash_source
-        policy_gate["peer_weight_mode"] = simulate_peer_weight_mode
+        policy_gate["peer_weight_mode"] = effective_weight_mode
 
     consensus_doc = {
         "schema": "consensus_summary_v2" if use_v2_consensus else "consensus_summary_v1",
@@ -586,8 +607,12 @@ def main() -> int:
     ap.add_argument("--simulate-peers", type=int, default=0, help="Generate deterministic local peer attestations.")
     ap.add_argument("--created-at-utc", default="", help="Override Secure Swarm artifact timestamps (RFC3339 UTC Z).")
     ap.add_argument("--bundle-id", default="", help="Override evidence bundle_id for deterministic comparisons.")
-    ap.add_argument("--simulate-peer-weight-mode", choices=["uniform", "linear"], default="uniform", help="Weight mode for simulated peers (Path B initialization).")
+    ap.add_argument("--simulate-peer-weight-mode", choices=["uniform", "linear", "adversarial"], default="uniform", help="Weight mode for simulated peers (Path B1 simulation).")
     args, _unknown = ap.parse_known_args()
+
+    has_explicit_weight_mode = "--simulate-peer-weight-mode" in sys.argv[1:]
+    if _load_network_profile() in {"reproducible_audit", "full_relay"} and not has_explicit_weight_mode:
+        raise SystemExit("weighted profiles require explicit --simulate-peer-weight-mode")
 
     outdir = Path(args.out).resolve()
     outdir.mkdir(parents=True, exist_ok=True)
