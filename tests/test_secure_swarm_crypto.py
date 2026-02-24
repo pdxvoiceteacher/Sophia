@@ -14,6 +14,7 @@ from tools.security.swarm_crypto import (
     generate_ed25519_keypair,
     generate_x25519_keypair,
     kid_from_signing_pubkey,
+    TrustedKeySet,
     node_id_from_signing_pubkey,
     open_envelope_for_recipient,
     seal_envelope,
@@ -182,3 +183,65 @@ def test_vault_delta_and_evidence_schemas_validate_minimal_examples() -> None:
             "bundle_sha256": "b" * 64,
         }
     )
+
+
+def test_trusted_key_set_add_contains_remove_roundtrip() -> None:
+    _priv, pub = generate_ed25519_keypair()
+    node_id = node_id_from_signing_pubkey(pub)
+    kid = kid_from_signing_pubkey(pub)
+
+    key_set = TrustedKeySet()
+    key_set.add({"node_id": node_id, "kid": kid, "pubkey_b64u": pub})
+
+    assert key_set.is_trusted_signer(node_id=node_id)
+    assert key_set.is_trusted_signer(kid=kid)
+    assert key_set.is_trusted_signer(pubkey_b64u=pub)
+    assert key_set.is_trusted_signer(node_id=node_id, kid=kid, pubkey_b64u=pub)
+
+    assert key_set.remove_by_kid(kid)
+    assert not key_set.is_trusted_signer(kid=kid)
+    assert not key_set.remove_by_kid(kid)
+
+
+def test_trusted_key_set_rejects_mismatched_derived_identifiers() -> None:
+    _priv, pub = generate_ed25519_keypair()
+    node_id = node_id_from_signing_pubkey(pub)
+    kid = kid_from_signing_pubkey(pub)
+
+    key_set = TrustedKeySet()
+
+    try:
+        key_set.add({"node_id": "node_wrong", "kid": kid, "pubkey_b64u": pub})
+        assert False, "expected node mismatch"
+    except ValueError as err:
+        assert str(err) == "trusted_key_node_id_mismatch"
+
+    try:
+        key_set.add({"node_id": node_id, "kid": "kid_wrong", "pubkey_b64u": pub})
+        assert False, "expected kid mismatch"
+    except ValueError as err:
+        assert str(err) == "trusted_key_kid_mismatch"
+
+
+def test_trusted_key_set_rejects_missing_pubkey() -> None:
+    key_set = TrustedKeySet()
+    try:
+        key_set.add({"node_id": "node_any", "kid": "kid_any"})
+        assert False, "expected missing pubkey"
+    except ValueError as err:
+        assert str(err) == "trusted_key_missing_pubkey"
+
+
+def test_trusted_key_set_readding_same_pubkey_is_idempotent_and_sorted() -> None:
+    _priv_a, pub_a = generate_ed25519_keypair()
+    _priv_b, pub_b = generate_ed25519_keypair()
+
+    key_set = TrustedKeySet()
+    key_set.add({"pubkey_b64u": pub_b})
+    key_set.add({"pubkey_b64u": pub_a})
+    key_set.add({"pubkey_b64u": pub_a})
+
+    materialized = key_set.to_list()
+    assert len(materialized) == 2
+    kids = [entry["kid"] for entry in materialized]
+    assert kids == sorted(kids)

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 from __future__ import annotations
 import argparse, hashlib, json, platform, subprocess, sys, statistics, re, math
 from datetime import datetime, timezone
@@ -28,6 +28,7 @@ from tools.security.swarm_crypto import (
     sign_peer_attestation_payload,
     is_attestation_expired,
     is_within_replay_window,
+    TrustedKeySet,
 )
 
 from tools.telemetry.weight_registry import WeightRegistry
@@ -343,6 +344,56 @@ def _load_or_create_local_attestation_identity() -> tuple[str, str, str, str]:
     return priv_b64u, pub_b64u, node_id, kid
 
 
+
+
+def _load_trusted_key_set() -> TrustedKeySet:
+    key_set = TrustedKeySet()
+    registry_path = REPO / "config" / "peer_registry_v1.json"
+    if not registry_path.exists():
+        return key_set
+    try:
+        payload = load_json_bom_safe(registry_path)
+    except Exception:
+        return key_set
+    peers = payload.get("peers") or []
+    for peer in peers:
+        if not isinstance(peer, dict):
+            continue
+        pub = str(peer.get("pubkey_b64u") or peer.get("pubkey") or "").strip()
+        if not pub:
+            continue
+        node_id = str(peer.get("node_id") or "").strip()
+        kid = str(peer.get("kid") or "").strip()
+        try:
+            key_set.add({"node_id": node_id, "kid": kid, "pubkey_b64u": pub})
+        except Exception:
+            continue
+    return key_set
+
+
+def _apply_key_validation_flag_non_rejecting(attestation: dict[str, object], trusted: TrustedKeySet) -> None:
+    payload = attestation.get("payload") if isinstance(attestation, dict) else None
+    key_id = None
+    if isinstance(payload, dict):
+        raw = payload.get("key_id")
+        if isinstance(raw, str):
+            key_id = raw.strip()
+    signer = attestation.get("signer") if isinstance(attestation, dict) else None
+    signer_node = signer.get("node_id") if isinstance(signer, dict) else None
+    signer_pub = signer.get("pubkey_b64u") if isinstance(signer, dict) else None
+
+    if not key_id:
+        attestation["key_validation_ok"] = False
+        return
+
+    attestation["key_validation_ok"] = bool(
+        trusted.is_trusted_signer(
+            kid=key_id,
+            node_id=str(signer_node) if isinstance(signer_node, str) else None,
+            pubkey_b64u=str(signer_pub) if isinstance(signer_pub, str) else None,
+        )
+    )
+
 def _deterministic_ed25519_keypair(seed_material: str) -> tuple[str, str]:
     seed = hashlib.sha256(seed_material.encode("utf-8")).digest()
     private_key = ed25519.Ed25519PrivateKey.from_private_bytes(seed)
@@ -405,6 +456,7 @@ def _write_evidence_and_consensus(
     profile = _load_network_profile()
     use_v2_consensus = profile in {"reproducible_audit", "full_relay"}
     effective_weight_mode = simulate_peer_weight_mode if use_v2_consensus else "uniform"
+    trusted_key_set = _load_trusted_key_set() if use_v2_consensus else TrustedKeySet()
     created_at = created_at_utc or _utc_now_z()
     run_id = outdir.name
     artifact_entries = []
@@ -467,6 +519,8 @@ def _write_evidence_and_consensus(
         results={"status": "pass"},
         created_at_utc=created_at,
     )
+    if use_v2_consensus:
+        central_payload["key_id"] = kid
     central_attestation = sign_peer_attestation_payload(
         payload_without_signature=central_payload,
         private_key_b64u=priv_b64u,
@@ -474,6 +528,8 @@ def _write_evidence_and_consensus(
         signer_pubkey_b64u=pub_b64u,
         kid=kid,
     )
+    if use_v2_consensus:
+        _apply_key_validation_flag_non_rejecting(central_attestation, trusted_key_set)
     (outdir / "attestations.json").write_text(
         json.dumps({
             "schema": "attestations_v1",
@@ -513,6 +569,8 @@ def _write_evidence_and_consensus(
                 },
                 created_at_utc=created_at,
             )
+            if use_v2_consensus:
+                payload["key_id"] = p_kid
             signed = sign_peer_attestation_payload(
                 payload_without_signature=payload,
                 private_key_b64u=p_priv,
@@ -525,6 +583,8 @@ def _write_evidence_and_consensus(
                 signed["simulated_weight"] = 1.0
             else:
                 signed["simulated_weight"] = float(weight_registry.get_weight(p_node))
+            if use_v2_consensus:
+                _apply_key_validation_flag_non_rejecting(signed, trusted_key_set)
             if use_v2_consensus and (replay_window_s > 0 or attestation_ttl_s > 0):
                 peer_created = str((signed.get("payload") or {}).get("created_at_utc") or created_at)
                 signed["replay_window_ok"] = bool(

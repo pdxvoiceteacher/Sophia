@@ -462,3 +462,51 @@ def test_witness_only_central_fail_blocks_even_with_weighted_majority(monkeypatc
 
 def test_witness_only_central_fail_blocks_even_with_weighted_majority_under_witness_only(monkeypatch, tmp_path: Path) -> None:
     test_witness_only_central_fail_blocks_even_with_weighted_majority(monkeypatch, tmp_path)
+
+
+def test_key_id_emitted_under_weighted_only(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    outdir = tmp_path / "weighted-key-id"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=2,
+        simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z",
+        bundle_id="weighted-key-id",
+    )
+
+    peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all(isinstance((p.get("payload") or {}).get("key_id"), str) and (p.get("payload") or {}).get("key_id") for p in peers)
+    assert all(p.get("key_validation_ok") is False for p in peers)
+
+
+def test_key_id_not_emitted_under_witness_only(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+
+    outdir = tmp_path / "witness-no-key-id"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=2,
+        simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z",
+        bundle_id="witness-no-key-id",
+    )
+
+    peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all("key_id" not in (p.get("payload") or {}) for p in peers)
