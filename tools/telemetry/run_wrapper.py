@@ -1,10 +1,43 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 from __future__ import annotations
 import argparse, hashlib, json, platform, subprocess, sys, statistics, re, math
 from datetime import datetime, timezone
 from pathlib import Path
-import sys
 import os
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519
+
+
+def _ensure_repo_on_sys_path() -> Path:
+    repo_root = Path(__file__).resolve().parents[2]
+    repo_root_s = str(repo_root)
+    if repo_root_s not in sys.path:
+        sys.path.insert(0, repo_root_s)
+    return repo_root
+
+
+REPO = _ensure_repo_on_sys_path()
+
+from tools.security.swarm_crypto import (
+    b64u_encode,
+    build_peer_attestation_payload,
+    generate_ed25519_keypair,
+    kid_from_signing_pubkey,
+    node_id_from_signing_pubkey,
+    sign_peer_attestation_payload,
+    is_attestation_expired,
+    is_within_replay_window,
+    TrustedKeySet,
+)
+
+from tools.telemetry.weight_registry import WeightRegistry
+from tools.cognition.reflection_engine import write_cognition_trace
+from tools.cognition.memory_graph import load_memory_graph, update_memory_graph, write_memory_graph
+from tools.cognition.memory_recall import write_memory_recall
+
+_WEIGHTED_REPLAY_WINDOW_S_DEFAULT = 300
+_WEIGHTED_ATTESTATION_TTL_S_DEFAULT = 300
 
 # --- TEL step events (module-level) ---
 def _utc_now_iso() -> str:
@@ -38,52 +71,54 @@ def _step_error(outdir: Path, name: str, t0: float, err: Exception) -> None:
 
 
 
-### UCC OUT PARSE (ALWAYS)
-# Always detect an output directory and always wire UCC_TEL_EVENTS_OUT.
-# Supports both --out and --outdir forms to avoid guided/unguided mismatch.
-_OUT_ALWAYS = None
-for i, a in enumerate(sys.argv):
-    if a in ("--out", "--outdir") and i + 1 < len(sys.argv):
-        _OUT_ALWAYS = sys.argv[i + 1]
-        break
-    if a.startswith("--out="):
-        _OUT_ALWAYS = a.split("=", 1)[1]
-        break
-    if a.startswith("--outdir="):
-        _OUT_ALWAYS = a.split("=", 1)[1]
-        break
-
-if _OUT_ALWAYS:
-    from pathlib import Path as _Path
-    os.environ["UCC_TEL_EVENTS_OUT"] = str(_Path(_OUT_ALWAYS) / "ucc_tel_events.jsonl")
-    _Path(_OUT_ALWAYS).mkdir(parents=True, exist_ok=True)
-    (_Path(_OUT_ALWAYS) / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
-### /UCC OUT PARSE (ALWAYS)
-
-
-# --- TEL events flag pre-parse (parser-agnostic) ---
-_TEL_EVENTS_EMIT = False
-if "--emit-tel-events" in sys.argv:
-    _TEL_EVENTS_EMIT = True
-    sys.argv.remove("--emit-tel-events")
-    # Auto-wire UCC step-event sink to <out>/ucc_tel_events.jsonl
-    _out = None
-    for i, a in enumerate(sys.argv):
-        if a == "--out" and i + 1 < len(sys.argv):
-            _out = sys.argv[i + 1]
-            break
+def _find_out(argv: list[str]) -> str | None:
+    for i, a in enumerate(argv):
+        if a in ("--out", "--outdir") and i + 1 < len(argv):
+            return argv[i + 1]
         if a.startswith("--out="):
-            _out = a.split("=", 1)[1]
-            break
+            return a.split("=", 1)[1]
+        if a.startswith("--outdir="):
+            return a.split("=", 1)[1]
+    return None
 
-if _out and not os.environ.get("UCC_TEL_EVENTS_OUT"):
-        from pathlib import Path as _Path
-        os.environ["UCC_TEL_EVENTS_OUT"] = str(_Path(_out) / "ucc_tel_events.jsonl")
-        # Ensure TEL events file exists whenever --emit-tel-events is requested (even if later empty)
-        _Path(_out).mkdir(parents=True, exist_ok=True)
-        (_Path(_out) / "tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
-        (_Path(_out) / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
-# --- /TEL events flag pre-parse ---
+
+def _preparse_cli(argv: list[str]) -> dict[str, object]:
+    emit_tel_events = "--emit-tel-events" in argv
+    emit_tel = "--emit-tel" in argv
+    require_tel = "--require-tel" in argv
+    out_always = _find_out(argv)
+
+    if out_always:
+        out_path = Path(out_always)
+        os.environ["UCC_TEL_EVENTS_OUT"] = str(out_path / "ucc_tel_events.jsonl")
+        out_path.mkdir(parents=True, exist_ok=True)
+        (out_path / "ucc_tel_events.jsonl").write_text("", encoding="utf-8", newline="\n")
+
+    out_for_tel_events = out_always
+    if not out_for_tel_events:
+        ucc_events_out = os.environ.get("UCC_TEL_EVENTS_OUT")
+        if ucc_events_out:
+            ucc_out_path = Path(ucc_events_out)
+            out_for_tel_events = str(ucc_out_path.parent if ucc_out_path.suffix == ".jsonl" else ucc_out_path)
+
+    if emit_tel_events and out_for_tel_events:
+        out_path = Path(out_for_tel_events)
+        out_path.mkdir(parents=True, exist_ok=True)
+        (out_path / "tel_events.jsonl").touch(exist_ok=True)
+
+    return {
+        "out": out_always,
+        "emit_tel": emit_tel,
+        "emit_tel_events": emit_tel_events,
+        "require_tel": require_tel,
+    }
+
+
+_PREPARSE = _preparse_cli(sys.argv[1:])
+_OUT_ALWAYS = _PREPARSE["out"]
+_TEL_EMIT = bool(_PREPARSE["emit_tel"])
+_TEL_EVENTS_EMIT = bool(_PREPARSE["emit_tel_events"])
+_REQUIRE_TEL = bool(_PREPARSE["require_tel"])
 
 
 def _safe_relpath(p: Path, base: Path) -> str:
@@ -92,21 +127,6 @@ def _safe_relpath(p: Path, base: Path) -> str:
     except Exception:
         return str(p.resolve()).replace('\\', '/')
 
-
-# --- TEL flag pre-parse (parser-agnostic) ---
-_TEL_EMIT = False
-if "--emit-tel" in sys.argv:
-    _TEL_EMIT = True
-    sys.argv.remove("--emit-tel")
-_TEL_EVENTS_EMIT = False
-if "--emit-tel-events" in sys.argv:
-    _TEL_EVENTS_EMIT = True
-    sys.argv.remove("--emit-tel-events")
-
-# --- /TEL flag pre-parse ---
-
-
-REPO = Path(__file__).resolve().parents[2]
 
 def sha256_file(p: Path) -> str:
     h = hashlib.sha256()
@@ -244,12 +264,702 @@ def drift(a: dict[str, float], b: dict[str, float]) -> float:
     keys = ["E", "T", "Psi", "Es"]
     return sum(abs(a[k] - b[k]) for k in keys) / len(keys)
 
+
+
+def _utc_now_z() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _load_network_profile() -> str:
+    policy_path = REPO / "config" / "network_policy_v1.json"
+    if not policy_path.exists():
+        return "witness_only"
+    try:
+        policy = load_json_bom_safe(policy_path)
+    except Exception:
+        return "witness_only"
+    profile = str(policy.get("profile") or "witness_only")
+    if profile not in {"witness_only", "reproducible_audit", "full_relay"}:
+        return "witness_only"
+    return profile
+
+
+
+
+def _load_policy_thresholds(network_profile: str) -> dict:
+    defaults = {
+        "consensus_requirements": {
+            "min_total_attestations": 1,
+            "min_weighted_pass": 1.0,
+            "max_weighted_fail": None,
+            "block_on_any_fail": True,
+            "allow_pending_to_satisfy": False,
+        },
+        "export_policy": {
+            "require_convergent": True,
+            "require_attestations": True,
+            "allowed_formats": ["json"],
+        },
+    }
+    policy_path = REPO / "config" / "policy_thresholds.json"
+    if not policy_path.exists():
+        return defaults
+    try:
+        payload = load_json_bom_safe(policy_path)
+    except Exception:
+        return defaults
+    if str(payload.get("network_profile") or network_profile) != network_profile:
+        return defaults
+    c = payload.get("consensus_requirements") or {}
+    e = payload.get("export_policy") or {}
+    return {
+        "consensus_requirements": {
+            "min_total_attestations": int(c.get("min_total_attestations", defaults["consensus_requirements"]["min_total_attestations"])),
+            "min_weighted_pass": float(c.get("min_weighted_pass", defaults["consensus_requirements"]["min_weighted_pass"])),
+            "max_weighted_fail": (
+                None
+                if c.get("max_weighted_fail", None) is None
+                else float(c.get("max_weighted_fail"))
+            ),
+            "block_on_any_fail": bool(c.get("block_on_any_fail", defaults["consensus_requirements"]["block_on_any_fail"])),
+            "allow_pending_to_satisfy": bool(c.get("allow_pending_to_satisfy", defaults["consensus_requirements"]["allow_pending_to_satisfy"])),
+        },
+        "export_policy": {
+            "require_convergent": bool(e.get("require_convergent", e.get("export_requires_convergent_consensus", defaults["export_policy"]["require_convergent"]))),
+            "require_attestations": bool(e.get("require_attestations", e.get("export_requires_policy_gate", defaults["export_policy"]["require_attestations"]))),
+            "allowed_formats": list(e.get("allowed_formats", defaults["export_policy"]["allowed_formats"])),
+        },
+    }
+
+
+def _load_or_create_local_attestation_identity() -> tuple[str, str, str, str]:
+    attestation_key_path = REPO / "config" / "local_attestation_key.json"
+    if not attestation_key_path.exists():
+        priv_b64u, pub_b64u = generate_ed25519_keypair()
+        attestation_key_path.parent.mkdir(parents=True, exist_ok=True)
+        attestation_key_path.write_text(
+            json.dumps({"private_key_b64": priv_b64u, "public_key_b64": pub_b64u}, indent=2),
+            encoding="utf-8",
+        )
+    else:
+        keys = json.loads(attestation_key_path.read_text(encoding="utf-8"))
+        priv_b64u = keys["private_key_b64"]
+        pub_b64u = keys["public_key_b64"]
+    node_id = node_id_from_signing_pubkey(pub_b64u)
+    kid = kid_from_signing_pubkey(pub_b64u)
+    return priv_b64u, pub_b64u, node_id, kid
+
+
+
+
+def _load_trusted_key_set() -> tuple[TrustedKeySet, set[str]]:
+    key_set = TrustedKeySet()
+    revoked_kids: set[str] = set()
+    registry_path = REPO / "config" / "peer_registry_v1.json"
+    if not registry_path.exists():
+        return key_set, revoked_kids
+    try:
+        payload = load_json_bom_safe(registry_path)
+    except Exception:
+        return key_set, revoked_kids
+    peers = payload.get("peers") or []
+    for peer in peers:
+        if not isinstance(peer, dict):
+            continue
+        pub = str(peer.get("pubkey_b64u") or peer.get("pubkey") or "").strip()
+        if not pub:
+            continue
+        node_id = str(peer.get("node_id") or "").strip()
+        kid = str(peer.get("kid") or "").strip()
+        try:
+            trusted = key_set.add({"node_id": node_id, "kid": kid, "pubkey_b64u": pub})
+            if bool(peer.get("revoked", False)) or bool(peer.get("enabled", True)) is False:
+                revoked_kids.add(trusted.kid)
+        except Exception:
+            continue
+    return key_set, revoked_kids
+
+
+def _effective_weighted_time_bounds(replay_window_s: int, attestation_ttl_s: int) -> tuple[int, int]:
+    replay = int(replay_window_s) if int(replay_window_s) > 0 else _WEIGHTED_REPLAY_WINDOW_S_DEFAULT
+    ttl = int(attestation_ttl_s) if int(attestation_ttl_s) > 0 else _WEIGHTED_ATTESTATION_TTL_S_DEFAULT
+    return replay, ttl
+
+
+def _time_checks_for_attestation(*, payload: object, reference_utc: str, replay_window_s: int, attestation_ttl_s: int) -> tuple[bool, bool]:
+    created = ""
+    if isinstance(payload, dict):
+        raw = payload.get("created_at_utc")
+        if isinstance(raw, str):
+            created = raw
+    if not created:
+        return False, True
+    replay_ok = bool(
+        is_within_replay_window(
+            created_at_utc=created,
+            reference_utc=reference_utc,
+            replay_window_s=int(replay_window_s),
+        )
+    )
+    expired = bool(
+        is_attestation_expired(
+            created_at_utc=created,
+            reference_utc=reference_utc,
+            ttl_s=int(attestation_ttl_s),
+        )
+    )
+    return replay_ok, expired
+
+
+def _parse_utc_any(ts: str) -> datetime | None:
+    try:
+        txt = str(ts).strip()
+        if txt.endswith("Z"):
+            txt = txt[:-1] + "+00:00"
+        dt = datetime.fromisoformat(txt)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def _replay_ledger_path() -> Path:
+    return REPO / "config" / "replay_ledger.jsonl"
+
+
+def _load_replay_ledger_entries() -> list[dict[str, object]]:
+    path = _replay_ledger_path()
+    if not path.exists():
+        return []
+    rows: list[dict[str, object]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line)
+        except Exception:
+            continue
+        if isinstance(obj, dict):
+            rows.append(obj)
+    return rows
+
+
+def _write_replay_ledger_entries(entries: list[dict[str, object]]) -> None:
+    path = _replay_ledger_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    def _k(e: dict[str, object]) -> tuple[str, str, str]:
+        return (
+            str(e.get("observed_at_utc") or ""),
+            str(e.get("bundle_hash") or ""),
+            str(e.get("run_id") or ""),
+        )
+
+    ordered = sorted(entries, key=_k)
+    data = "".join(json.dumps(item, ensure_ascii=False, sort_keys=True) + "\n" for item in ordered)
+    path.write_text(data, encoding="utf-8")
+
+
+def _replay_is_outside_window(bundle_hash: str, reference_utc: str, replay_window_s: int) -> bool:
+    ref_dt = _parse_utc_any(reference_utc)
+    if ref_dt is None:
+        return True
+    window = max(0, int(replay_window_s))
+    prior = []
+    for entry in _load_replay_ledger_entries():
+        if str(entry.get("bundle_hash") or "") != bundle_hash:
+            continue
+        dt = _parse_utc_any(str(entry.get("observed_at_utc") or ""))
+        if dt is not None:
+            prior.append(dt)
+    if not prior:
+        return False
+    latest = max(prior)
+    return abs((ref_dt - latest).total_seconds()) > float(window)
+
+
+def _append_replay_ledger(*, bundle_hash: str, observed_at_utc: str, run_id: str) -> None:
+    entries = _load_replay_ledger_entries()
+    entries.append({"bundle_hash": bundle_hash, "observed_at_utc": observed_at_utc, "run_id": run_id})
+    _write_replay_ledger_entries(entries)
+
+
+def _is_malformed_key_id(key_id: object) -> bool:
+    if not isinstance(key_id, str):
+        return True
+    key_id_clean = key_id.strip()
+    if not key_id_clean:
+        return True
+    return re.fullmatch(r"kid_[A-Za-z0-9_-]{6,}", key_id_clean) is None
+
+
+def _apply_key_enforcement_weighted_only(
+    attestation: dict[str, object],
+    trusted: TrustedKeySet,
+    revoked_kids: set[str],
+    *,
+    enforce: bool,
+    reference_utc: str,
+    replay_window_s: int,
+    attestation_ttl_s: int,
+) -> bool:
+    if not enforce:
+        return True
+    payload = attestation.get("payload") if isinstance(attestation, dict) else None
+    replay_ok, expired = _time_checks_for_attestation(
+        payload=payload,
+        reference_utc=reference_utc,
+        replay_window_s=replay_window_s,
+        attestation_ttl_s=attestation_ttl_s,
+    )
+    key_id = (payload or {}).get("key_id") if isinstance(payload, dict) else None
+    signer = attestation.get("signer") if isinstance(attestation, dict) else None
+    signer_node = signer.get("node_id") if isinstance(signer, dict) else None
+    signer_pub = signer.get("pubkey_b64u") if isinstance(signer, dict) else None
+
+    malformed = _is_malformed_key_id(key_id)
+    key_id_clean = key_id.strip() if isinstance(key_id, str) else ""
+    is_revoked = (not malformed) and (key_id_clean in revoked_kids)
+    in_trusted = (
+        (not malformed)
+        and trusted.is_trusted_signer(
+            kid=key_id_clean,
+            node_id=str(signer_node) if isinstance(signer_node, str) else None,
+            pubkey_b64u=str(signer_pub) if isinstance(signer_pub, str) else None,
+        )
+    )
+
+    is_valid = bool(in_trusted) and not is_revoked and replay_ok and (not expired)
+    attestation["key_validation_ok"] = bool(is_valid)
+    attestation["key_enforced"] = True
+    attestation["attestation_valid"] = bool(is_valid)
+    attestation["replay_window_ok"] = bool(replay_ok)
+    attestation["attestation_expired"] = bool(expired)
+    if not is_valid:
+        if (not replay_ok) or expired:
+            attestation["attestation_invalid_reason"] = "expired_attestation"
+        elif malformed:
+            attestation["attestation_invalid_reason"] = "malformed_key_id"
+        elif is_revoked:
+            attestation["attestation_invalid_reason"] = "revoked_key_id"
+        else:
+            attestation["attestation_invalid_reason"] = "unknown_key_id"
+    return bool(is_valid)
+
+def _deterministic_ed25519_keypair(seed_material: str) -> tuple[str, str]:
+    seed = hashlib.sha256(seed_material.encode("utf-8")).digest()
+    private_key = ed25519.Ed25519PrivateKey.from_private_bytes(seed)
+    public_key = private_key.public_key()
+    return (
+        b64u_encode(
+            private_key.private_bytes(
+                encoding=serialization.Encoding.Raw,
+                format=serialization.PrivateFormat.Raw,
+                encryption_algorithm=serialization.NoEncryption(),
+            )
+        ),
+        b64u_encode(
+            public_key.public_bytes(
+                encoding=serialization.Encoding.Raw,
+                format=serialization.PublicFormat.Raw,
+            )
+        ),
+    )
+
+
+
+
+def _simulated_peer_status(i: int, total: int, mode: str, adversarial_pattern: str) -> str:
+    if mode != "adversarial":
+        return "pass"
+    fail_count = max(1, total // 3)
+    if adversarial_pattern in {"minority_high_weight_fail", "majority_low_weight_pass"}:
+        return "fail" if i < fail_count else "pass"
+    if adversarial_pattern == "borderline_threshold_case":
+        return "fail" if (total > 0 and i == 0) else "pass"
+    return "fail" if i < fail_count else "pass"
+
+
+def _adversarial_node_order(node_ids: list[str], pattern: str) -> list[str]:
+    if pattern == "majority_low_weight_pass":
+        return sorted(node_ids)
+    if pattern == "borderline_threshold_case":
+        return list(reversed(sorted(node_ids)))
+    return node_ids
+
+def _status_from_signed_attestation(item: dict) -> str:
+    payload = item.get("payload") if isinstance(item, dict) else {}
+    results = payload.get("results") if isinstance(payload, dict) else {}
+    return str((results or {}).get("status", "pending")).lower()
+
+
+def _write_evidence_and_consensus(
+    outdir: Path,
+    artifacts: list[dict[str, str]],
+    simulate_peers: int = 0,
+    *,
+    created_at_utc: str | None = None,
+    bundle_id: str | None = None,
+    simulate_peer_weight_mode: str = "uniform",
+    adversarial_weight_pattern: str = "minority_high_weight_fail",
+    replay_window_s: int = 0,
+    attestation_ttl_s: int = 0,
+) -> None:
+    profile = _load_network_profile()
+    use_v2_consensus = profile in {"reproducible_audit", "full_relay"}
+    effective_weight_mode = simulate_peer_weight_mode if use_v2_consensus else "uniform"
+    trusted_key_set, revoked_kids = _load_trusted_key_set() if use_v2_consensus else (TrustedKeySet(), set())
+    effective_replay_window_s, effective_attestation_ttl_s = _effective_weighted_time_bounds(replay_window_s, attestation_ttl_s)
+    created_at = created_at_utc or _utc_now_z()
+    run_id = outdir.name
+    artifact_entries = []
+    for art in artifacts:
+        rel = art["path"]
+        p = (outdir / rel)
+        size = p.stat().st_size if p.exists() else 0
+        artifact_entries.append(
+            {
+                "path": rel,
+                "content_type": "application/json",
+                "sha256": art["sha256"],
+                "size_bytes": size,
+                "classification": "evidence",
+                "encrypted": False,
+                "transport": {
+                    "transport_sha256": art["sha256"],
+                    "transport_size_bytes": size,
+                },
+            }
+        )
+
+    evidence = {
+        "schema": "evidence_bundle_v1",
+        "bundle_id": bundle_id or f"bundle-{run_id}",
+        "created_at_utc": created_at,
+        "producer": {
+            "node_id": "node_local_runner",
+            "software": "sophia",
+            "version": "v0.1",
+        },
+        "policy": {
+            "network_profile": profile,
+            "share_scopes": ["hashes/*", "metrics/*", "attestations/*"],
+            "peer_set": [],
+        },
+        "artifacts": artifact_entries,
+    }
+    try:
+        from tools.security.swarm_crypto import compute_evidence_bundle_hash
+        evidence["bundle_sha256"] = compute_evidence_bundle_hash(evidence)
+    except Exception:
+        evidence["bundle_sha256"] = hashlib.sha256(
+            json.dumps(evidence, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+
+    # Deterministic override for cross-directory reproducibility checks.
+    # When bundle_id is explicitly provided, use a stable hash derived from it.
+    bundle_hash_source = "evidence_content"
+    if bundle_id:
+        evidence["bundle_sha256"] = hashlib.sha256(bundle_id.encode("utf-8")).hexdigest()
+        bundle_hash_source = "bundle_id_override"
+    (outdir / "evidence_bundle.json").write_text(json.dumps(evidence, indent=2, sort_keys=True), encoding="utf-8")
+
+    replay_outside_window = False
+    if use_v2_consensus:
+        replay_outside_window = _replay_is_outside_window(
+            evidence["bundle_sha256"],
+            created_at,
+            effective_replay_window_s,
+        )
+        _append_replay_ledger(
+            bundle_hash=evidence["bundle_sha256"],
+            observed_at_utc=created_at,
+            run_id=run_id,
+        )
+
+    priv_b64u, pub_b64u, node_id, kid = _load_or_create_local_attestation_identity()
+    central_payload = build_peer_attestation_payload(
+        pubkey_b64u=pub_b64u,
+        bundle_hash=evidence["bundle_sha256"],
+        checks_run=["epoch_replay"],
+        results={"status": "pass"},
+        created_at_utc=created_at,
+    )
+    if use_v2_consensus:
+        central_payload["key_id"] = kid
+    central_attestation = sign_peer_attestation_payload(
+        payload_without_signature=central_payload,
+        private_key_b64u=priv_b64u,
+        signer_node_id=node_id,
+        signer_pubkey_b64u=pub_b64u,
+        kid=kid,
+    )
+    if use_v2_consensus:
+        _apply_key_enforcement_weighted_only(
+            central_attestation,
+            trusted_key_set,
+            revoked_kids,
+            enforce=use_v2_consensus,
+            reference_utc=created_at,
+            replay_window_s=effective_replay_window_s,
+            attestation_ttl_s=effective_attestation_ttl_s,
+        )
+        if replay_outside_window:
+            central_attestation["key_enforced"] = True
+            central_attestation["attestation_valid"] = False
+            central_attestation["attestation_invalid_reason"] = "replay_outside_window"
+    (outdir / "attestations.json").write_text(
+        json.dumps({
+            "schema": "attestations_v1",
+            "attestations": [
+                {
+                    "submission_id": evidence["bundle_id"],
+                    "status": "accepted",
+                    "reviewer": node_id,
+                    "detail": "Local central attestation generated by run_wrapper.",
+                    "signed_message": central_attestation,
+                }
+            ],
+        }, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
+    peer_path = outdir / "peer_attestations.json"
+    if simulate_peers > 0:
+        simulated = []
+        weighted_nodes: list[str] = []
+        for i in range(simulate_peers):
+            p_priv, p_pub = _deterministic_ed25519_keypair(f"{evidence['bundle_sha256']}:{i}")
+            p_node = node_id_from_signing_pubkey(p_pub)
+            weighted_nodes.append(p_node)
+        weighted_nodes = _adversarial_node_order(weighted_nodes, adversarial_weight_pattern) if effective_weight_mode == "adversarial" else weighted_nodes
+        weight_registry = WeightRegistry.for_simulation(node_ids=weighted_nodes, mode=effective_weight_mode) if use_v2_consensus else None
+        for i in range(simulate_peers):
+            p_priv, p_pub = _deterministic_ed25519_keypair(f"{evidence['bundle_sha256']}:{i}")
+            p_node = node_id_from_signing_pubkey(p_pub)
+            p_kid = kid_from_signing_pubkey(p_pub)
+            payload = build_peer_attestation_payload(
+                pubkey_b64u=p_pub,
+                bundle_hash=evidence["bundle_sha256"],
+                checks_run=["epoch_replay"],
+                results={
+                    "status": _simulated_peer_status(i, simulate_peers, effective_weight_mode, adversarial_weight_pattern)
+                },
+                created_at_utc=created_at,
+            )
+            if use_v2_consensus:
+                payload["key_id"] = p_kid
+            signed = sign_peer_attestation_payload(
+                payload_without_signature=payload,
+                private_key_b64u=p_priv,
+                signer_node_id=p_node,
+                signer_pubkey_b64u=p_pub,
+                kid=p_kid,
+            )
+            signed["simulated"] = True
+            if weight_registry is None:
+                signed["simulated_weight"] = 1.0
+            else:
+                signed["simulated_weight"] = float(weight_registry.get_weight(p_node))
+            if use_v2_consensus:
+                _apply_key_enforcement_weighted_only(
+                    signed,
+                    trusted_key_set,
+                    revoked_kids,
+                    enforce=use_v2_consensus,
+                    reference_utc=created_at,
+                    replay_window_s=effective_replay_window_s,
+                    attestation_ttl_s=effective_attestation_ttl_s,
+                )
+                if replay_outside_window:
+                    signed["key_enforced"] = True
+                    signed["attestation_valid"] = False
+                    signed["attestation_invalid_reason"] = "replay_outside_window"
+            simulated.append(signed)
+        peer_path.write_text(json.dumps({"attestations": simulated}, indent=2, sort_keys=True), encoding="utf-8")
+
+    peer_present = False
+    peer_items = []
+    if peer_path.exists():
+        try:
+            parsed = load_json_bom_safe(peer_path)
+            peer_items = parsed if isinstance(parsed, list) else (parsed.get("attestations") or [])
+            peer_present = bool(peer_items)
+        except Exception:
+            peer_present = False
+
+    central_path = outdir / "attestations.json"
+    central_present = central_path.exists()
+    central_status = _status_from_signed_attestation(central_attestation) if central_present else "pending"
+    if use_v2_consensus and central_present:
+        central_valid = bool(central_attestation.get("attestation_valid", central_attestation.get("key_validation_ok", True)))
+        if not central_valid:
+            central_status = "invalid"
+    central_pass = 1 if central_status == "pass" else 0
+    central_fail = 1 if central_status == "fail" else 0
+    central_pending = 1 if central_status not in {"pass", "fail"} and central_present else 0
+
+    peer_pass = 0
+    peer_fail = 0
+    peer_weighted_pass = 0.0
+    peer_weighted_fail = 0.0
+    peer_weighted_pending = 0.0
+    for idx, item in enumerate(peer_items):
+        status = _status_from_signed_attestation(item)
+        item_weight = float((item or {}).get("simulated_weight", 1.0)) if isinstance(item, dict) else 1.0
+        item_valid = True
+        if use_v2_consensus and isinstance(item, dict):
+            item_valid = bool(item.get("attestation_valid", item.get("key_validation_ok", True)))
+        if use_v2_consensus and not item_valid:
+            continue
+        if status == "pass":
+            peer_pass += 1
+            peer_weighted_pass += item_weight
+        elif status == "fail":
+            peer_fail += 1
+            peer_weighted_fail += item_weight
+        else:
+            peer_weighted_pending += item_weight
+
+    thresholds = _load_policy_thresholds(profile)
+    req = thresholds["consensus_requirements"]
+    total_attestations = int(central_present) + len(peer_items)
+    weighted_pass = float(central_pass) + peer_weighted_pass
+    weighted_fail = float(central_fail) + peer_weighted_fail
+
+    pending_weight = float(central_pending) + peer_weighted_pending
+    effective_pass = weighted_pass + (pending_weight if req["allow_pending_to_satisfy"] else 0.0)
+
+    consensus = "insufficient"
+    max_weighted_fail = req.get("max_weighted_fail")
+    if req["block_on_any_fail"] and weighted_fail > 0:
+        consensus = "divergent"
+    elif max_weighted_fail is not None and weighted_fail > float(max_weighted_fail):
+        consensus = "divergent"
+    elif total_attestations >= req["min_total_attestations"] and effective_pass >= req["min_weighted_pass"] and central_pass > 0:
+        consensus = "convergent"
+
+    policy_gate = {
+        "network_profile": profile,
+        "required_for": ["publish", "export"],
+        "satisfied": bool(
+            (consensus == "convergent" or not thresholds["export_policy"].get("require_convergent", True))
+            and ((total_attestations >= req["min_total_attestations"]) or not thresholds["export_policy"].get("require_attestations", True))
+            and central_pass > 0
+        ),
+        "allow_pending_to_satisfy": bool(req["allow_pending_to_satisfy"]),
+    }
+    if use_v2_consensus:
+        policy_gate["bundle_hash_source"] = bundle_hash_source
+        policy_gate["peer_weight_mode"] = effective_weight_mode
+
+    consensus_doc = {
+        "schema": "consensus_summary_v2" if use_v2_consensus else "consensus_summary_v1",
+        "bundle_hash": evidence["bundle_sha256"],
+        "computed_at_utc": created_at,
+        "inputs": {
+            "central_attestations_present": central_present,
+            "peer_attestations_present": peer_present,
+        },
+        "central": {
+            "total": 1 if central_present else 0,
+            "pass": central_pass,
+            "fail": central_fail,
+            "pending": central_pending,
+        },
+        "peers": {
+            "total": len(peer_items),
+            "pass": peer_pass,
+            "fail": peer_fail,
+            "pending": len(peer_items) - peer_pass - peer_fail,
+            "weighted_pass": float(peer_weighted_pass),
+            "weighted_fail": float(peer_weighted_fail),
+            "weighted_pending": float(peer_weighted_pending),
+        },
+        "consensus": consensus,
+        "policy_gate": policy_gate,
+    }
+
+
+    (outdir / "consensus_summary.json").write_text(json.dumps(consensus_doc, indent=2, sort_keys=True), encoding="utf-8")
+
+
+
+def _maybe_emit_cognition_outputs(
+    *,
+    outdir: Path,
+    telemetry: dict,
+    profile: str,
+    reflection_mode: str,
+    memory_graph_mode: str,
+    memory_graph_path: str,
+    memory_recall_mode: str = "off",
+    memory_recall_path: str = "",
+) -> None:
+    if reflection_mode != "structured" or profile not in {"reproducible_audit", "full_relay"}:
+        return
+
+    all_graph_recall_gates = (
+        memory_graph_mode == "update"
+        and bool(memory_graph_path)
+        and memory_recall_mode == "emit"
+        and bool(memory_recall_path)
+    )
+    if not all_graph_recall_gates:
+        return
+
+    evidence_doc = load_json_bom_safe(outdir / "evidence_bundle.json")
+    consensus_doc = load_json_bom_safe(outdir / "consensus_summary.json")
+    bundle_hash_source = str(((consensus_doc.get("policy_gate") or {}).get("bundle_hash_source") or "evidence_content"))
+    trace_path = write_cognition_trace(
+        outdir=outdir,
+        telemetry=telemetry,
+        mode="structured",
+        profile=profile,
+        bundle_hash=str(evidence_doc.get("bundle_sha256") or ""),
+        bundle_hash_source=bundle_hash_source,
+    )
+
+    graph_path = Path(memory_graph_path)
+    trace_payload = load_json_bom_safe(trace_path)
+    graph = load_memory_graph(graph_path)
+    updated = update_memory_graph(graph, trace_payload)
+    write_memory_graph(graph_path, updated)
+
+    write_memory_recall(
+        graph_path=graph_path,
+        recall_path=Path(memory_recall_path),
+        bundle_hash=str(evidence_doc.get("bundle_sha256") or ""),
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--perturbations", type=int, default=3)
-    args = ap.parse_args()
+    ap.add_argument("--emit-tel", action="store_true", help="Emit tel.json and tel_summary metadata.")
+    ap.add_argument("--emit-tel-events", action="store_true", help="Emit tel_events.jsonl (parsed in pre-run flag handling).")
+    ap.add_argument("--require-tel", action="store_true", help="Fail run if TEL builder import/build fails.")
+    ap.add_argument("--simulate-peers", type=int, default=0, help="Generate deterministic local peer attestations.")
+    ap.add_argument("--created-at-utc", default="", help="Override Secure Swarm artifact timestamps (RFC3339 UTC Z).")
+    ap.add_argument("--bundle-id", default="", help="Override evidence bundle_id for deterministic comparisons.")
+    ap.add_argument("--simulate-peer-weight-mode", choices=["uniform", "linear", "adversarial"], default="uniform", help="Weight mode for simulated peers (Path B1 simulation).")
+    ap.add_argument("--adversarial-weight-pattern", choices=["minority_high_weight_fail", "majority_low_weight_pass", "borderline_threshold_case"], default="minority_high_weight_fail", help="Deterministic adversarial weight pattern for Path B drift harness.")
+    ap.add_argument("--replay-window-s", type=int, default=0, help="Path B2 scaffold: optional replay window check in seconds for weighted profiles.")
+    ap.add_argument("--attestation-ttl-s", type=int, default=0, help="Path B2 scaffold: optional attestation TTL check in seconds for weighted profiles.")
+    ap.add_argument("--cognitive-reflection-mode", choices=["off", "structured"], default="off", help="Deterministic cognition trace mode (no effect on consensus/governance outputs).")
+    ap.add_argument("--cognitive-memory-graph-mode", choices=["off", "update"], default="off", help="Deterministic out-of-band cognition memory graph update mode.")
+    ap.add_argument("--cognitive-memory-graph-path", default="", help="Optional cognition memory graph path; if unset no graph file is written.")
+    ap.add_argument("--cognitive-memory-recall-mode", choices=["off", "emit"], default="off", help="Deterministic out-of-band cognition memory recall mode.")
+    ap.add_argument("--cognitive-memory-recall-path", default="", help="Optional cognition memory recall path; if unset no recall file is written.")
+    args, _unknown = ap.parse_known_args()
+
+    has_explicit_weight_mode = "--simulate-peer-weight-mode" in sys.argv[1:]
+    if _load_network_profile() in {"reproducible_audit", "full_relay"} and not has_explicit_weight_mode:
+        raise SystemExit("weighted profiles require explicit --simulate-peer-weight-mode")
 
     outdir = Path(args.out).resolve()
     outdir.mkdir(parents=True, exist_ok=True)
@@ -290,7 +1000,7 @@ def main() -> int:
 
         pert_results.append({
             "i": i,
-            "audit_bundle_path": _safe_relpath(bundle_i, REPO),
+            "audit_bundle_path": _safe_relpath(bundle_i, outdir),
             "metrics": vec_i,
             "drift_from_base": d_i,
             "perf_index": perf_index_i,
@@ -306,7 +1016,7 @@ def main() -> int:
     pert_doc = {
         "kind": "telemetry_perturbations.v1",
         "base": {
-            "audit_bundle_path": _safe_relpath(base_bundle, REPO),
+            "audit_bundle_path": _safe_relpath(base_bundle, outdir),
             "metrics": base_vec,
             "perf_index": perf_index_base,
             "perf_values_count": nvals_base
@@ -323,10 +1033,16 @@ def main() -> int:
     metrics["Lambda"] = lam
 
     artifacts = [
-        {"path": _safe_relpath(base_summary, REPO), "sha256": sha256_file(base_summary)},
-        {"path": _safe_relpath(base_bundle, REPO), "sha256": sha256_file(base_bundle)},
-        {"path": _safe_relpath(pert_path, REPO), "sha256": sha256_file(pert_path)}
+        {"path": _safe_relpath(base_summary, outdir), "sha256": sha256_file(base_summary)},
+        {"path": _safe_relpath(base_bundle, outdir), "sha256": sha256_file(base_bundle)},
+        {"path": _safe_relpath(pert_path, outdir), "sha256": sha256_file(pert_path)}
     ]
+
+    connector_override = {
+        "type": os.environ.get("SOPHIA_CONNECTOR_TYPE"),
+        "endpoint": os.environ.get("SOPHIA_CONNECTOR_ENDPOINT"),
+        "model": os.environ.get("SOPHIA_CONNECTOR_MODEL"),
+    }
 
     telemetry = {
         "schema_id": "coherencelattice.telemetry_run.v1",
@@ -336,7 +1052,8 @@ def main() -> int:
         "environment": {
             "python": sys.version.replace("\\n", " "),
             "platform": platform.platform(),
-            "git_commit": git_commit()
+            "git_commit": git_commit(),
+            "connector_override": connector_override
         },
         "metrics": metrics,
         "flags": {
@@ -349,7 +1066,7 @@ def main() -> int:
         },
         "artifacts": artifacts,
         "ucc": {
-            "audit_bundle_path": _safe_relpath(base_bundle, REPO),
+            "audit_bundle_path": _safe_relpath(base_bundle, outdir),
             "audit_bundle_sha256": sha256_file(base_bundle)
         },
         "notes": "Telemetry derived without telemetry_snapshot module. E from KONOMI CSV numeric substrings; T/Es from UCC coverage audit_bundle; Psi=E*T; ÃŽâ€S/ÃŽâ€º from perturbation drift."
@@ -358,6 +1075,28 @@ def main() -> int:
     t0_write = _step_start(outdir, "write_telemetry_json")
     out_json = outdir / "telemetry.json"
     out_json.write_text(json.dumps(telemetry, indent=2, sort_keys=True), encoding="utf-8")
+    _write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=max(0, int(args.simulate_peers)),
+        created_at_utc=(args.created_at_utc.strip() or None),
+        bundle_id=(args.bundle_id.strip() or None),
+        simulate_peer_weight_mode=str(args.simulate_peer_weight_mode),
+        adversarial_weight_pattern=str(args.adversarial_weight_pattern),
+        replay_window_s=int(args.replay_window_s),
+        attestation_ttl_s=int(args.attestation_ttl_s),
+    )
+    profile = _load_network_profile()
+    _maybe_emit_cognition_outputs(
+        outdir=outdir,
+        telemetry=telemetry,
+        profile=profile,
+        reflection_mode=str(args.cognitive_reflection_mode),
+        memory_graph_mode=str(args.cognitive_memory_graph_mode),
+        memory_graph_path=str(args.cognitive_memory_graph_path),
+        memory_recall_mode=str(args.cognitive_memory_recall_mode),
+        memory_recall_path=str(args.cognitive_memory_recall_path),
+    )
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})
     return 0
@@ -376,17 +1115,7 @@ if __name__ == "__main__":
     # We separate TEL emission from UCC emission to avoid schema mixing.
     # TEL emission is optional. UCC event stream is always written when --out is present.
 
-    def _find_out(argv):
-        for i, a in enumerate(argv):
-            if a in ("--out", "--outdir") and i + 1 < len(argv):
-                return argv[i + 1]
-            if a.startswith("--out="):
-                return a.split("=", 1)[1]
-            if a.startswith("--outdir="):
-                return a.split("=", 1)[1]
-        return None
-
-    _out = _find_out(sys.argv)
+    _out = _find_out(sys.argv[1:])
     if not _out:
         raise SystemExit(_rc)
 
@@ -452,7 +1181,16 @@ if __name__ == "__main__":
 
         except Exception as _e:
             print(f"[tel] failed: {_e}", file=sys.stderr)
-            raise
+            if globals().get("_TEL_EVENTS_EMIT", False):
+                warn_path = _out_dir / "tel_events.jsonl"
+                warn_path.parent.mkdir(parents=True, exist_ok=True)
+                with warn_path.open("a", encoding="utf-8", newline="\n") as f:
+                    f.write(
+                        json.dumps({"event": "tel_warning", "warning": str(_e)}, ensure_ascii=False, sort_keys=True)
+                        + "\n"
+                    )
+            if globals().get("_REQUIRE_TEL", False):
+                raise
 
     # --- /TEL/UCC post-run emission ---
     raise SystemExit(_rc)

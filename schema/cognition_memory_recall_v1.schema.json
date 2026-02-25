@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cognition_memory_recall_v1.schema.json",
+  "title": "Cognition Memory Recall v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "bundle_hash",
+    "trace_node_id",
+    "matched_bundle_node_id",
+    "bundle_hash_occurrences",
+    "recalled_node_ids",
+    "recalled_edge_ids",
+    "invariants_checked"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "cognition_memory_recall_v1"
+    },
+    "bundle_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "trace_node_id": {
+      "type": "string"
+    },
+    "matched_bundle_node_id": {
+      "type": "string"
+    },
+    "bundle_hash_occurrences": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "recalled_node_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recalled_edge_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "invariants_checked": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "governance_isolation",
+          "no_runtime_entropy",
+          "sorted_serialization"
+        ]
+      },
+      "minItems": 3,
+      "uniqueItems": true
+    }
+  },
+  "allOf": [
+    { "not": { "required": ["created_at"] } },
+    { "not": { "required": ["created_at_utc"] } },
+    { "not": { "required": ["timestamp"] } },
+    { "not": { "required": ["time"] } },
+    { "not": { "required": ["uuid"] } },
+    { "not": { "required": ["guid"] } },
+    { "not": { "required": ["nonce"] } },
+    { "not": { "required": ["rand"] } },
+    { "not": { "required": ["random"] } },
+    { "not": { "required": ["entropy"] } }
+  ]
+}

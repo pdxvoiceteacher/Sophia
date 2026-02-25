@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cognition_memory_graph_v1.schema.json",
+  "title": "Cognition Memory Graph v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "nodes", "edges", "bundle_hash_index"],
+  "properties": {
+    "schema": { "type": "string", "const": "cognition_memory_graph_v1" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id", "kind", "label"],
+        "properties": {
+          "node_id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "minLength": 1 },
+          "label": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["edge_id", "source", "target", "relation"],
+        "properties": {
+          "edge_id": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 },
+          "target": { "type": "string", "minLength": 1 },
+          "relation": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "bundle_hash_index": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["bundle_hash", "node_id"],
+        "properties": {
+          "bundle_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "node_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "not": { "required": ["created_at"] } },
+    { "not": { "required": ["timestamp"] } },
+    { "not": { "required": ["uuid"] } },
+    { "not": { "required": ["rand"] } },
+    { "not": { "required": ["random"] } }
+  ]
+}
