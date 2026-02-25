@@ -33,6 +33,7 @@ from tools.security.swarm_crypto import (
 
 from tools.telemetry.weight_registry import WeightRegistry
 from tools.cognition.reflection_engine import write_cognition_trace
+from tools.cognition.memory_graph import load_memory_graph, update_memory_graph, write_memory_graph
 
 _WEIGHTED_REPLAY_WINDOW_S_DEFAULT = 300
 _WEIGHTED_ATTESTATION_TTL_S_DEFAULT = 300
@@ -883,6 +884,42 @@ def _write_evidence_and_consensus(
 
     (outdir / "consensus_summary.json").write_text(json.dumps(consensus_doc, indent=2, sort_keys=True), encoding="utf-8")
 
+
+
+def _maybe_emit_cognition_outputs(
+    *,
+    outdir: Path,
+    telemetry: dict,
+    profile: str,
+    reflection_mode: str,
+    memory_graph_mode: str,
+    memory_graph_path: str,
+) -> None:
+    if reflection_mode != "structured" or profile not in {"reproducible_audit", "full_relay"}:
+        return
+
+    evidence_doc = load_json_bom_safe(outdir / "evidence_bundle.json")
+    consensus_doc = load_json_bom_safe(outdir / "consensus_summary.json")
+    bundle_hash_source = str(((consensus_doc.get("policy_gate") or {}).get("bundle_hash_source") or "evidence_content"))
+    trace_path = write_cognition_trace(
+        outdir=outdir,
+        telemetry=telemetry,
+        mode="structured",
+        profile=profile,
+        bundle_hash=str(evidence_doc.get("bundle_sha256") or ""),
+        bundle_hash_source=bundle_hash_source,
+    )
+
+    if memory_graph_mode != "update" or not memory_graph_path or trace_path is None:
+        return
+
+    graph_path = Path(memory_graph_path)
+    trace_payload = load_json_bom_safe(trace_path)
+    graph = load_memory_graph(graph_path)
+    updated = update_memory_graph(graph, trace_payload)
+    write_memory_graph(graph_path, updated)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
@@ -899,6 +936,8 @@ def main() -> int:
     ap.add_argument("--replay-window-s", type=int, default=0, help="Path B2 scaffold: optional replay window check in seconds for weighted profiles.")
     ap.add_argument("--attestation-ttl-s", type=int, default=0, help="Path B2 scaffold: optional attestation TTL check in seconds for weighted profiles.")
     ap.add_argument("--cognitive-reflection-mode", choices=["off", "structured"], default="off", help="Deterministic cognition trace mode (no effect on consensus/governance outputs).")
+    ap.add_argument("--cognitive-memory-graph-mode", choices=["off", "update"], default="off", help="Deterministic out-of-band cognition memory graph update mode.")
+    ap.add_argument("--cognitive-memory-graph-path", default="", help="Optional cognition memory graph path; if unset no graph file is written.")
     args, _unknown = ap.parse_known_args()
 
     has_explicit_weight_mode = "--simulate-peer-weight-mode" in sys.argv[1:]
@@ -1031,18 +1070,14 @@ def main() -> int:
         attestation_ttl_s=int(args.attestation_ttl_s),
     )
     profile = _load_network_profile()
-    if str(args.cognitive_reflection_mode) == "structured" and profile in {"reproducible_audit", "full_relay"}:
-        evidence_doc = load_json_bom_safe(outdir / "evidence_bundle.json")
-        consensus_doc = load_json_bom_safe(outdir / "consensus_summary.json")
-        bundle_hash_source = str(((consensus_doc.get("policy_gate") or {}).get("bundle_hash_source") or "evidence_content"))
-        write_cognition_trace(
-            outdir=outdir,
-            telemetry=telemetry,
-            mode="structured",
-            profile=profile,
-            bundle_hash=str(evidence_doc.get("bundle_sha256") or ""),
-            bundle_hash_source=bundle_hash_source,
-        )
+    _maybe_emit_cognition_outputs(
+        outdir=outdir,
+        telemetry=telemetry,
+        profile=profile,
+        reflection_mode=str(args.cognitive_reflection_mode),
+        memory_graph_mode=str(args.cognitive_memory_graph_mode),
+        memory_graph_path=str(args.cognitive_memory_graph_path),
+    )
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})
     return 0

@@ -27,3 +27,15 @@ Enabling cognition reflection mode must not change bytes of:
 - `peer_attestations.json`
 
 Path A/B/C invariants remain unchanged.
+
+
+## D3 Contract: Persistent deterministic memory graph
+
+- `cognition_memory_graph.json` is producer-only and out-of-band.
+- Graph updates are deterministic and idempotent for identical traces.
+- Memory graph is not included in Secure Swarm consensus gates.
+- Memory graph updates must not change bytes of:
+  - `consensus_summary.json`
+  - `evidence_bundle.json`
+  - `attestations.json`
+  - `peer_attestations.json`
