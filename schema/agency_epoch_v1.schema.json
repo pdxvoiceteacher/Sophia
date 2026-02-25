@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agency_epoch_v1.schema.json",
+  "title": "Agency Epoch v1",
+  "type": "object",
+  "required": [
+    "epoch_id",
+    "started_at_utc",
+    "ended_at_utc",
+    "prompt_hash",
+    "run_mode",
+    "seed",
+    "inputs_manifest",
+    "outputs_manifest"
+  ],
+  "properties": {
+    "epoch_id": { "type": "string", "minLength": 8 },
+    "started_at_utc": { "type": "string" },
+    "ended_at_utc": { "type": "string" },
+    "prompt_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "run_mode": { "type": "string", "enum": ["deterministic", "stochastic"] },
+    "seed": { "type": "integer" },
+    "inputs_manifest": {
+      "type": "object",
+      "required": ["prompt_source", "prompt_hash", "seed", "mode"],
+      "properties": {
+        "prompt_source": { "type": "string" },
+        "prompt_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "seed": { "type": "integer" },
+        "mode": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "outputs_manifest": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["sha256", "size"],
+        "properties": {
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "size": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
