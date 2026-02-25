@@ -33,6 +33,9 @@ from tools.security.swarm_crypto import (
 
 from tools.telemetry.weight_registry import WeightRegistry
 
+_WEIGHTED_REPLAY_WINDOW_S_DEFAULT = 300
+_WEIGHTED_ATTESTATION_TTL_S_DEFAULT = 300
+
 # --- TEL step events (module-level) ---
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -374,6 +377,37 @@ def _load_trusted_key_set() -> tuple[TrustedKeySet, set[str]]:
     return key_set, revoked_kids
 
 
+def _effective_weighted_time_bounds(replay_window_s: int, attestation_ttl_s: int) -> tuple[int, int]:
+    replay = int(replay_window_s) if int(replay_window_s) > 0 else _WEIGHTED_REPLAY_WINDOW_S_DEFAULT
+    ttl = int(attestation_ttl_s) if int(attestation_ttl_s) > 0 else _WEIGHTED_ATTESTATION_TTL_S_DEFAULT
+    return replay, ttl
+
+
+def _time_checks_for_attestation(*, payload: object, reference_utc: str, replay_window_s: int, attestation_ttl_s: int) -> tuple[bool, bool]:
+    created = ""
+    if isinstance(payload, dict):
+        raw = payload.get("created_at_utc")
+        if isinstance(raw, str):
+            created = raw
+    if not created:
+        return False, True
+    replay_ok = bool(
+        is_within_replay_window(
+            created_at_utc=created,
+            reference_utc=reference_utc,
+            replay_window_s=int(replay_window_s),
+        )
+    )
+    expired = bool(
+        is_attestation_expired(
+            created_at_utc=created,
+            reference_utc=reference_utc,
+            ttl_s=int(attestation_ttl_s),
+        )
+    )
+    return replay_ok, expired
+
+
 def _is_malformed_key_id(key_id: object) -> bool:
     if not isinstance(key_id, str):
         return True
@@ -383,10 +417,25 @@ def _is_malformed_key_id(key_id: object) -> bool:
     return re.fullmatch(r"kid_[A-Za-z0-9_-]{6,}", key_id_clean) is None
 
 
-def _apply_key_enforcement_weighted_only(attestation: dict[str, object], trusted: TrustedKeySet, revoked_kids: set[str], *, enforce: bool) -> bool:
+def _apply_key_enforcement_weighted_only(
+    attestation: dict[str, object],
+    trusted: TrustedKeySet,
+    revoked_kids: set[str],
+    *,
+    enforce: bool,
+    reference_utc: str,
+    replay_window_s: int,
+    attestation_ttl_s: int,
+) -> bool:
     if not enforce:
         return True
     payload = attestation.get("payload") if isinstance(attestation, dict) else None
+    replay_ok, expired = _time_checks_for_attestation(
+        payload=payload,
+        reference_utc=reference_utc,
+        replay_window_s=replay_window_s,
+        attestation_ttl_s=attestation_ttl_s,
+    )
     key_id = (payload or {}).get("key_id") if isinstance(payload, dict) else None
     signer = attestation.get("signer") if isinstance(attestation, dict) else None
     signer_node = signer.get("node_id") if isinstance(signer, dict) else None
@@ -404,12 +453,16 @@ def _apply_key_enforcement_weighted_only(attestation: dict[str, object], trusted
         )
     )
 
-    is_valid = bool(in_trusted) and not is_revoked
+    is_valid = bool(in_trusted) and not is_revoked and replay_ok and (not expired)
     attestation["key_validation_ok"] = bool(is_valid)
     attestation["key_enforced"] = True
     attestation["attestation_valid"] = bool(is_valid)
+    attestation["replay_window_ok"] = bool(replay_ok)
+    attestation["attestation_expired"] = bool(expired)
     if not is_valid:
-        if malformed:
+        if (not replay_ok) or expired:
+            attestation["attestation_invalid_reason"] = "expired_attestation"
+        elif malformed:
             attestation["attestation_invalid_reason"] = "malformed_key_id"
         elif is_revoked:
             attestation["attestation_invalid_reason"] = "revoked_key_id"
@@ -480,6 +533,7 @@ def _write_evidence_and_consensus(
     use_v2_consensus = profile in {"reproducible_audit", "full_relay"}
     effective_weight_mode = simulate_peer_weight_mode if use_v2_consensus else "uniform"
     trusted_key_set, revoked_kids = _load_trusted_key_set() if use_v2_consensus else (TrustedKeySet(), set())
+    effective_replay_window_s, effective_attestation_ttl_s = _effective_weighted_time_bounds(replay_window_s, attestation_ttl_s)
     created_at = created_at_utc or _utc_now_z()
     run_id = outdir.name
     artifact_entries = []
@@ -552,7 +606,15 @@ def _write_evidence_and_consensus(
         kid=kid,
     )
     if use_v2_consensus:
-        _apply_key_enforcement_weighted_only(central_attestation, trusted_key_set, revoked_kids, enforce=use_v2_consensus)
+        _apply_key_enforcement_weighted_only(
+            central_attestation,
+            trusted_key_set,
+            revoked_kids,
+            enforce=use_v2_consensus,
+            reference_utc=created_at,
+            replay_window_s=effective_replay_window_s,
+            attestation_ttl_s=effective_attestation_ttl_s,
+        )
     (outdir / "attestations.json").write_text(
         json.dumps({
             "schema": "attestations_v1",
@@ -607,22 +669,14 @@ def _write_evidence_and_consensus(
             else:
                 signed["simulated_weight"] = float(weight_registry.get_weight(p_node))
             if use_v2_consensus:
-                _apply_key_enforcement_weighted_only(signed, trusted_key_set, revoked_kids, enforce=use_v2_consensus)
-            if use_v2_consensus and (replay_window_s > 0 or attestation_ttl_s > 0):
-                peer_created = str((signed.get("payload") or {}).get("created_at_utc") or created_at)
-                signed["replay_window_ok"] = bool(
-                    is_within_replay_window(
-                        created_at_utc=peer_created,
-                        reference_utc=created_at,
-                        replay_window_s=int(replay_window_s),
-                    )
-                )
-                signed["attestation_expired"] = bool(
-                    is_attestation_expired(
-                        created_at_utc=peer_created,
-                        reference_utc=created_at,
-                        ttl_s=int(attestation_ttl_s),
-                    )
+                _apply_key_enforcement_weighted_only(
+                    signed,
+                    trusted_key_set,
+                    revoked_kids,
+                    enforce=use_v2_consensus,
+                    reference_utc=created_at,
+                    replay_window_s=effective_replay_window_s,
+                    attestation_ttl_s=effective_attestation_ttl_s,
                 )
             simulated.append(signed)
         peer_path.write_text(json.dumps({"attestations": simulated}, indent=2, sort_keys=True), encoding="utf-8")

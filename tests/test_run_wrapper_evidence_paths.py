@@ -671,3 +671,113 @@ def test_witness_only_ignores_revocation_enforcement(monkeypatch, tmp_path: Path
 
     consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
     assert consensus["schema"] == "consensus_summary_v1"
+
+
+def test_expired_attestation_rejected_weighted(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    bundle_id = "weighted-expired-attestation"
+    _seed_trusted_simulated_peers(tmp_path, bundle_id, 2)
+
+    outdir = tmp_path / "weighted-expired"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=2,
+        simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:10:00Z",
+        bundle_id=bundle_id,
+        replay_window_s=60,
+        attestation_ttl_s=60,
+    )
+
+    peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    for p_item in peers:
+        p_item["payload"]["created_at_utc"] = "2026-01-01T00:00:00Z"
+
+    trusted, revoked = run_wrapper._load_trusted_key_set()
+    validated = [
+        run_wrapper._apply_key_enforcement_weighted_only(
+            item,
+            trusted,
+            revoked,
+            enforce=True,
+            reference_utc="2026-01-01T00:10:00Z",
+            replay_window_s=60,
+            attestation_ttl_s=60,
+        )
+        for item in peers
+    ]
+    assert all(v is False for v in validated)
+    assert all(item.get("attestation_valid") is False for item in peers)
+    assert all(item.get("key_enforced") is True for item in peers)
+    assert all(item.get("attestation_invalid_reason") == "expired_attestation" for item in peers)
+
+
+def test_valid_attestation_within_ttl(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    bundle_id = "weighted-valid-ttl"
+    _seed_trusted_simulated_peers(tmp_path, bundle_id, 1)
+
+    outdir = tmp_path / "weighted-valid-ttl"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=1,
+        simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z",
+        bundle_id=bundle_id,
+        replay_window_s=120,
+        attestation_ttl_s=120,
+    )
+
+    peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all(item.get("attestation_valid") is True for item in peers)
+    assert all(item.get("attestation_expired") is False for item in peers)
+    assert all(item.get("replay_window_ok") is True for item in peers)
+
+
+def test_witness_only_not_affected(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+
+    outdir = tmp_path / "witness-not-affected"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=2,
+        simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z",
+        bundle_id="witness-not-affected",
+        replay_window_s=1,
+        attestation_ttl_s=1,
+    )
+
+    peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all("attestation_expired" not in p for p in peers)
+    assert all("replay_window_ok" not in p for p in peers)
+    assert all("attestation_valid" not in p for p in peers)
+
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v1"
