@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import os
+import tempfile
 import json
 from pathlib import Path
 from typing import Any
@@ -70,4 +72,15 @@ def update_memory_graph(graph: dict[str, Any], cognition_trace: dict[str, Any]) 
 def write_memory_graph(path: Path, updated_graph: dict[str, Any]) -> None:
     g = _norm_graph(updated_graph)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(g, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    payload = json.dumps(g, indent=2, sort_keys=True) + "\n"
+    fd, tmp_name = tempfile.mkstemp(prefix=path.name + ".", suffix=".tmp", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(payload)
+        os.replace(tmp_name, path)
+    finally:
+        try:
+            if os.path.exists(tmp_name):
+                os.unlink(tmp_name)
+        except Exception:
+            pass
