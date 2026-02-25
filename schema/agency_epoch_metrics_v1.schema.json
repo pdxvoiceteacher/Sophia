@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agency_epoch_metrics_v1.schema.json",
+  "title": "Agency Epoch Metrics v1",
+  "type": "object",
+  "required": ["epoch_id", "step_series", "thresholds"],
+  "properties": {
+    "epoch_id": { "type": "string" },
+    "step_series": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["step", "E", "T", "Psi", "DeltaS", "Lambda", "Es"],
+        "properties": {
+          "step": { "type": "integer", "minimum": 0 },
+          "E": { "type": "number" },
+          "T": { "type": "number" },
+          "Psi": { "type": "number" },
+          "DeltaS": { "type": "number" },
+          "Lambda": { "type": "number" },
+          "Es": { "type": "number" }
+        }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "required": ["entropy_abs_cut", "entropy_k_sigma", "no_teleport_tau0", "ethical_symmetry_min"],
+      "properties": {
+        "entropy_abs_cut": { "type": "number" },
+        "entropy_k_sigma": { "type": "number" },
+        "no_teleport_tau0": { "type": "number" },
+        "ethical_symmetry_min": { "type": "number" }
+      }
+    }
+  },
+  "additionalProperties": true
+}
