@@ -901,6 +901,15 @@ def _maybe_emit_cognition_outputs(
     if reflection_mode != "structured" or profile not in {"reproducible_audit", "full_relay"}:
         return
 
+    all_graph_recall_gates = (
+        memory_graph_mode == "update"
+        and bool(memory_graph_path)
+        and memory_recall_mode == "emit"
+        and bool(memory_recall_path)
+    )
+    if not all_graph_recall_gates:
+        return
+
     evidence_doc = load_json_bom_safe(outdir / "evidence_bundle.json")
     consensus_doc = load_json_bom_safe(outdir / "consensus_summary.json")
     bundle_hash_source = str(((consensus_doc.get("policy_gate") or {}).get("bundle_hash_source") or "evidence_content"))
@@ -913,16 +922,11 @@ def _maybe_emit_cognition_outputs(
         bundle_hash_source=bundle_hash_source,
     )
 
-    graph_path = Path(memory_graph_path) if memory_graph_path else None
+    graph_path = Path(memory_graph_path)
     trace_payload = load_json_bom_safe(trace_path)
-
-    if memory_graph_mode == "update" and graph_path is not None:
-        graph = load_memory_graph(graph_path)
-        updated = update_memory_graph(graph, trace_payload)
-        write_memory_graph(graph_path, updated)
-
-    if memory_recall_mode != "emit" or not memory_recall_path or graph_path is None:
-        return
+    graph = load_memory_graph(graph_path)
+    updated = update_memory_graph(graph, trace_payload)
+    write_memory_graph(graph_path, updated)
 
     write_memory_recall(
         graph_path=graph_path,

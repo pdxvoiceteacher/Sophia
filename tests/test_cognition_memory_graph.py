@@ -46,7 +46,7 @@ def _prepare_run(tmp_path: Path, bundle_id: str) -> Path:
     return outdir
 
 
-def _emit_reflection_and_graph(outdir: Path, *, graph_path: Path) -> None:
+def _emit_reflection_and_graph(outdir: Path, *, graph_path: Path, recall_path: Path) -> None:
     run_wrapper._maybe_emit_cognition_outputs(
         outdir=outdir,
         telemetry={"run_id": outdir.name, "metrics": {"E": 0.1, "T": 0.2}},
@@ -54,6 +54,8 @@ def _emit_reflection_and_graph(outdir: Path, *, graph_path: Path) -> None:
         reflection_mode="structured",
         memory_graph_mode="update",
         memory_graph_path=str(graph_path),
+        memory_recall_mode="emit",
+        memory_recall_path=str(recall_path),
     )
 
 
@@ -64,7 +66,7 @@ def test_memory_graph_created_weighted_only(monkeypatch, tmp_path: Path) -> None
     outdir = _prepare_run(tmp_path, bundle_id)
     graph_path = tmp_path / "out" / "cognition_memory_graph.json"
 
-    _emit_reflection_and_graph(outdir, graph_path=graph_path)
+    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json")
     assert graph_path.exists()
 
     schema = json.loads((ROOT / "schema" / "cognition_memory_graph_v1.schema.json").read_text(encoding="utf-8"))
@@ -79,9 +81,9 @@ def test_memory_graph_idempotent_on_repeat_same_trace(monkeypatch, tmp_path: Pat
     outdir = _prepare_run(tmp_path, bundle_id)
     graph_path = tmp_path / "out" / "idempotent_graph.json"
 
-    _emit_reflection_and_graph(outdir, graph_path=graph_path)
+    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json")
     first = graph_path.read_bytes()
-    _emit_reflection_and_graph(outdir, graph_path=graph_path)
+    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json")
     second = graph_path.read_bytes()
     assert first == second
 
@@ -119,7 +121,7 @@ def test_memory_graph_does_not_modify_governance_artifacts(monkeypatch, tmp_path
         for name in ["evidence_bundle.json", "consensus_summary.json", "attestations.json", "peer_attestations.json"]
     }
     graph_path = tmp_path / "out" / "impact_graph.json"
-    _emit_reflection_and_graph(outdir, graph_path=graph_path)
+    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json")
 
     for name, before in baseline.items():
         assert (outdir / name).read_bytes() == before
@@ -138,6 +140,7 @@ def test_witness_only_unaffected(monkeypatch, tmp_path: Path) -> None:
     run_wrapper._write_evidence_and_consensus(outdir, artifacts, simulate_peers=1)
 
     graph_path = tmp_path / "out" / "witness_graph.json"
+    recall_path = tmp_path / "out" / "witness_recall.json"
     run_wrapper._maybe_emit_cognition_outputs(
         outdir=outdir,
         telemetry={"run_id": "witness"},
@@ -145,5 +148,8 @@ def test_witness_only_unaffected(monkeypatch, tmp_path: Path) -> None:
         reflection_mode="structured",
         memory_graph_mode="update",
         memory_graph_path=str(graph_path),
+        memory_recall_mode="emit",
+        memory_recall_path=str(recall_path),
     )
     assert not graph_path.exists()
+    assert not recall_path.exists()

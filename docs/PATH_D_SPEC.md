@@ -45,12 +45,14 @@ Path A/B/C invariants remain unchanged.
 
 - `cognition_memory_recall.json` is producer-only and out-of-band.
 - Recall reads `cognition_memory_graph.json` and emits a deterministic, schema-bound artifact (`schema/cognition_memory_recall_v1.schema.json`).
-- Recall emission is gated and only allowed when all of the following are true:
+- D4 cognition graph+recall emission is gated and only allowed when all of the following are true:
   - weighted profile (`reproducible_audit` or `full_relay`)
   - structured reflection mode enabled
+  - `--cognitive-memory-graph-mode update`
+  - `--cognitive-memory-graph-path` is set
   - `--cognitive-memory-recall-mode emit`
   - `--cognitive-memory-recall-path` is set
-- `--cognitive-memory-graph-path` must be set for recall because recall is derived from the graph file.
+- If any gate is missing, no cognition trace/graph/recall artifacts are written by this D4 path.
 
 ### Determinism and non-impact guarantees
 

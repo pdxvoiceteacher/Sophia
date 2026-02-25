@@ -132,6 +132,44 @@ def test_memory_recall_witness_only_unaffected(monkeypatch, tmp_path: Path) -> N
     assert not recall_path.exists()
 
 
+
+def test_memory_recall_requires_full_gating(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    bundle_id = "recall-gates"
+    _seed_weighted_env(tmp_path, bundle_id)
+    outdir = _prepare_run(tmp_path, bundle_id)
+
+    graph_path = tmp_path / "out" / "gate_graph.json"
+    recall_path = tmp_path / "out" / "gate_recall.json"
+
+    run_wrapper._maybe_emit_cognition_outputs(
+        outdir=outdir,
+        telemetry={"run_id": "gates"},
+        profile="reproducible_audit",
+        reflection_mode="structured",
+        memory_graph_mode="update",
+        memory_graph_path=str(graph_path),
+        memory_recall_mode="off",
+        memory_recall_path=str(recall_path),
+    )
+
+    assert not graph_path.exists()
+    assert not recall_path.exists()
+
+    run_wrapper._maybe_emit_cognition_outputs(
+        outdir=outdir,
+        telemetry={"run_id": "gates"},
+        profile="reproducible_audit",
+        reflection_mode="structured",
+        memory_graph_mode="update",
+        memory_graph_path="",
+        memory_recall_mode="emit",
+        memory_recall_path=str(recall_path),
+    )
+
+    assert not graph_path.exists()
+    assert not recall_path.exists()
+
 def test_memory_recall_schema_validation(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
     bundle_id = "recall-schema"
