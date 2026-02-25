@@ -46,7 +46,14 @@ def _prepare_run(tmp_path: Path, bundle_id: str) -> Path:
     return outdir
 
 
-def _emit_reflection_and_graph(outdir: Path, *, graph_path: Path, recall_path: Path) -> None:
+def _emit_reflection_and_graph(
+    outdir: Path,
+    *,
+    graph_path: Path,
+    recall_path: Path,
+    memory_max_nodes: int = 0,
+    memory_max_edges: int = 0,
+) -> None:
     run_wrapper._maybe_emit_cognition_outputs(
         outdir=outdir,
         telemetry={"run_id": outdir.name, "metrics": {"E": 0.1, "T": 0.2}},
@@ -56,6 +63,8 @@ def _emit_reflection_and_graph(outdir: Path, *, graph_path: Path, recall_path: P
         memory_graph_path=str(graph_path),
         memory_recall_mode="emit",
         memory_recall_path=str(recall_path),
+        memory_max_nodes=memory_max_nodes,
+        memory_max_edges=memory_max_edges,
     )
 
 
@@ -153,3 +162,129 @@ def test_witness_only_unaffected(monkeypatch, tmp_path: Path) -> None:
     )
     assert not graph_path.exists()
     assert not recall_path.exists()
+
+
+def test_memory_graph_corrupt_file_recovers_deterministically(tmp_path: Path) -> None:
+    graph_path = tmp_path / "corrupt_graph.json"
+    graph_path.write_text('{"schema":"cognition_memory_graph_v1","nodes":[', encoding="utf-8")
+
+    trace = {
+        "schema": "cognition_trace_v1",
+        "bundle_hash": "b" * 64,
+        "bundle_hash_source": "evidence_content",
+        "profile": "reproducible_audit",
+        "mode": "structured",
+        "reflection_score": 0.2,
+        "self_consistency_delta": 0.0,
+        "correction_applied": False,
+        "reasoning_depth_used": 3,
+        "reflection_blocks": ["a"],
+        "invariants_checked": ["x"],
+        "findings": ["f"],
+        "recommendations": ["r"],
+    }
+
+    recovered = update_memory_graph(load_memory_graph(graph_path), trace)
+    write_memory_graph(graph_path, recovered)
+    first = graph_path.read_bytes()
+
+    recovered_again = update_memory_graph(load_memory_graph(graph_path), trace)
+    write_memory_graph(graph_path, recovered_again)
+    second = graph_path.read_bytes()
+
+    assert first == second
+    schema = json.loads((ROOT / "schema" / "cognition_memory_graph_v1.schema.json").read_text(encoding="utf-8"))
+    Draft202012Validator(schema).validate(json.loads(second.decode("utf-8")))
+
+
+def test_memory_graph_pruning_deterministic() -> None:
+    trace = {
+        "schema": "cognition_trace_v1",
+        "bundle_hash": "c" * 64,
+        "bundle_hash_source": "evidence_content",
+        "profile": "reproducible_audit",
+        "mode": "structured",
+        "reflection_score": 0.3,
+        "self_consistency_delta": 0.0,
+        "correction_applied": False,
+        "reasoning_depth_used": 3,
+        "reflection_blocks": ["a"],
+        "invariants_checked": ["x"],
+        "findings": ["f"],
+        "recommendations": ["r"],
+    }
+    base_graph = {
+        "schema": "cognition_memory_graph_v1",
+        "nodes": [
+            {"node_id": "n3", "kind": "misc", "label": "n3"},
+            {"node_id": "n1", "kind": "misc", "label": "n1"},
+            {"node_id": "n2", "kind": "misc", "label": "n2"},
+        ],
+        "edges": [
+            {"edge_id": "e1", "source": "n1", "target": "n2", "relation": "r"},
+        ],
+        "bundle_hash_index": [],
+    }
+
+    g1 = update_memory_graph(base_graph, trace, max_nodes=4, max_edges=2)
+    g2 = update_memory_graph(base_graph, trace, max_nodes=4, max_edges=2)
+    assert json.dumps(g1, sort_keys=True, indent=2) == json.dumps(g2, sort_keys=True, indent=2)
+
+
+def test_memory_graph_pruning_idempotent_under_repeat() -> None:
+    trace = {
+        "schema": "cognition_trace_v1",
+        "bundle_hash": "d" * 64,
+        "bundle_hash_source": "evidence_content",
+        "profile": "reproducible_audit",
+        "mode": "structured",
+        "reflection_score": 0.4,
+        "self_consistency_delta": 0.0,
+        "correction_applied": False,
+        "reasoning_depth_used": 3,
+        "reflection_blocks": ["a"],
+        "invariants_checked": ["x"],
+        "findings": ["f"],
+        "recommendations": ["r"],
+    }
+    graph = {
+        "schema": "cognition_memory_graph_v1",
+        "nodes": [{"node_id": f"n{i}", "kind": "misc", "label": f"n{i}"} for i in range(6)],
+        "edges": [
+            {"edge_id": "e1", "source": "n0", "target": "n1", "relation": "r"},
+            {"edge_id": "e2", "source": "n1", "target": "n2", "relation": "r"},
+            {"edge_id": "e3", "source": "n2", "target": "n3", "relation": "r"},
+            {"edge_id": "e4", "source": "n3", "target": "n4", "relation": "r"},
+        ],
+        "bundle_hash_index": [],
+    }
+
+    once = update_memory_graph(graph, trace, max_nodes=4, max_edges=2)
+    twice = update_memory_graph(once, trace, max_nodes=4, max_edges=2)
+    assert json.dumps(once, sort_keys=True, indent=2) == json.dumps(twice, sort_keys=True, indent=2)
+
+
+def test_cognition_flags_do_not_mutate_governance_bytes(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    bundle_id = "mg-tripwire"
+    _seed_weighted_env(tmp_path, bundle_id)
+
+    # build separate runs deterministically
+    out_off = _prepare_run(tmp_path / "off_env", bundle_id)
+    out_on = _prepare_run(tmp_path / "on_env", bundle_id)
+
+    baseline = {
+        name: (out_off / name).read_bytes()
+        for name in ["evidence_bundle.json", "consensus_summary.json", "attestations.json", "peer_attestations.json"]
+    }
+
+    _emit_reflection_and_graph(
+        out_on,
+        graph_path=tmp_path / "out" / "tripwire_graph.json",
+        recall_path=tmp_path / "out" / "tripwire_recall.json",
+        memory_max_nodes=8,
+        memory_max_edges=8,
+    )
+
+    for name, before in baseline.items():
+        assert (out_on / name).read_bytes() == before

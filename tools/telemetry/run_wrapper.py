@@ -897,6 +897,8 @@ def _maybe_emit_cognition_outputs(
     memory_graph_path: str,
     memory_recall_mode: str = "off",
     memory_recall_path: str = "",
+    memory_max_nodes: int = 0,
+    memory_max_edges: int = 0,
 ) -> None:
     if reflection_mode != "structured" or profile not in {"reproducible_audit", "full_relay"}:
         return
@@ -925,7 +927,12 @@ def _maybe_emit_cognition_outputs(
     graph_path = Path(memory_graph_path)
     trace_payload = load_json_bom_safe(trace_path)
     graph = load_memory_graph(graph_path)
-    updated = update_memory_graph(graph, trace_payload)
+    updated = update_memory_graph(
+        graph,
+        trace_payload,
+        max_nodes=int(memory_max_nodes),
+        max_edges=int(memory_max_edges),
+    )
     write_memory_graph(graph_path, updated)
 
     write_memory_recall(
@@ -955,6 +962,8 @@ def main() -> int:
     ap.add_argument("--cognitive-memory-graph-path", default="", help="Optional cognition memory graph path; if unset no graph file is written.")
     ap.add_argument("--cognitive-memory-recall-mode", choices=["off", "emit"], default="off", help="Deterministic out-of-band cognition memory recall mode.")
     ap.add_argument("--cognitive-memory-recall-path", default="", help="Optional cognition memory recall path; if unset no recall file is written.")
+    ap.add_argument("--cognitive-memory-max-nodes", type=int, default=0, help="Optional deterministic cognition memory graph node cap (0 disables pruning).")
+    ap.add_argument("--cognitive-memory-max-edges", type=int, default=0, help="Optional deterministic cognition memory graph edge cap (0 disables pruning).")
     args, _unknown = ap.parse_known_args()
 
     has_explicit_weight_mode = "--simulate-peer-weight-mode" in sys.argv[1:]
@@ -1096,6 +1105,8 @@ def main() -> int:
         memory_graph_path=str(args.cognitive_memory_graph_path),
         memory_recall_mode=str(args.cognitive_memory_recall_mode),
         memory_recall_path=str(args.cognitive_memory_recall_path),
+        memory_max_nodes=int(args.cognitive_memory_max_nodes),
+        memory_max_edges=int(args.cognitive_memory_max_edges),
     )
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})

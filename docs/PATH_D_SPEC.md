@@ -66,3 +66,23 @@ Path A/B/C invariants remain unchanged.
   - `peer_attestations.json`
 
 Path A/B/C invariants and weighted consensus math remain unchanged.
+
+
+## D5 Contract: Persistent deterministic memory hardening
+
+- Determinism for memory graph updates is defined as: **given the same prior graph bytes and the same cognition trace payload, output graph bytes are identical**.
+- Optional bounded-memory pruning is available only through explicit knobs:
+  - `--cognitive-memory-max-nodes N`
+  - `--cognitive-memory-max-edges M`
+  - `0` keeps pruning disabled (default).
+- Pruning applies only during the memory graph update step and is deterministic:
+  - node pruning removes lowest-degree nodes first, then lexicographic `node_id` tie-breaker
+  - edge pruning uses lexicographic `edge_id` ordering
+- Corrupt or partial graph files are recovered deterministically by treating input as empty graph and rewriting valid schema-bound output.
+- D5 remains out-of-band and must not change bytes of governance artifacts:
+  - `consensus_summary.json`
+  - `evidence_bundle.json`
+  - `attestations.json`
+  - `peer_attestations.json`
+
+Path A/B/C governance logic, bundle hashing, replay ledger behavior, and trust enforcement remain unchanged.
