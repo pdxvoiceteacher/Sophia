@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sentinel_state_v1.schema.json",
+  "title": "Emergence Sentinel State v1",
+  "type": "object",
+  "required": ["schema", "state", "reasons", "artifact_links"],
+  "properties": {
+    "schema": { "type": "string", "const": "sentinel_state_v1" },
+    "state": { "type": "string", "enum": ["normal", "observe", "protect", "quarantine"] },
+    "reasons": { "type": "array", "items": { "type": "string" } },
+    "artifact_links": { "type": "array", "items": { "type": "string" } },
+    "policy_profile": { "type": "string" }
+  },
+  "additionalProperties": true
+}
