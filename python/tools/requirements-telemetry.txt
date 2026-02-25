@@ -2,3 +2,6 @@ fastapi
 uvicorn[standard]
 jsonschema
 mido
+
+# Optional experiment dependencies
+-r ../experiments/requirements-experiments.txt
