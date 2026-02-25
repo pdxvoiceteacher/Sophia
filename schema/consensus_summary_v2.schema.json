@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "consensus_summary_v2.schema.json",
+  "title": "Secure Swarm Consensus Summary v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "bundle_hash",
+    "computed_at_utc",
+    "inputs",
+    "central",
+    "peers",
+    "consensus",
+    "policy_gate"
+  ],
+  "properties": {
+    "schema": {
+      "const": "consensus_summary_v2"
+    },
+    "bundle_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "computed_at_utc": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "central_attestations_present",
+        "peer_attestations_present"
+      ],
+      "properties": {
+        "central_attestations_present": {
+          "type": "boolean"
+        },
+        "peer_attestations_present": {
+          "type": "boolean"
+        }
+      }
+    },
+    "central": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "pass", "fail", "pending"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "pass": {"type": "integer", "minimum": 0},
+        "fail": {"type": "integer", "minimum": 0},
+        "pending": {"type": "integer", "minimum": 0}
+      }
+    },
+    "peers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "pass",
+        "fail",
+        "pending",
+        "weighted_pass",
+        "weighted_fail",
+        "weighted_pending"
+      ],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "pass": {"type": "integer", "minimum": 0},
+        "fail": {"type": "integer", "minimum": 0},
+        "pending": {"type": "integer", "minimum": 0},
+        "weighted_pass": {"type": "number", "minimum": 0},
+        "weighted_fail": {"type": "number", "minimum": 0},
+        "weighted_pending": {"type": "number", "minimum": 0}
+      }
+    },
+    "consensus": {
+      "type": "string",
+      "enum": ["convergent", "divergent", "insufficient"]
+    },
+    "policy_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network_profile",
+        "required_for",
+        "satisfied",
+        "bundle_hash_source",
+        "peer_weight_mode"
+      ],
+      "properties": {
+        "network_profile": {
+          "type": "string",
+          "enum": ["witness_only", "reproducible_audit", "full_relay"]
+        },
+        "required_for": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "satisfied": {"type": "boolean"},
+        "allow_pending_to_satisfy": {"type": "boolean"},
+        "bundle_hash_source": {
+          "type": "string",
+          "enum": ["evidence_content", "bundle_id_override"]
+        },
+        "peer_weight_mode": {
+          "type": "string",
+          "enum": ["uniform", "linear", "adversarial"]
+        }
+      }
+    }
+  }
+}
