@@ -898,7 +898,7 @@ def main() -> int:
     ap.add_argument("--adversarial-weight-pattern", choices=["minority_high_weight_fail", "majority_low_weight_pass", "borderline_threshold_case"], default="minority_high_weight_fail", help="Deterministic adversarial weight pattern for Path B drift harness.")
     ap.add_argument("--replay-window-s", type=int, default=0, help="Path B2 scaffold: optional replay window check in seconds for weighted profiles.")
     ap.add_argument("--attestation-ttl-s", type=int, default=0, help="Path B2 scaffold: optional attestation TTL check in seconds for weighted profiles.")
-    ap.add_argument("--cognitive-reflection-mode", choices=["off", "structured"], default="off", help="Deterministic cognition trace mode.")
+    ap.add_argument("--cognitive-reflection-mode", choices=["off", "structured"], default="off", help="Deterministic cognition trace mode (no effect on consensus/governance outputs).")
     args, _unknown = ap.parse_known_args()
 
     has_explicit_weight_mode = "--simulate-peer-weight-mode" in sys.argv[1:]
@@ -1032,7 +1032,17 @@ def main() -> int:
     )
     profile = _load_network_profile()
     if str(args.cognitive_reflection_mode) == "structured" and profile in {"reproducible_audit", "full_relay"}:
-        write_cognition_trace(outdir=outdir, telemetry=telemetry, mode="structured")
+        evidence_doc = load_json_bom_safe(outdir / "evidence_bundle.json")
+        consensus_doc = load_json_bom_safe(outdir / "consensus_summary.json")
+        bundle_hash_source = str(((consensus_doc.get("policy_gate") or {}).get("bundle_hash_source") or "evidence_content"))
+        write_cognition_trace(
+            outdir=outdir,
+            telemetry=telemetry,
+            mode="structured",
+            profile=profile,
+            bundle_hash=str(evidence_doc.get("bundle_sha256") or ""),
+            bundle_hash_source=bundle_hash_source,
+        )
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})
     return 0
