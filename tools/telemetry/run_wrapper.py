@@ -32,6 +32,7 @@ from tools.security.swarm_crypto import (
 )
 
 from tools.telemetry.weight_registry import WeightRegistry
+from tools.cognition.reflection_engine import write_cognition_trace
 
 _WEIGHTED_REPLAY_WINDOW_S_DEFAULT = 300
 _WEIGHTED_ATTESTATION_TTL_S_DEFAULT = 300
@@ -897,6 +898,7 @@ def main() -> int:
     ap.add_argument("--adversarial-weight-pattern", choices=["minority_high_weight_fail", "majority_low_weight_pass", "borderline_threshold_case"], default="minority_high_weight_fail", help="Deterministic adversarial weight pattern for Path B drift harness.")
     ap.add_argument("--replay-window-s", type=int, default=0, help="Path B2 scaffold: optional replay window check in seconds for weighted profiles.")
     ap.add_argument("--attestation-ttl-s", type=int, default=0, help="Path B2 scaffold: optional attestation TTL check in seconds for weighted profiles.")
+    ap.add_argument("--cognitive-reflection-mode", choices=["off", "structured"], default="off", help="Deterministic cognition trace mode.")
     args, _unknown = ap.parse_known_args()
 
     has_explicit_weight_mode = "--simulate-peer-weight-mode" in sys.argv[1:]
@@ -1028,6 +1030,9 @@ def main() -> int:
         replay_window_s=int(args.replay_window_s),
         attestation_ttl_s=int(args.attestation_ttl_s),
     )
+    profile = _load_network_profile()
+    if str(args.cognitive_reflection_mode) == "structured" and profile in {"reproducible_audit", "full_relay"}:
+        write_cognition_trace(outdir=outdir, telemetry=telemetry, mode="structured")
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})
     return 0
