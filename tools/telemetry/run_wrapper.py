@@ -408,6 +408,81 @@ def _time_checks_for_attestation(*, payload: object, reference_utc: str, replay_
     return replay_ok, expired
 
 
+def _parse_utc_any(ts: str) -> datetime | None:
+    try:
+        txt = str(ts).strip()
+        if txt.endswith("Z"):
+            txt = txt[:-1] + "+00:00"
+        dt = datetime.fromisoformat(txt)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    except Exception:
+        return None
+
+
+def _replay_ledger_path() -> Path:
+    return REPO / "config" / "replay_ledger.jsonl"
+
+
+def _load_replay_ledger_entries() -> list[dict[str, object]]:
+    path = _replay_ledger_path()
+    if not path.exists():
+        return []
+    rows: list[dict[str, object]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line)
+        except Exception:
+            continue
+        if isinstance(obj, dict):
+            rows.append(obj)
+    return rows
+
+
+def _write_replay_ledger_entries(entries: list[dict[str, object]]) -> None:
+    path = _replay_ledger_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    def _k(e: dict[str, object]) -> tuple[str, str, str]:
+        return (
+            str(e.get("observed_at_utc") or ""),
+            str(e.get("bundle_hash") or ""),
+            str(e.get("run_id") or ""),
+        )
+
+    ordered = sorted(entries, key=_k)
+    data = "".join(json.dumps(item, ensure_ascii=False, sort_keys=True) + "\n" for item in ordered)
+    path.write_text(data, encoding="utf-8")
+
+
+def _replay_is_outside_window(bundle_hash: str, reference_utc: str, replay_window_s: int) -> bool:
+    ref_dt = _parse_utc_any(reference_utc)
+    if ref_dt is None:
+        return True
+    window = max(0, int(replay_window_s))
+    prior = []
+    for entry in _load_replay_ledger_entries():
+        if str(entry.get("bundle_hash") or "") != bundle_hash:
+            continue
+        dt = _parse_utc_any(str(entry.get("observed_at_utc") or ""))
+        if dt is not None:
+            prior.append(dt)
+    if not prior:
+        return False
+    latest = max(prior)
+    return abs((ref_dt - latest).total_seconds()) > float(window)
+
+
+def _append_replay_ledger(*, bundle_hash: str, observed_at_utc: str, run_id: str) -> None:
+    entries = _load_replay_ledger_entries()
+    entries.append({"bundle_hash": bundle_hash, "observed_at_utc": observed_at_utc, "run_id": run_id})
+    _write_replay_ledger_entries(entries)
+
+
 def _is_malformed_key_id(key_id: object) -> bool:
     if not isinstance(key_id, str):
         return True
@@ -588,6 +663,19 @@ def _write_evidence_and_consensus(
         bundle_hash_source = "bundle_id_override"
     (outdir / "evidence_bundle.json").write_text(json.dumps(evidence, indent=2, sort_keys=True), encoding="utf-8")
 
+    replay_outside_window = False
+    if use_v2_consensus:
+        replay_outside_window = _replay_is_outside_window(
+            evidence["bundle_sha256"],
+            created_at,
+            effective_replay_window_s,
+        )
+        _append_replay_ledger(
+            bundle_hash=evidence["bundle_sha256"],
+            observed_at_utc=created_at,
+            run_id=run_id,
+        )
+
     priv_b64u, pub_b64u, node_id, kid = _load_or_create_local_attestation_identity()
     central_payload = build_peer_attestation_payload(
         pubkey_b64u=pub_b64u,
@@ -615,6 +703,10 @@ def _write_evidence_and_consensus(
             replay_window_s=effective_replay_window_s,
             attestation_ttl_s=effective_attestation_ttl_s,
         )
+        if replay_outside_window:
+            central_attestation["key_enforced"] = True
+            central_attestation["attestation_valid"] = False
+            central_attestation["attestation_invalid_reason"] = "replay_outside_window"
     (outdir / "attestations.json").write_text(
         json.dumps({
             "schema": "attestations_v1",
@@ -678,6 +770,10 @@ def _write_evidence_and_consensus(
                     replay_window_s=effective_replay_window_s,
                     attestation_ttl_s=effective_attestation_ttl_s,
                 )
+                if replay_outside_window:
+                    signed["key_enforced"] = True
+                    signed["attestation_valid"] = False
+                    signed["attestation_invalid_reason"] = "replay_outside_window"
             simulated.append(signed)
         peer_path.write_text(json.dumps({"attestations": simulated}, indent=2, sort_keys=True), encoding="utf-8")
 

@@ -781,3 +781,121 @@ def test_witness_only_not_affected(monkeypatch, tmp_path: Path) -> None:
 
     consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
     assert consensus["schema"] == "consensus_summary_v1"
+
+
+def test_replay_rejected_outside_window(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    bundle_id = "replay-window-bundle"
+    _seed_trusted_simulated_peers(tmp_path, bundle_id, 2)
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    out1 = tmp_path / "replay-1"
+    (out1 / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (out1 / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    run_wrapper._write_evidence_and_consensus(
+        out1, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z", bundle_id=bundle_id, replay_window_s=60
+    )
+
+    out2 = tmp_path / "replay-2"
+    (out2 / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (out2 / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    run_wrapper._write_evidence_and_consensus(
+        out2, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:10:00Z", bundle_id=bundle_id, replay_window_s=60
+    )
+
+    peers = json.loads((out2 / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all(p.get("attestation_valid") is False for p in peers)
+    assert all(p.get("attestation_invalid_reason") == "replay_outside_window" for p in peers)
+
+    consensus = json.loads((out2 / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["consensus"] != "convergent"
+
+
+def test_replay_allowed_within_window(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    bundle_id = "replay-within-window"
+    _seed_trusted_simulated_peers(tmp_path, bundle_id, 2)
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    out1 = tmp_path / "allow-1"
+    (out1 / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (out1 / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    run_wrapper._write_evidence_and_consensus(
+        out1, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z", bundle_id=bundle_id, replay_window_s=120
+    )
+
+    out2 = tmp_path / "allow-2"
+    (out2 / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (out2 / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    run_wrapper._write_evidence_and_consensus(
+        out2, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:01:00Z", bundle_id=bundle_id, replay_window_s=120
+    )
+
+    peers = json.loads((out2 / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all(p.get("attestation_valid") is True for p in peers)
+
+
+def test_replay_does_not_mutate_consensus_json(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    bundle_id = "replay-consensus-stable"
+    _seed_trusted_simulated_peers(tmp_path, bundle_id, 2)
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    out1 = tmp_path / "stable-1"
+    out2 = tmp_path / "stable-2"
+    for outdir in (out1, out2):
+        (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+        (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+
+    run_wrapper._write_evidence_and_consensus(
+        out1, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z", bundle_id=bundle_id, replay_window_s=120
+    )
+    run_wrapper._write_evidence_and_consensus(
+        out2, artifacts, simulate_peers=2, simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z", bundle_id=bundle_id, replay_window_s=120
+    )
+
+    assert (out1 / "consensus_summary.json").read_bytes() == (out2 / "consensus_summary.json").read_bytes()
+
+
+def test_deterministic_replay_under_identical_inputs(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    bundle_id = "replay-identical-inputs"
+    _seed_trusted_simulated_peers(tmp_path, bundle_id, 3)
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    out1 = tmp_path / "identical-1"
+    out2 = tmp_path / "identical-2"
+    for outdir in (out1, out2):
+        (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+        (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+        run_wrapper._write_evidence_and_consensus(
+            outdir, artifacts, simulate_peers=3, simulate_peer_weight_mode="adversarial",
+            created_at_utc="2026-01-01T00:00:00Z", bundle_id=bundle_id, replay_window_s=120
+        )
+
+    assert (out1 / "peer_attestations.json").read_bytes() == (out2 / "peer_attestations.json").read_bytes()
+    assert (out1 / "consensus_summary.json").read_bytes() == (out2 / "consensus_summary.json").read_bytes()
