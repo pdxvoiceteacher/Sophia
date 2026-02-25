@@ -346,15 +346,16 @@ def _load_or_create_local_attestation_identity() -> tuple[str, str, str, str]:
 
 
 
-def _load_trusted_key_set() -> TrustedKeySet:
+def _load_trusted_key_set() -> tuple[TrustedKeySet, set[str]]:
     key_set = TrustedKeySet()
+    revoked_kids: set[str] = set()
     registry_path = REPO / "config" / "peer_registry_v1.json"
     if not registry_path.exists():
-        return key_set
+        return key_set, revoked_kids
     try:
         payload = load_json_bom_safe(registry_path)
     except Exception:
-        return key_set
+        return key_set, revoked_kids
     peers = payload.get("peers") or []
     for peer in peers:
         if not isinstance(peer, dict):
@@ -365,10 +366,12 @@ def _load_trusted_key_set() -> TrustedKeySet:
         node_id = str(peer.get("node_id") or "").strip()
         kid = str(peer.get("kid") or "").strip()
         try:
-            key_set.add({"node_id": node_id, "kid": kid, "pubkey_b64u": pub})
+            trusted = key_set.add({"node_id": node_id, "kid": kid, "pubkey_b64u": pub})
+            if bool(peer.get("revoked", False)) or bool(peer.get("enabled", True)) is False:
+                revoked_kids.add(trusted.kid)
         except Exception:
             continue
-    return key_set
+    return key_set, revoked_kids
 
 
 def _is_malformed_key_id(key_id: object) -> bool:
@@ -380,7 +383,7 @@ def _is_malformed_key_id(key_id: object) -> bool:
     return re.fullmatch(r"kid_[A-Za-z0-9_-]{6,}", key_id_clean) is None
 
 
-def _apply_key_enforcement_weighted_only(attestation: dict[str, object], trusted: TrustedKeySet, *, enforce: bool) -> bool:
+def _apply_key_enforcement_weighted_only(attestation: dict[str, object], trusted: TrustedKeySet, revoked_kids: set[str], *, enforce: bool) -> bool:
     if not enforce:
         return True
     payload = attestation.get("payload") if isinstance(attestation, dict) else None
@@ -391,6 +394,7 @@ def _apply_key_enforcement_weighted_only(attestation: dict[str, object], trusted
 
     malformed = _is_malformed_key_id(key_id)
     key_id_clean = key_id.strip() if isinstance(key_id, str) else ""
+    is_revoked = (not malformed) and (key_id_clean in revoked_kids)
     in_trusted = (
         (not malformed)
         and trusted.is_trusted_signer(
@@ -400,12 +404,18 @@ def _apply_key_enforcement_weighted_only(attestation: dict[str, object], trusted
         )
     )
 
-    attestation["key_validation_ok"] = bool(in_trusted)
+    is_valid = bool(in_trusted) and not is_revoked
+    attestation["key_validation_ok"] = bool(is_valid)
     attestation["key_enforced"] = True
-    attestation["attestation_valid"] = bool(in_trusted)
-    if not in_trusted:
-        attestation["attestation_invalid_reason"] = "malformed_key_id" if malformed else "unknown_key_id"
-    return bool(in_trusted)
+    attestation["attestation_valid"] = bool(is_valid)
+    if not is_valid:
+        if malformed:
+            attestation["attestation_invalid_reason"] = "malformed_key_id"
+        elif is_revoked:
+            attestation["attestation_invalid_reason"] = "revoked_key_id"
+        else:
+            attestation["attestation_invalid_reason"] = "unknown_key_id"
+    return bool(is_valid)
 
 def _deterministic_ed25519_keypair(seed_material: str) -> tuple[str, str]:
     seed = hashlib.sha256(seed_material.encode("utf-8")).digest()
@@ -469,7 +479,7 @@ def _write_evidence_and_consensus(
     profile = _load_network_profile()
     use_v2_consensus = profile in {"reproducible_audit", "full_relay"}
     effective_weight_mode = simulate_peer_weight_mode if use_v2_consensus else "uniform"
-    trusted_key_set = _load_trusted_key_set() if use_v2_consensus else TrustedKeySet()
+    trusted_key_set, revoked_kids = _load_trusted_key_set() if use_v2_consensus else (TrustedKeySet(), set())
     created_at = created_at_utc or _utc_now_z()
     run_id = outdir.name
     artifact_entries = []
@@ -542,7 +552,7 @@ def _write_evidence_and_consensus(
         kid=kid,
     )
     if use_v2_consensus:
-        _apply_key_enforcement_weighted_only(central_attestation, trusted_key_set, enforce=use_v2_consensus)
+        _apply_key_enforcement_weighted_only(central_attestation, trusted_key_set, revoked_kids, enforce=use_v2_consensus)
     (outdir / "attestations.json").write_text(
         json.dumps({
             "schema": "attestations_v1",
@@ -597,7 +607,7 @@ def _write_evidence_and_consensus(
             else:
                 signed["simulated_weight"] = float(weight_registry.get_weight(p_node))
             if use_v2_consensus:
-                _apply_key_enforcement_weighted_only(signed, trusted_key_set, enforce=use_v2_consensus)
+                _apply_key_enforcement_weighted_only(signed, trusted_key_set, revoked_kids, enforce=use_v2_consensus)
             if use_v2_consensus and (replay_window_s > 0 or attestation_ttl_s > 0):
                 peer_created = str((signed.get("payload") or {}).get("created_at_utc") or created_at)
                 signed["replay_window_ok"] = bool(

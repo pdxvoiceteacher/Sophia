@@ -600,3 +600,74 @@ def test_witness_only_ignores_key_enforcement(monkeypatch, tmp_path: Path) -> No
     consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
     assert consensus["schema"] == "consensus_summary_v1"
     assert consensus["peers"]["pass"] == 2
+
+
+def test_revoked_key_rejected_under_weighted(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "network_policy_v1.json").write_text('{"profile":"reproducible_audit"}\n', encoding="utf-8")
+
+    bundle_id = "weighted-revoked-key"
+    bundle_hash = hashlib.sha256(bundle_id.encode("utf-8")).hexdigest()
+    peers = []
+    for i in range(2):
+        _priv, pub = run_wrapper._deterministic_ed25519_keypair(f"{bundle_hash}:{i}")
+        peers.append({"pubkey_b64u": pub, "enabled": False})
+    (cfg / "peer_registry_v1.json").write_text(json.dumps({"schema": "peer_registry_v1", "peers": peers}) + "\n", encoding="utf-8")
+
+    outdir = tmp_path / "weighted-revoked"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=2,
+        simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z",
+        bundle_id=bundle_id,
+    )
+
+    peers_out = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers_out
+    assert all(p.get("key_enforced") is True for p in peers_out)
+    assert all(p.get("key_validation_ok") is False for p in peers_out)
+    assert all(p.get("attestation_invalid_reason") == "revoked_key_id" for p in peers_out)
+
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v2"
+    assert consensus["peers"]["weighted_pass"] == 0.0
+
+
+def test_witness_only_ignores_revocation_enforcement(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    cfg = tmp_path / "config"
+    cfg.mkdir(parents=True, exist_ok=True)
+    (cfg / "peer_registry_v1.json").write_text(
+        json.dumps({"schema": "peer_registry_v1", "peers": [{"pubkey_b64u": "abc_DEF-123", "enabled": False}]}) + "\n",
+        encoding="utf-8",
+    )
+
+    outdir = tmp_path / "witness-revocation-ignored"
+    (outdir / "konomi_smoke_base").mkdir(parents=True, exist_ok=True)
+    (outdir / "konomi_smoke_base" / "konomi_smoke_summary.json").write_text('{"ok": true}\n', encoding="utf-8")
+    artifacts = [{"path": "konomi_smoke_base/konomi_smoke_summary.json", "sha256": "a" * 64}]
+
+    run_wrapper._write_evidence_and_consensus(
+        outdir,
+        artifacts,
+        simulate_peers=2,
+        simulate_peer_weight_mode="linear",
+        created_at_utc="2026-01-01T00:00:00Z",
+        bundle_id="witness-revocation-ignored",
+    )
+
+    peers = json.loads((outdir / "peer_attestations.json").read_text(encoding="utf-8")).get("attestations") or []
+    assert peers
+    assert all("key_enforced" not in p for p in peers)
+    assert all("attestation_invalid_reason" not in p for p in peers)
+
+    consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
+    assert consensus["schema"] == "consensus_summary_v1"
