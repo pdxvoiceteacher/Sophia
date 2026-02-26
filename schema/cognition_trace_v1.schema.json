@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cognition_trace_v1.schema.json",
+  "title": "Cognition Trace v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "bundle_hash",
+    "bundle_hash_source",
+    "profile",
+    "mode",
+    "reflection_score",
+    "self_consistency_delta",
+    "correction_applied",
+    "reasoning_depth_used",
+    "reflection_blocks",
+    "invariants_checked",
+    "findings",
+    "recommendations"
+  ],
+  "properties": {
+    "schema": { "type": "string", "const": "cognition_trace_v1" },
+    "bundle_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "bundle_hash_source": {
+      "type": "string",
+      "enum": ["evidence_content", "bundle_id_override"]
+    },
+    "profile": {
+      "type": "string",
+      "enum": ["witness_only", "reproducible_audit", "full_relay"]
+    },
+    "mode": { "type": "string", "enum": ["off", "structured"] },
+    "reflection_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "self_consistency_delta": { "type": "number", "minimum": 0, "maximum": 1 },
+    "correction_applied": { "type": "boolean" },
+    "reasoning_depth_used": { "type": "integer", "minimum": 1 },
+    "reflection_blocks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "invariants_checked": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "findings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "recommendations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  },
+  "allOf": [
+    { "not": { "required": ["created_at"] } },
+    { "not": { "required": ["uuid"] } },
+    { "not": { "required": ["rand"] } },
+    { "not": { "required": ["random"] } },
+    { "not": { "required": ["timestamp"] } }
+  ]
+}
