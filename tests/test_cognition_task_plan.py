@@ -128,6 +128,11 @@ def test_task_plan_governance_non_impact(monkeypatch, tmp_path: Path) -> None:
     for name, before in baseline.items():
         assert (outdir / name).read_bytes() == before
 
+    evidence_bundle = json.loads((outdir / "evidence_bundle.json").read_text(encoding="utf-8"))
+    artifact_paths = [str(item.get("path") or "") for item in evidence_bundle.get("artifacts", [])]
+    banned_tokens = ("cognition", "task_plan", "memory_graph", "memory_recall")
+    assert all(not any(token in path for token in banned_tokens) for path in artifact_paths)
+
 
 def test_task_plan_witness_unaffected(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
