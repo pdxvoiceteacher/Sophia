@@ -160,6 +160,48 @@ def test_task_plan_witness_unaffected(monkeypatch, tmp_path: Path) -> None:
     assert not (tmp_path / "out" / "wt.json").exists()
 
 
+
+
+def test_task_plan_canonical_json_and_entropy_denylist(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    _seed_weighted_env(tmp_path, "task-plan-canonical")
+    outdir = _prepare_run(tmp_path, "task-plan-canonical")
+
+    task_plan_path = tmp_path / "out" / "canonical_task_plan.json"
+    _emit_all_cognition(
+        outdir,
+        graph_path=tmp_path / "out" / "canonical_graph.json",
+        recall_path=tmp_path / "out" / "canonical_recall.json",
+        task_plan_path=task_plan_path,
+    )
+
+    raw = task_plan_path.read_bytes()
+    assert raw.endswith(b"\n")
+    assert b"\r\n" not in raw
+    payload = json.loads(raw.decode("utf-8"))
+
+    # canonical key ordering check
+    canonical = json.dumps(payload, indent=2, sort_keys=True).encode("utf-8") + b"\n"
+    assert raw == canonical
+
+    # stable IDs and ordering by numeric suffix
+    task_ids = [task["task_id"] for task in payload["tasks"]]
+    assert task_ids == sorted(task_ids)
+
+    entropy_keys = {"created_at", "timestamp", "uuid", "nonce", "rand", "random"}
+
+    def walk(obj):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                assert k not in entropy_keys
+                walk(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                walk(item)
+
+    walk(payload)
+
+
 def test_task_plan_missing_gate_no_outputs(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
     _seed_weighted_env(tmp_path, "task-plan-gates")
