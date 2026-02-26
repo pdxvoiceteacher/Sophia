@@ -903,11 +903,10 @@ def _maybe_emit_cognition_outputs(
     task_plan_mode: str = "off",
     task_plan_path: str = "",
 ) -> None:
-    if reflection_mode != "structured" or profile not in {"reproducible_audit", "full_relay"}:
-        return
-
     all_cognition_gates = (
-        memory_graph_mode == "update"
+        profile in {"reproducible_audit", "full_relay"}
+        and reflection_mode == "structured"
+        and memory_graph_mode == "update"
         and bool(memory_graph_path)
         and memory_recall_mode == "emit"
         and bool(memory_recall_path)
