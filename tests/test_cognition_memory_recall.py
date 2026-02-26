@@ -170,6 +170,40 @@ def test_memory_recall_requires_full_gating(monkeypatch, tmp_path: Path) -> None
     assert not graph_path.exists()
     assert not recall_path.exists()
 
+
+def test_memory_recall_requires_all_individual_gates(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    bundle_id = "recall-all-gates"
+    _seed_weighted_env(tmp_path, bundle_id)
+    outdir = _prepare_run(tmp_path, bundle_id)
+
+    graph_path = tmp_path / "out" / "all_gates_graph.json"
+    recall_path = tmp_path / "out" / "all_gates_recall.json"
+
+    cases = [
+        dict(profile="reproducible_audit", reflection_mode="off", memory_graph_mode="update", memory_graph_path=str(graph_path), memory_recall_mode="emit", memory_recall_path=str(recall_path)),
+        dict(profile="witness_only", reflection_mode="structured", memory_graph_mode="update", memory_graph_path=str(graph_path), memory_recall_mode="emit", memory_recall_path=str(recall_path)),
+        dict(profile="reproducible_audit", reflection_mode="structured", memory_graph_mode="off", memory_graph_path=str(graph_path), memory_recall_mode="emit", memory_recall_path=str(recall_path)),
+        dict(profile="reproducible_audit", reflection_mode="structured", memory_graph_mode="update", memory_graph_path=str(graph_path), memory_recall_mode="off", memory_recall_path=str(recall_path)),
+        dict(profile="reproducible_audit", reflection_mode="structured", memory_graph_mode="update", memory_graph_path=str(graph_path), memory_recall_mode="emit", memory_recall_path=""),
+        dict(profile="reproducible_audit", reflection_mode="structured", memory_graph_mode="update", memory_graph_path="", memory_recall_mode="emit", memory_recall_path=str(recall_path)),
+    ]
+
+    for case in cases:
+        if graph_path.exists():
+            graph_path.unlink()
+        if recall_path.exists():
+            recall_path.unlink()
+        trace_path = outdir / "cognition_trace.json"
+        if trace_path.exists():
+            trace_path.unlink()
+
+        run_wrapper._maybe_emit_cognition_outputs(outdir=outdir, telemetry={"run_id": "gates-loop"}, **case)
+
+        assert not trace_path.exists()
+        assert not graph_path.exists()
+        assert not recall_path.exists()
+
 def test_memory_recall_schema_validation(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
     bundle_id = "recall-schema"

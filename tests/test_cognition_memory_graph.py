@@ -288,3 +288,7 @@ def test_cognition_flags_do_not_mutate_governance_bytes(monkeypatch, tmp_path: P
 
     for name, before in baseline.items():
         assert (out_on / name).read_bytes() == before
+
+    evidence = json.loads((out_on / "evidence_bundle.json").read_text(encoding="utf-8"))
+    artifact_paths = sorted(str(a.get("path", "")) for a in evidence.get("artifacts", []) if isinstance(a, dict))
+    assert all(not p.startswith("cognition_") for p in artifact_paths)

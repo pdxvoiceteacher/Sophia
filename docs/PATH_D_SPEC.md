@@ -1,4 +1,10 @@
-# PATH D — Cognition Trace (D2)
+# PATH D — Cognition (D1–D5)
+
+## D1 Contract: Out-of-band cognition baseline
+
+- Cognition artifacts are producer-only outputs and are **never** governance inputs.
+- Cognition artifacts must not be added to `evidence_bundle.json` artifact lists.
+- Cognition code paths are optional and default-off.
 
 ## D2 Contract: Hardening
 
@@ -53,6 +59,7 @@ Path A/B/C invariants remain unchanged.
   - `--cognitive-memory-recall-mode emit`
   - `--cognitive-memory-recall-path` is set
 - If any gate is missing, no cognition trace/graph/recall artifacts are written by this D4 path.
+- Cognition artifacts remain out-of-band and are not included in `evidence_bundle.json` artifact entries.
 
 ### Determinism and non-impact guarantees
 
