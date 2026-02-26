@@ -149,3 +149,48 @@ def test_witness_only_unaffected(monkeypatch, tmp_path: Path) -> None:
     assert not (outdir / "cognition_trace.json").exists()
     consensus = json.loads((outdir / "consensus_summary.json").read_text(encoding="utf-8"))
     assert consensus["schema"] == "consensus_summary_v1"
+
+
+def test_run_wrapper_cognition_trace_requires_full_gating(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(run_wrapper, "REPO", tmp_path)
+    bundle_id = "trace-gating"
+    _seed_weighted_env(tmp_path, bundle_id, peers=2)
+
+    outdir = tmp_path / "run"
+    _prepare_run(outdir, bundle_id=bundle_id)
+
+    # Full gates satisfied -> trace/graph/recall present
+    graph_path = tmp_path / "out" / "trace_gate_graph.json"
+    recall_path = tmp_path / "out" / "trace_gate_recall.json"
+    run_wrapper._maybe_emit_cognition_outputs(
+        outdir=outdir,
+        telemetry={"run_id": "trace-gating", "metrics": {"E": 0.1, "T": 0.2}},
+        profile="reproducible_audit",
+        reflection_mode="structured",
+        memory_graph_mode="update",
+        memory_graph_path=str(graph_path),
+        memory_recall_mode="emit",
+        memory_recall_path=str(recall_path),
+    )
+    assert (outdir / "cognition_trace.json").exists()
+    assert graph_path.exists()
+    assert recall_path.exists()
+
+    # Remove one gate (reflection mode) -> no cognition outputs
+    outdir2 = tmp_path / "run2"
+    _prepare_run(outdir2, bundle_id=bundle_id)
+    graph_path2 = tmp_path / "out" / "trace_gate_graph2.json"
+    recall_path2 = tmp_path / "out" / "trace_gate_recall2.json"
+    run_wrapper._maybe_emit_cognition_outputs(
+        outdir=outdir2,
+        telemetry={"run_id": "trace-gating-2", "metrics": {"E": 0.1, "T": 0.2}},
+        profile="reproducible_audit",
+        reflection_mode="off",
+        memory_graph_mode="update",
+        memory_graph_path=str(graph_path2),
+        memory_recall_mode="emit",
+        memory_recall_path=str(recall_path2),
+    )
+    assert not (outdir2 / "cognition_trace.json").exists()
+    assert not graph_path2.exists()
+    assert not recall_path2.exists()

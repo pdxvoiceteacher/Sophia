@@ -74,6 +74,9 @@ jobs:
           python -m pytest -q tests/test_secure_swarm_schemas.py
           python -m pytest -q tests/test_weighted_drift_matrix.py
           python -m pytest -q tests/test_replay_window.py
+          python -m pytest -q tests/test_cognitive_reflection.py
+          python -m pytest -q tests/test_cognition_memory_graph.py
+          python -m pytest -q tests/test_cognition_memory_recall.py
           python scripts/verify_secure_swarm_freeze.py --repo-root . --out-root out/ci_freeze_verify
 
       - name: Run lightweight pytest smoke
