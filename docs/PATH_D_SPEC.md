@@ -93,3 +93,19 @@ Path A/B/C invariants and weighted consensus math remain unchanged.
   - `peer_attestations.json`
 
 Path A/B/C governance logic, bundle hashing, replay ledger behavior, and trust enforcement remain unchanged.
+
+
+## Path E Contract: Deterministic cognition task plan (out-of-band)
+
+- `cognition_task_plan.json` is producer-only, deterministic, and out-of-band.
+- Path E emission is strict AND-gated and requires all Path D gates plus:
+  - `--cognitive-task-plan-mode emit`
+  - `--cognitive-task-plan-path` is set
+- If any gate is missing, no cognition artifacts are written (`cognition_trace.json`, `cognition_memory_graph.json`, `cognition_memory_recall.json`, `cognition_task_plan.json`).
+- Determinism definition: given the same prior graph bytes, same trace payload, and same recall payload, task-plan bytes are identical.
+- Task plan stays out of governance and must not change bytes of:
+  - `consensus_summary.json`
+  - `evidence_bundle.json`
+  - `attestations.json`
+  - `peer_attestations.json`
+- `cognition_task_plan.json` must not be added to `evidence_bundle.json` artifacts list.

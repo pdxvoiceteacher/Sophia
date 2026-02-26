@@ -35,6 +35,7 @@ from tools.telemetry.weight_registry import WeightRegistry
 from tools.cognition.reflection_engine import write_cognition_trace
 from tools.cognition.memory_graph import load_memory_graph, update_memory_graph, write_memory_graph
 from tools.cognition.memory_recall import write_memory_recall
+from tools.cognition.task_plan import build_task_plan, write_task_plan
 
 _WEIGHTED_REPLAY_WINDOW_S_DEFAULT = 300
 _WEIGHTED_ATTESTATION_TTL_S_DEFAULT = 300
@@ -899,17 +900,21 @@ def _maybe_emit_cognition_outputs(
     memory_recall_path: str = "",
     memory_max_nodes: int = 0,
     memory_max_edges: int = 0,
+    task_plan_mode: str = "off",
+    task_plan_path: str = "",
 ) -> None:
     if reflection_mode != "structured" or profile not in {"reproducible_audit", "full_relay"}:
         return
 
-    all_graph_recall_gates = (
+    all_cognition_gates = (
         memory_graph_mode == "update"
         and bool(memory_graph_path)
         and memory_recall_mode == "emit"
         and bool(memory_recall_path)
+        and task_plan_mode == "emit"
+        and bool(task_plan_path)
     )
-    if not all_graph_recall_gates:
+    if not all_cognition_gates:
         return
 
     evidence_doc = load_json_bom_safe(outdir / "evidence_bundle.json")
@@ -941,6 +946,18 @@ def _maybe_emit_cognition_outputs(
         bundle_hash=str(evidence_doc.get("bundle_sha256") or ""),
     )
 
+    recall_payload = load_json_bom_safe(Path(memory_recall_path))
+    task_plan_payload = build_task_plan(
+        trace=trace_payload,
+        recall=recall_payload,
+        graph=updated,
+        bundle_hash=str(evidence_doc.get("bundle_sha256") or ""),
+        bundle_hash_source=bundle_hash_source,
+        profile=profile,
+        mode="emit",
+    )
+    write_task_plan(Path(task_plan_path), task_plan_payload)
+
 
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -964,6 +981,8 @@ def main() -> int:
     ap.add_argument("--cognitive-memory-recall-path", default="", help="Optional cognition memory recall path; if unset no recall file is written.")
     ap.add_argument("--cognitive-memory-max-nodes", type=int, default=0, help="Optional deterministic cognition memory graph node cap (0 disables pruning).")
     ap.add_argument("--cognitive-memory-max-edges", type=int, default=0, help="Optional deterministic cognition memory graph edge cap (0 disables pruning).")
+    ap.add_argument("--cognitive-task-plan-mode", choices=["off", "emit"], default="off", help="Deterministic out-of-band cognition task plan mode.")
+    ap.add_argument("--cognitive-task-plan-path", default="", help="Optional cognition task plan path; if unset no task plan file is written.")
     args, _unknown = ap.parse_known_args()
 
     has_explicit_weight_mode = "--simulate-peer-weight-mode" in sys.argv[1:]
@@ -1107,6 +1126,8 @@ def main() -> int:
         memory_recall_path=str(args.cognitive_memory_recall_path),
         memory_max_nodes=int(args.cognitive_memory_max_nodes),
         memory_max_edges=int(args.cognitive_memory_max_edges),
+        task_plan_mode=str(args.cognitive_task_plan_mode),
+        task_plan_path=str(args.cognitive_task_plan_path),
     )
     print(f"[run_wrapper] wrote {out_json}")
     _step_end(outdir, "write_telemetry_json", t0_write, "ok", details={"path":"telemetry.json"})

@@ -162,6 +162,7 @@ def test_run_wrapper_cognition_trace_requires_full_gating(monkeypatch, tmp_path:
     # Full gates satisfied -> trace/graph/recall present
     graph_path = tmp_path / "out" / "trace_gate_graph.json"
     recall_path = tmp_path / "out" / "trace_gate_recall.json"
+    task_plan_path = tmp_path / "out" / "trace_gate_task_plan.json"
     run_wrapper._maybe_emit_cognition_outputs(
         outdir=outdir,
         telemetry={"run_id": "trace-gating", "metrics": {"E": 0.1, "T": 0.2}},
@@ -171,10 +172,13 @@ def test_run_wrapper_cognition_trace_requires_full_gating(monkeypatch, tmp_path:
         memory_graph_path=str(graph_path),
         memory_recall_mode="emit",
         memory_recall_path=str(recall_path),
+        task_plan_mode="emit",
+        task_plan_path=str(task_plan_path),
     )
     assert (outdir / "cognition_trace.json").exists()
     assert graph_path.exists()
     assert recall_path.exists()
+    assert task_plan_path.exists()
 
     # Remove one gate (reflection mode) -> no cognition outputs
     outdir2 = tmp_path / "run2"

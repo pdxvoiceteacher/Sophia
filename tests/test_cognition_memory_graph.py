@@ -51,6 +51,7 @@ def _emit_reflection_and_graph(
     *,
     graph_path: Path,
     recall_path: Path,
+    task_plan_path: Path,
     memory_max_nodes: int = 0,
     memory_max_edges: int = 0,
 ) -> None:
@@ -65,6 +66,8 @@ def _emit_reflection_and_graph(
         memory_recall_path=str(recall_path),
         memory_max_nodes=memory_max_nodes,
         memory_max_edges=memory_max_edges,
+        task_plan_mode="emit",
+        task_plan_path=str(task_plan_path),
     )
 
 
@@ -75,7 +78,7 @@ def test_memory_graph_created_weighted_only(monkeypatch, tmp_path: Path) -> None
     outdir = _prepare_run(tmp_path, bundle_id)
     graph_path = tmp_path / "out" / "cognition_memory_graph.json"
 
-    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json")
+    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json", task_plan_path=tmp_path / "out" / "cognition_task_plan.json")
     assert graph_path.exists()
 
     schema = json.loads((ROOT / "schema" / "cognition_memory_graph_v1.schema.json").read_text(encoding="utf-8"))
@@ -90,9 +93,9 @@ def test_memory_graph_idempotent_on_repeat_same_trace(monkeypatch, tmp_path: Pat
     outdir = _prepare_run(tmp_path, bundle_id)
     graph_path = tmp_path / "out" / "idempotent_graph.json"
 
-    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json")
+    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json", task_plan_path=tmp_path / "out" / "cognition_task_plan.json")
     first = graph_path.read_bytes()
-    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json")
+    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json", task_plan_path=tmp_path / "out" / "cognition_task_plan.json")
     second = graph_path.read_bytes()
     assert first == second
 
@@ -130,7 +133,7 @@ def test_memory_graph_does_not_modify_governance_artifacts(monkeypatch, tmp_path
         for name in ["evidence_bundle.json", "consensus_summary.json", "attestations.json", "peer_attestations.json"]
     }
     graph_path = tmp_path / "out" / "impact_graph.json"
-    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json")
+    _emit_reflection_and_graph(outdir, graph_path=graph_path, recall_path=tmp_path / "out" / "cognition_memory_recall.json", task_plan_path=tmp_path / "out" / "cognition_task_plan.json")
 
     for name, before in baseline.items():
         assert (outdir / name).read_bytes() == before
@@ -159,9 +162,12 @@ def test_witness_only_unaffected(monkeypatch, tmp_path: Path) -> None:
         memory_graph_path=str(graph_path),
         memory_recall_mode="emit",
         memory_recall_path=str(recall_path),
+        task_plan_mode="emit",
+        task_plan_path=str(tmp_path / "out" / "witness_task_plan.json"),
     )
     assert not graph_path.exists()
     assert not recall_path.exists()
+    assert not (tmp_path / "out" / "witness_task_plan.json").exists()
 
 
 def test_memory_graph_corrupt_file_recovers_deterministically(tmp_path: Path) -> None:
@@ -282,6 +288,7 @@ def test_cognition_flags_do_not_mutate_governance_bytes(monkeypatch, tmp_path: P
         out_on,
         graph_path=tmp_path / "out" / "tripwire_graph.json",
         recall_path=tmp_path / "out" / "tripwire_recall.json",
+        task_plan_path=tmp_path / "out" / "tripwire_task_plan.json",
         memory_max_nodes=8,
         memory_max_edges=8,
     )

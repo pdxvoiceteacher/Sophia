@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cognition_task_plan_v1.schema.json",
+  "title": "Cognition Task Plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "bundle_hash", "bundle_hash_source", "profile", "mode", "inputs", "tasks"],
+  "properties": {
+    "schema": {"type": "string", "const": "cognition_task_plan_v1"},
+    "bundle_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "bundle_hash_source": {"type": "string", "enum": ["evidence_content", "bundle_id_override"]},
+    "profile": {"type": "string", "enum": ["reproducible_audit", "full_relay"]},
+    "mode": {"type": "string", "const": "emit"},
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_schema", "recall_schema", "graph_schema", "trace_node_id", "bundle_hash_occurrences"],
+      "properties": {
+        "trace_schema": {"type": "string", "const": "cognition_trace_v1"},
+        "recall_schema": {"type": "string", "const": "cognition_memory_recall_v1"},
+        "graph_schema": {"type": "string", "const": "cognition_memory_graph_v1"},
+        "trace_node_id": {"type": "string"},
+        "bundle_hash_occurrences": {"type": "integer", "minimum": 0}
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_id", "task", "priority"],
+        "properties": {
+          "task_id": {"type": "string", "pattern": "^task_[0-9]{3}$"},
+          "task": {"type": "string", "minLength": 1},
+          "priority": {"type": "integer", "minimum": 0}
+        }
+      }
+    }
+  },
+  "allOf": [
+    {"not": {"required": ["created_at"]}},
+    {"not": {"required": ["timestamp"]}},
+    {"not": {"required": ["uuid"]}},
+    {"not": {"required": ["nonce"]}},
+    {"not": {"required": ["rand"]}},
+    {"not": {"required": ["random"]}}
+  ]
+}
