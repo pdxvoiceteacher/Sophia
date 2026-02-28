@@ -1,111 +1,50 @@
-# Windows Setup (Python Tooling)
+# Windows Setup (Telemetry / Secure Swarm)
 
-This repository root is not a standalone Python package (`pip install -e .` is not supported), but it now includes a root convenience requirements file for telemetry/python setup.
+This repo root is **not** a standalone installable package. Use the telemetry requirements + editable subpackages.
 
-Use either of the following bootstrap flows in PowerShell:
+## One-command bootstrap (PowerShell)
+
+From repo root:
 
 ```powershell
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+./scripts/windows/bootstrap_one_shot.ps1
 ```
 
-Or use the helper script:
+This script creates `.venv`, installs telemetry dependencies, installs editable packages (`.\python`, `.\ucc`), runs focused tests, and prints run examples.
+
+## Manual bootstrap (equivalent)
 
 ```powershell
-./scripts/bootstrap_telemetry.ps1
-./scripts/bootstrap.ps1
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r .\python\tools\requirements-telemetry.txt
+.\.venv\Scripts\python.exe -m pip install -e .\python
+.\.venv\Scripts\python.exe -m pip install -e .\ucc
 ```
 
-Optional developer extras:
+## Invocation regression checks (both must work)
 
 ```powershell
-python -m pip install -r requirements-dev.txt
-```
-
-## CLI note: `run_epoch_real.py` vs `run_wrapper.py`
-
-`tools/telemetry/run_epoch_real.py` orchestrates scenario + pipeline execution.
-
-- `--quick`, `--perturbations`, `--simulate-peers`, `--simulate-peer-weight-mode`, `--created-at-utc`, and `--bundle-id` are pass-through overrides for `tools/telemetry/run_wrapper.py` pipeline settings.
-
-## Python version guidance
-
-Recommended on Windows: Python 3.12 or 3.13.
-
-Newer interpreter versions can lag on binary wheel availability for some dependencies.
-
-
-## Editable package set
-
-For full telemetry/dev tooling, install editable subpackages:
-
-```powershell
-python -m pip install -e ./python -e ./ucc -e ./sophia-core -e ./tools/coherenceledger_bootstrap
-```
-
-
-## Consensus note
-
-`consensus_summary.json` used to remain `insufficient` in single-node local runs because no peer attestations were present.
-
-Current behavior: `run_wrapper` emits a local central attestation (`attestations.json`) with explicit status; policy gate satisfaction requires a convergent consensus outcome backed by a central `pass`.
-
-
-## CLI smoke checks
-
-Run both invocation forms to catch import-path regressions on Windows:
-
-```powershell
-python tools/telemetry/run_wrapper.py -h
+python tools\telemetry\run_wrapper.py -h
 python -m tools.telemetry.run_wrapper -h
+python tools\telemetry\run_epoch_real.py -h
+python -m tools.telemetry.run_epoch_real -h
 ```
 
-
-## Search tooling note
-
-If `rg` (ripgrep) is not installed on Windows, use PowerShell `Select-String` as a fallback:
+## Focused Windows test suite
 
 ```powershell
-Get-ChildItem -Recurse -File | Select-String -Pattern "run_wrapper"
+python -m pytest -q tests/test_run_wrapper_evidence_paths.py tests/test_secure_swarm_crypto.py tests/test_secure_swarm_schemas.py tests/test_epoch_real_runner.py tests/test_run_wrapper_invocation.py
 ```
 
-
-## One-shot launcher
-
-Use `scripts/Run-Sophia-Telemetry.ps1` for venv setup, focused tests, and a telemetry run with artifact printout.
-
-
-## Deterministic artifact compare note
-
-PowerShell `fc` is an alias (`Format-Custom`), not file-compare. Use one of:
+## Tiny smoke run
 
 ```powershell
-cmd /c fc /b path\to\runA\peer_attestations.json path\to\runB\peer_attestations.json
-Compare-Object (Get-Content path\to\runA\peer_attestations.json) (Get-Content path\to\runB\peer_attestations.json)
+python tools\telemetry\run_wrapper.py --out out\windows_smoke --quick --perturbations 1 --simulate-peers 2 --simulate-peer-weight-mode uniform
 ```
 
-For meaningful byte-identical comparisons across output directories, run with fixed deterministic overrides.
+## Determinism / governance contract
 
-`run_wrapper` direct:
-
-```powershell
-python tools/telemetry/run_wrapper.py --out <runA> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --simulate-peer-weight-mode uniform
-python tools/telemetry/run_wrapper.py --out <runB> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --simulate-peer-weight-mode uniform
-```
-
-`run_epoch_real` entrypoint (pass-through):
-
-```powershell
-python tools/telemetry/run_epoch_real.py --scenario epoch_scenarios/baseline_deterministic.json --mode deterministic --out <runA> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --simulate-peer-weight-mode uniform --quick --perturbations 1
-python tools/telemetry/run_epoch_real.py --scenario epoch_scenarios/baseline_deterministic.json --mode deterministic --out <runB> --simulate-peers 2 --created-at-utc 2026-01-01T00:00:00Z --bundle-id bundle-fixed --simulate-peer-weight-mode uniform --quick --perturbations 1
-```
-
-Or run the automated verification script:
-
-```powershell
-python scripts/verify_secure_swarm_freeze.py --repo-root . --out-root out/freeze_verify
-# (uses deterministic uniform peer weights)
-```
-
-
-See `docs/PATH_B_SPEC.md` for weighted-peer initialization semantics and invariants.
+- Secure Swarm governance/consensus semantics are unchanged.
+- Path A freeze invariants remain required.
+- Cognition artifacts remain out-of-band and should not alter `evidence_bundle.json` artifact membership.

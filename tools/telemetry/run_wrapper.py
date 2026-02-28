@@ -8,16 +8,13 @@ import os
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519
 
-
-def _ensure_repo_on_sys_path() -> Path:
-    repo_root = Path(__file__).resolve().parents[2]
-    repo_root_s = str(repo_root)
+if __name__ == "__main__" and __package__ is None:
+    repo_root_s = str(Path(__file__).resolve().parents[2])
     if repo_root_s not in sys.path:
         sys.path.insert(0, repo_root_s)
-    return repo_root
 
 
-REPO = _ensure_repo_on_sys_path()
+REPO = Path(__file__).resolve().parents[2]
 
 from tools.security.swarm_crypto import (
     b64u_encode,
