@@ -23,6 +23,19 @@ def test_run_wrapper_help_succeeds_for_module_and_script_invocation() -> None:
     assert "--simulate-peers" in script.stdout
 
 
+def test_run_epoch_real_help_succeeds_for_module_and_script_invocation() -> None:
+    module_cmd = [sys.executable, "-m", "tools.telemetry.run_epoch_real", "-h"]
+    script_cmd = [sys.executable, str(REPO / "tools" / "telemetry" / "run_epoch_real.py"), "-h"]
+
+    module = subprocess.run(module_cmd, cwd=REPO, capture_output=True, text=True)
+    script = subprocess.run(script_cmd, cwd=REPO, capture_output=True, text=True)
+
+    assert module.returncode == 0, module.stderr
+    assert script.returncode == 0, script.stderr
+    assert "--scenario" in module.stdout
+    assert "--out" in script.stdout
+
+
 def test_policy_thresholds_template_validates_against_schema() -> None:
     schema = json.loads((REPO / "schema" / "policy_thresholds_v1.schema.json").read_text(encoding="utf-8-sig"))
     template = json.loads((REPO / "config" / "policy_thresholds.json").read_text(encoding="utf-8-sig"))

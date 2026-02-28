@@ -1,7 +1,7 @@
 param(
   [string]$PythonExe = "python",
   [string]$VenvDir = ".venv",
-  [string]$OutDir = "out/telemetry_smoke"
+  [string]$OutDir = "out/windows_smoke"
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,9 +12,11 @@ Set-Location $repoRoot
 $py = Join-Path $repoRoot "$VenvDir/Scripts/python.exe"
 
 & $py -m pip install --upgrade pip
-& $py -m pip install -r requirements.txt -e ./tools/coherenceledger_bootstrap hypothesis httpx
+& $py -m pip install -r .\python\tools\requirements-telemetry.txt
+& $py -m pip install -e .\python
+& $py -m pip install -e .\ucc
 
-& $py -m pytest -q tests/test_run_wrapper_invocation.py tests/test_run_wrapper_evidence_paths.py
-& $py tools/telemetry/run_wrapper.py --out $OutDir --quick --perturbations 1 --emit-tel --emit-tel-events
+& $py -m pytest -q tests/test_run_wrapper_evidence_paths.py tests/test_secure_swarm_crypto.py tests/test_secure_swarm_schemas.py tests/test_epoch_real_runner.py tests/test_run_wrapper_invocation.py
 
-Write-Host "Artifacts written under: $OutDir"
+Write-Host "Bootstrap complete. Example run:"
+Write-Host "$py tools/telemetry/run_wrapper.py --out $OutDir --quick --perturbations 1 --simulate-peers 2 --simulate-peer-weight-mode uniform"

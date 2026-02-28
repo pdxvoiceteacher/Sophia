@@ -10,11 +10,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-try:
-    from tools.telemetry.epoch_analyze import analyze_epoch
-except ModuleNotFoundError:
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-    from tools.telemetry.epoch_analyze import analyze_epoch
+if __name__ == "__main__" and __package__ is None:
+    repo_root_s = str(Path(__file__).resolve().parents[2])
+    if repo_root_s not in sys.path:
+        sys.path.insert(0, repo_root_s)
+
+from tools.telemetry.epoch_analyze import analyze_epoch
 
 REPO = Path(__file__).resolve().parents[2]
 
