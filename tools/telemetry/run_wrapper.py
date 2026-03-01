@@ -6,9 +6,10 @@ from pathlib import Path
 import os
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
-_repo_root_s = str(_REPO_ROOT)
-if _repo_root_s not in sys.path:
-    sys.path.insert(0, _repo_root_s)
+if __name__ == "__main__" and __package__ is None:
+    _repo_root_s = str(_REPO_ROOT)
+    if _repo_root_s not in sys.path:
+        sys.path.insert(0, _repo_root_s)
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519
