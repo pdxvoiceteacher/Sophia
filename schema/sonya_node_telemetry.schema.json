@@ -1,15 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "sonya_node_telemetry.schema.json",
-  "title": "Sonya Node Telemetry v1",
+  "$id": "https://coherencelattice.dev/schema/sonya_node_telemetry.schema.json",
+  "title": "Sonya Node Telemetry",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema",
     "node_id",
     "task_id",
     "timestamp",
-    "metrics",
     "status",
     "artifacts"
   ],
@@ -28,44 +26,32 @@
     },
     "timestamp": {
       "type": "string",
-      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "failed"]
     },
     "metrics": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "E": {
-          "type": "number"
-        },
-        "T": {
-          "type": "number"
-        },
-        "Ψ": {
-          "type": "number"
-        },
-        "ΔS": {
-          "type": "number"
-        },
-        "Λ": {
-          "type": "number"
-        },
-        "Eₛ": {
-          "type": "number"
-        }
+        "E":      { "type": "number" },
+        "T":      { "type": "number" },
+        "Psi":    { "type": "number" },
+        "DeltaS": { "type": "number" },
+        "Lambda": { "type": "number" },
+        "Es":     { "type": "number" }
       }
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "success",
-        "failed"
-      ]
     },
     "artifacts": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "signature": {
+      "type": "string"
     }
   }
 }
