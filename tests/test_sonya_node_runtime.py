@@ -50,6 +50,8 @@ def test_sonya_node_runtime_writes_valid_telemetry_and_summary(monkeypatch, tmp_
     Draft202012Validator(schema).validate(record)
     assert record["node_id"] == "test-node"
     assert record["status"] == "success"
+    assert isinstance(record.get("public_key"), str) and record["public_key"]
+    assert isinstance(record.get("signature"), str) and record["signature"]
     captured = capsys.readouterr()
     assert "Sonya Node test-node ran task" in captured.out
 

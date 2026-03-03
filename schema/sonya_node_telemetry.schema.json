@@ -50,6 +50,9 @@
         "type": "string"
       }
     },
+    "public_key": {
+      "type": "string"
+    },
     "signature": {
       "type": "string"
     }

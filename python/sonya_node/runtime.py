@@ -12,6 +12,15 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from .keys import SonyaKeyPair, load_or_generate_keypair
+
+
+def _canonical_json(payload: dict[str, Any]) -> bytes:
+    # Exclude any existing "signature" field from the payload
+    base = dict(payload)
+    base.pop("signature", None)
+    return json.dumps(base, sort_keys=True, separators=(",", ":")).encode("utf-8")
+
 
 @dataclass(slots=True)
 class SonyaNodeConfig:
@@ -27,6 +36,10 @@ class SonyaNodeRuntime:
         self.repo_root = (repo_root or Path(__file__).resolve().parents[2]).resolve()
         self.config = config or self.load_config(self.repo_root)
         self._schema_validator = self._load_schema_validator()
+
+        # Load or create an Ed25519 keypair under config/
+        config_dir = self.repo_root / "config"
+        self._keypair: SonyaKeyPair = load_or_generate_keypair(config_dir)
 
     @classmethod
     def load_config(cls, repo_root: Path) -> SonyaNodeConfig:
@@ -148,6 +161,10 @@ class SonyaNodeRuntime:
             "status": status,
             "artifacts": artifacts,
         }
+        # Attach public key + signature
+        telemetry_record["public_key"] = self._keypair.public_key_b64()
+        message = _canonical_json(telemetry_record)
+        telemetry_record["signature"] = self._keypair.sign_b64(message)
         # Validate against the Sonya telemetry schema
         self._schema_validator.validate(telemetry_record)
 
