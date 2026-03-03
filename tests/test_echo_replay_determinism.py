@@ -6,12 +6,12 @@ from pathlib import Path
 from tools.telemetry import echo_test_runner
 
 
-def _write_fake_epoch(epoch_dir: Path, *, result: str = "stable", psi: float = 0.6) -> None:
+def _write_fake_epoch(epoch_dir: Path, *, result: str = "stable", e: float = 0.5, psi: float = 0.6) -> None:
     epoch_dir.mkdir(parents=True, exist_ok=True)
     telemetry = {
         "result": result,
         "metrics": {
-            "E": 0.5,
+            "E": e,
             "T": 0.8,
             "Psi": psi,
             "DeltaS": 0.2,
@@ -45,10 +45,33 @@ def test_echo_replay_reports_no_anomalies_for_deterministic_epochs(monkeypatch, 
     assert "0 anomalies" in captured.out
 
 
+def test_echo_replay_ignores_small_metric_jitter_with_default_tolerances(monkeypatch, tmp_path: Path, capsys) -> None:
+    def _fake_run_single_epoch(*, repo_root: Path, prompt: str, epoch_dir: Path, seed: int | None, epoch_index: int) -> Path:
+        if epoch_index == 2:
+            _write_fake_epoch(epoch_dir, psi=0.6000001)
+        else:
+            _write_fake_epoch(epoch_dir)
+        return epoch_dir / "telemetry.json"
+
+    monkeypatch.setattr(echo_test_runner, "run_single_epoch", _fake_run_single_epoch)
+
+    summary = echo_test_runner.run_echo_benchmark(
+        prompt="Echo test prompt",
+        epochs=3,
+        output_dir=tmp_path / "echo_results_jitter",
+        seed=11,
+        repo_root=tmp_path,
+    )
+
+    assert summary["anomalies"] == []
+    captured = capsys.readouterr()
+    assert "0 anomalies" in captured.out
+
+
 def test_echo_replay_reports_anomalies_for_perturbed_epoch(monkeypatch, tmp_path: Path, capsys) -> None:
     def _fake_run_single_epoch(*, repo_root: Path, prompt: str, epoch_dir: Path, seed: int | None, epoch_index: int) -> Path:
         if epoch_index == 2:
-            _write_fake_epoch(epoch_dir, result="drifted", psi=0.25)
+            _write_fake_epoch(epoch_dir, result="drifted", e=0.6, psi=0.25)
         else:
             _write_fake_epoch(epoch_dir)
         return epoch_dir / "telemetry.json"

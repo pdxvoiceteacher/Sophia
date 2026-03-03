@@ -8,7 +8,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 if __name__ == "__main__" and __package__ is None:
@@ -88,7 +88,19 @@ def run_single_epoch(*, repo_root: Path, prompt: str, epoch_dir: Path, seed: int
     return telemetry_path
 
 
-def _compare_epochs(runs: list[EpochRun], tolerance: float = 1e-9) -> list[dict[str, Any]]:
+
+
+def _metrics_equal(a: Optional[float], b: Optional[float], abs_tol: float, rel_tol: float) -> bool:
+    if a is None or b is None:
+        return a is None and b is None
+    diff = abs(a - b)
+    if diff == 0:
+        return True
+    max_mag = max(abs(a), abs(b))
+    return diff <= max(abs_tol, rel_tol * max_mag)
+
+
+def _compare_epochs(runs: list[EpochRun], abs_tol: float = 1e-6, rel_tol: float = 1e-4) -> list[dict[str, Any]]:
     if not runs:
         return []
     baseline = runs[0]
@@ -104,11 +116,7 @@ def _compare_epochs(runs: list[EpochRun], tolerance: float = 1e-9) -> list[dict[
         for key in sorted(all_metric_keys):
             a = baseline.metrics.get(key)
             b = run.metrics.get(key)
-            if a is None or b is None:
-                if a != b:
-                    reasons.append(f"metrics.{key}")
-                continue
-            if abs(a - b) > tolerance:
+            if not _metrics_equal(a, b, abs_tol, rel_tol):
                 reasons.append(f"metrics.{key}")
 
         if run.tel_paths != baseline.tel_paths:
@@ -119,7 +127,7 @@ def _compare_epochs(runs: list[EpochRun], tolerance: float = 1e-9) -> list[dict[
     return anomalies
 
 
-def run_echo_benchmark(*, prompt: str, epochs: int, output_dir: Path, seed: int | None, repo_root: Path | None = None) -> dict[str, Any]:
+def run_echo_benchmark(*, prompt: str, epochs: int, output_dir: Path, seed: int | None, abs_tol: float = 1e-6, rel_tol: float = 1e-4, repo_root: Path | None = None) -> dict[str, Any]:
     repo = (repo_root or _REPO_ROOT).resolve()
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -140,7 +148,7 @@ def run_echo_benchmark(*, prompt: str, epochs: int, output_dir: Path, seed: int 
         )
         runs.append(run)
 
-    anomalies = _compare_epochs(runs)
+    anomalies = _compare_epochs(runs, abs_tol=abs_tol, rel_tol=rel_tol)
     deterministic = epochs - len(anomalies)
 
     summary = {
@@ -173,12 +181,31 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("-e", "--epochs", type=int, default=3, help="Number of replay epochs (default: 3)")
     p.add_argument("-o", "--output-dir", default="./echo_results", help="Directory to write benchmark outputs")
     p.add_argument("--seed", type=int, default=None, help="Optional seed for repeatability")
+    p.add_argument(
+        "--abs-tol",
+        type=float,
+        default=1e-6,
+        help="Absolute tolerance for numeric metric comparison (default: 1e-6)",
+    )
+    p.add_argument(
+        "--rel-tol",
+        type=float,
+        default=1e-4,
+        help="Relative tolerance for numeric metric comparison (default: 1e-4)",
+    )
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
-    run_echo_benchmark(prompt=args.prompt, epochs=int(args.epochs), output_dir=Path(args.output_dir), seed=args.seed)
+    run_echo_benchmark(
+        prompt=args.prompt,
+        epochs=int(args.epochs),
+        output_dir=Path(args.output_dir),
+        seed=args.seed,
+        abs_tol=float(args.abs_tol),
+        rel_tol=float(args.rel_tol),
+    )
     return 0
 
 
