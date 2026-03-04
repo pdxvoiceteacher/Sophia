@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -16,34 +17,39 @@ if __name__ == "__main__" and __package__ is None:
     if _repo_root_s not in sys.path:
         sys.path.insert(0, _repo_root_s)
 
-_METRIC_KEYS: tuple[tuple[str, str], ...] = (
-    ("E", "E"),
-    ("T", "T"),
-    ("Psi", "Ψ"),
-    ("DeltaS", "ΔS"),
-    ("Lambda", "Λ"),
-    ("Es", "Eₛ"),
-)
+_METRIC_KEYS: tuple[str, ...] = ("E", "T", "Psi", "DeltaS", "Lambda", "Es")
 
 
 @dataclass(slots=True)
 class EpochRun:
     epoch_index: int
     epoch_dir: Path
-    telemetry_path: Path
+    telemetry_path: Path | None
     tel_paths: list[str]
     metrics: dict[str, float]
     result_signature: Any
+    status: str
+    error: str | None = None
 
 
 def _extract_metrics(telemetry: dict[str, Any]) -> dict[str, float]:
     src = telemetry.get("metrics") if isinstance(telemetry, dict) else {}
     src = src if isinstance(src, dict) else {}
     out: dict[str, float] = {}
-    for key, out_key in _METRIC_KEYS:
-        value = src.get(key)
-        if isinstance(value, (int, float)):
-            out[out_key] = float(value)
+    key_candidates: dict[str, tuple[str, ...]] = {
+        "E": ("E",),
+        "T": ("T",),
+        "Psi": ("Psi", "Ψ"),
+        "DeltaS": ("DeltaS", "ΔS"),
+        "Lambda": ("Lambda", "Λ"),
+        "Es": ("Es", "Eₛ"),
+    }
+    for key, candidates in key_candidates.items():
+        for candidate in candidates:
+            value = src.get(candidate)
+            if isinstance(value, (int, float)):
+                out[key] = float(value)
+                break
     return out
 
 
@@ -88,8 +94,6 @@ def run_single_epoch(*, repo_root: Path, prompt: str, epoch_dir: Path, seed: int
     return telemetry_path
 
 
-
-
 def _metrics_equal(a: Optional[float], b: Optional[float], abs_tol: float, rel_tol: float) -> bool:
     if a is None or b is None:
         return a is None and b is None
@@ -108,26 +112,53 @@ def _compare_epochs(runs: list[EpochRun], abs_tol: float = 1e-6, rel_tol: float 
 
     for run in runs[1:]:
         reasons: list[str] = []
+        diverged_metrics: list[str] = []
+        metric_deltas: dict[str, dict[str, float | None]] = {}
+
+        if run.status != "success":
+            reasons.append("status")
 
         if run.result_signature != baseline.result_signature:
             reasons.append("result_signature")
 
-        all_metric_keys = set(baseline.metrics) | set(run.metrics)
+        all_metric_keys = set(_METRIC_KEYS) | set(baseline.metrics) | set(run.metrics)
         for key in sorted(all_metric_keys):
             a = baseline.metrics.get(key)
             b = run.metrics.get(key)
             if not _metrics_equal(a, b, abs_tol, rel_tol):
                 reasons.append(f"metrics.{key}")
+                diverged_metrics.append(key)
+                metric_deltas[key] = {
+                    "baseline": a,
+                    "epoch": b,
+                    "abs_diff": (abs(a - b) if a is not None and b is not None else None),
+                }
 
         if run.tel_paths != baseline.tel_paths:
             reasons.append("tel_paths")
 
         if reasons:
-            anomalies.append({"epoch": run.epoch_index, "fields": reasons})
+            anomalies.append(
+                {
+                    "epoch": run.epoch_index,
+                    "fields": reasons,
+                    "diverged_metrics": sorted(set(diverged_metrics)),
+                    "metric_deltas": metric_deltas,
+                }
+            )
     return anomalies
 
 
-def run_echo_benchmark(*, prompt: str, epochs: int, output_dir: Path, seed: int | None, abs_tol: float = 1e-6, rel_tol: float = 1e-4, repo_root: Path | None = None) -> dict[str, Any]:
+def run_echo_benchmark(
+    *,
+    prompt: str,
+    epochs: int,
+    output_dir: Path,
+    seed: int | None,
+    abs_tol: float = 1e-6,
+    rel_tol: float = 1e-4,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
     repo = (repo_root or _REPO_ROOT).resolve()
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -135,42 +166,98 @@ def run_echo_benchmark(*, prompt: str, epochs: int, output_dir: Path, seed: int 
     runs: list[EpochRun] = []
     for epoch_index in range(1, epochs + 1):
         epoch_dir = output_dir / f"epoch_{epoch_index}"
-        telemetry_path = run_single_epoch(repo_root=repo, prompt=prompt, epoch_dir=epoch_dir, seed=seed, epoch_index=epoch_index)
+        epoch_dir.mkdir(parents=True, exist_ok=True)
+        telemetry_path: Path | None = None
+        metrics: dict[str, float] = {}
+        result_signature: Any = None
+        status = "success"
+        error: str | None = None
 
-        telemetry_payload = json.loads(telemetry_path.read_text(encoding="utf-8-sig"))
-        run = EpochRun(
-            epoch_index=epoch_index,
-            epoch_dir=epoch_dir,
-            telemetry_path=telemetry_path,
-            tel_paths=_collect_tel_paths(epoch_dir),
-            metrics=_extract_metrics(telemetry_payload),
-            result_signature=_extract_result_signature(telemetry_payload),
+        try:
+            telemetry_path = run_single_epoch(repo_root=repo, prompt=prompt, epoch_dir=epoch_dir, seed=seed, epoch_index=epoch_index)
+            telemetry_payload = json.loads(telemetry_path.read_text(encoding="utf-8-sig"))
+            metrics = _extract_metrics(telemetry_payload)
+            result_signature = _extract_result_signature(telemetry_payload)
+        except Exception as exc:  # noqa: BLE001
+            status = "failed"
+            error = repr(exc)
+
+        metrics_path = epoch_dir / "metrics.json"
+        metrics_path.write_text(
+            json.dumps({"epoch_index": epoch_index, "metrics": metrics}, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
         )
-        runs.append(run)
+
+        runs.append(
+            EpochRun(
+                epoch_index=epoch_index,
+                epoch_dir=epoch_dir,
+                telemetry_path=telemetry_path,
+                tel_paths=_collect_tel_paths(epoch_dir),
+                metrics=metrics,
+                result_signature=result_signature,
+                status=status,
+                error=error,
+            )
+        )
 
     anomalies = _compare_epochs(runs, abs_tol=abs_tol, rel_tol=rel_tol)
-    deterministic = epochs - len(anomalies)
+    anomaly_by_epoch = {item["epoch"]: item for item in anomalies}
+
+    per_epoch: list[dict[str, Any]] = []
+    diverged_metrics_overall: set[str] = set()
+    for run in runs:
+        anomaly_entry = anomaly_by_epoch.get(run.epoch_index)
+        is_anomaly = run.status != "success" or anomaly_entry is not None
+        diverged_metrics = list(anomaly_entry.get("diverged_metrics", [])) if anomaly_entry else []
+        diverged_metrics_overall.update(diverged_metrics)
+        entry = {
+            "epoch_index": run.epoch_index,
+            "metrics": run.metrics,
+            "status": run.status,
+            "anomaly": is_anomaly,
+            "diverged_metrics": diverged_metrics,
+            "telemetry_path": str(run.telemetry_path) if run.telemetry_path else None,
+            "tel_paths": run.tel_paths,
+        }
+        if anomaly_entry:
+            entry["anomaly_details"] = {
+                "fields": anomaly_entry.get("fields", []),
+                "metric_deltas": anomaly_entry.get("metric_deltas", {}),
+            }
+        if run.error:
+            entry["error"] = run.error
+        per_epoch.append(entry)
+
+    num_anomalous = sum(1 for item in per_epoch if item["anomaly"])
+    deterministic = epochs - num_anomalous
 
     summary = {
         "prompt": prompt,
         "epochs": epochs,
+        "abs_tol": abs_tol,
+        "rel_tol": rel_tol,
+        "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "per_epoch": per_epoch,
+        "summary": {
+            "num_epochs": epochs,
+            "num_anomalous_epochs": num_anomalous,
+            "diverged_metrics_overall": sorted(diverged_metrics_overall),
+        },
+        # Backward-compatible fields for existing tests/tooling:
         "deterministic": deterministic,
         "anomalies": anomalies,
-        "epochs_data": [
-            {
-                "epoch": run.epoch_index,
-                "telemetry_path": str(run.telemetry_path),
-                "tel_paths": run.tel_paths,
-                "metrics": run.metrics,
-            }
-            for run in runs
-        ],
     }
     (output_dir / "echo_summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    print(f'Echo benchmark for prompt "{prompt}" : {epochs} epochs, {deterministic} deterministic, {len(anomalies)} anomalies')
-    for anomaly in anomalies:
-        print(f"- epoch_{anomaly['epoch']} diverged: {', '.join(anomaly['fields'])}")
+    print(f'Echo benchmark for prompt "{prompt}" : {epochs} epochs, {deterministic} deterministic, {num_anomalous} anomalies')
+    for item in per_epoch:
+        if item["anomaly"]:
+            fields = item.get("anomaly_details", {}).get("fields", [])
+            if item.get("error"):
+                print(f"- epoch_{item['epoch_index']} diverged: status,error")
+            else:
+                print(f"- epoch_{item['epoch_index']} diverged: {', '.join(fields)}")
 
     return summary
 

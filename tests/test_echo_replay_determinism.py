@@ -40,7 +40,11 @@ def test_echo_replay_reports_no_anomalies_for_deterministic_epochs(monkeypatch, 
 
     for i in range(1, 4):
         assert (tmp_path / "echo_results" / f"epoch_{i}" / "telemetry.json").exists()
+        assert (tmp_path / "echo_results" / f"epoch_{i}" / "metrics.json").exists()
     assert summary["anomalies"] == []
+    assert summary["summary"]["num_epochs"] == 3
+    assert "created_at" in summary
+    assert len(summary["per_epoch"]) == 3
     captured = capsys.readouterr()
     assert "0 anomalies" in captured.out
 
@@ -64,6 +68,9 @@ def test_echo_replay_ignores_small_metric_jitter_with_default_tolerances(monkeyp
     )
 
     assert summary["anomalies"] == []
+    assert summary["summary"]["num_epochs"] == 3
+    assert "created_at" in summary
+    assert len(summary["per_epoch"]) == 3
     captured = capsys.readouterr()
     assert "0 anomalies" in captured.out
 
