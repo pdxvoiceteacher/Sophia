@@ -1,0 +1,40 @@
+{
+  "schema": "sonya_lattice_projection_v1",
+  "created_at": "2026-03-07T00:00:00Z",
+  "projections": [
+    {
+      "inputId": "sonya:text:atlas-note-002",
+      "modality": "text",
+      "projectedConceptIds": [
+        "concept:memory-linking"
+      ],
+      "latticeCoordinates": {
+        "E": 0.51,
+        "T": 0.49,
+        "psiCoherence": 0.33
+      },
+      "regime": "watch",
+      "projectionConfidence": 0.58,
+      "contradictionFlags": ["cross-link-cycle"],
+      "requiresReview": true,
+      "driftScore": 0.31
+    },
+    {
+      "inputId": "sonya:text:atlas-note-001",
+      "modality": "text",
+      "projectedConceptIds": [
+        "concept:coherence-lattice"
+      ],
+      "latticeCoordinates": {
+        "E": 0.88,
+        "T": 0.82,
+        "psiCoherence": 0.72
+      },
+      "regime": "stable-high",
+      "projectionConfidence": 0.79,
+      "contradictionFlags": [],
+      "requiresReview": false,
+      "driftScore": 0.18
+    }
+  ]
+}

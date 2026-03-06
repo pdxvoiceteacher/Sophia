@@ -27,3 +27,14 @@ If Publisher keeps a local visual mismatch comparator, name it something explici
 - `activityMismatchScore`
 
 This avoids conflating local rendering diagnostics with canonical lattice-derived drift.
+
+
+## Admission gate for Sonya projections
+
+Sophia is the **only executive layer** allowed to convert CoherenceLattice Sonya projections into admission decisions for Publisher memory.
+
+Required intake order:
+
+`raw Sonya input -> CoherenceLattice projection -> Sophia audit -> Publisher memory storage`
+
+Publisher must consume `bridge/sonya_admission_decisions.json` as the canonical executive decision artifact and must not bypass or re-author admission logic.
