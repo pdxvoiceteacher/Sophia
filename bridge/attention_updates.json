@@ -1,43 +1,56 @@
 {
   "schema": "attention_updates_v1",
-  "created_at": "2026-03-06T21:41:13Z",
+  "created_at": "2026-03-06T19:24:01Z",
+  "pipeline": "CoherenceLattice truth -> Sophia evaluation -> Publisher overlay",
   "inputs": {
     "concept_lattice_map": "bridge/concept_lattice_map.json",
     "constellation_lattice_map": "bridge/constellation_lattice_map.json",
+    "publication_regime_map": "bridge/publication_regime_map.json",
     "coherence_assessment": "bridge/coherence_assessment.json",
-    "sophia_recommendations": "bridge/sophia_recommendations.json"
+    "sophia_recommendations": "bridge/sophia_recommendations.json",
+    "coherence_drift_map": "bridge/coherence_drift_map.json"
   },
   "policy": {
     "type": "reinforcement_learning_rules",
     "coherenceScore": 0.4744,
     "riskScore": 0.1725,
     "regimeClassification": "watch",
-    "recommendedAction": "observe"
+    "recommendedAction": "observe",
+    "formalDriftSignal": 0.22
   },
   "updates": [
     {
-      "node_id": "c1",
+      "targetId": "c1",
       "previous_weight": 0.636667,
-      "updated_weight": 0.738816,
-      "delta": 0.10215,
-      "rule": "observe_tracking",
-      "explanation": "Observation rule applied a minimal policy adjustment while collecting additional evidence. Node 'coherence' connectivity=0.533."
+      "updated_weight": 0.685117,
+      "delta": 0.04845,
+      "coherenceScore": 0.4744,
+      "riskScore": 0.1725,
+      "driftScore": 0.18,
+      "governing_rule": "observe_tracking",
+      "explanation": "Observation rule kept moderate adaptation while awaiting stronger drift/coherence signal. target='coherence', connectivity=0.533, coherence=0.474, risk=0.172, drift=0.180."
     },
     {
-      "node_id": "c2",
+      "targetId": "c2",
       "previous_weight": 0.8,
-      "updated_weight": 0.948816,
-      "delta": 0.148816,
-      "rule": "observe_tracking",
-      "explanation": "Observation rule applied a minimal policy adjustment while collecting additional evidence. Node 'stability' connectivity=1.000."
+      "updated_weight": 0.855716,
+      "delta": 0.055716,
+      "coherenceScore": 0.4744,
+      "riskScore": 0.1725,
+      "driftScore": 0.26,
+      "governing_rule": "observe_tracking",
+      "explanation": "Observation rule kept moderate adaptation while awaiting stronger drift/coherence signal. target='stability', connectivity=1.000, coherence=0.474, risk=0.172, drift=0.260."
     },
     {
-      "node_id": "c3",
+      "targetId": "c3",
       "previous_weight": 0.613333,
-      "updated_weight": 0.708816,
-      "delta": 0.095483,
-      "rule": "observe_tracking",
-      "explanation": "Observation rule applied a minimal policy adjustment while collecting additional evidence. Node 'alignment' connectivity=0.467."
+      "updated_weight": 0.644316,
+      "delta": 0.030983,
+      "coherenceScore": 0.4744,
+      "riskScore": 0.1725,
+      "driftScore": 0.24,
+      "governing_rule": "observe_tracking",
+      "explanation": "Observation rule kept moderate adaptation while awaiting stronger drift/coherence signal. target='alignment', connectivity=0.467, coherence=0.474, risk=0.172, drift=0.240."
     }
   ]
 }
