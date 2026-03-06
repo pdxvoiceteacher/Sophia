@@ -8,6 +8,7 @@
     "schema",
     "created_at",
     "pipeline",
+    "artifactSemantics",
     "inputs",
     "policy",
     "updates"
@@ -16,6 +17,16 @@
     "schema": {"type": "string", "const": "attention_updates_v1"},
     "created_at": {"type": "string"},
     "pipeline": {"type": "string"},
+    "artifactSemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formal_drift", "attention_update", "overlay_rendering"],
+      "properties": {
+        "formal_drift": {"type": "string"},
+        "attention_update": {"type": "string"},
+        "overlay_rendering": {"type": "string"}
+      }
+    },
     "inputs": {
       "type": "object",
       "additionalProperties": false,

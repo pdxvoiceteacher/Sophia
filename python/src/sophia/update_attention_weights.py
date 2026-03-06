@@ -239,6 +239,11 @@ def build_attention_updates() -> tuple[dict[str, Any], dict[str, Any]]:
         "schema": "attention_updates_v1",
         "created_at": created_at,
         "pipeline": "CoherenceLattice truth -> Sophia evaluation -> Publisher overlay",
+        "artifactSemantics": {
+            "formal_drift": "CoherenceLattice truth",
+            "attention_update": "Sophia executive interpretation",
+            "overlay_rendering": "Publisher visualization/memory presentation",
+        },
         "inputs": {
             "concept_lattice_map": str(CONCEPT_PATH.relative_to(REPO_ROOT)).replace("\\", "/"),
             "constellation_lattice_map": str(CONSTELLATION_PATH.relative_to(REPO_ROOT)).replace("\\", "/"),

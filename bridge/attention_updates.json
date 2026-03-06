@@ -2,6 +2,11 @@
   "schema": "attention_updates_v1",
   "created_at": "2026-03-06T19:24:01Z",
   "pipeline": "CoherenceLattice truth -> Sophia evaluation -> Publisher overlay",
+  "artifactSemantics": {
+    "formal_drift": "CoherenceLattice truth",
+    "attention_update": "Sophia executive interpretation",
+    "overlay_rendering": "Publisher visualization/memory presentation"
+  },
   "inputs": {
     "concept_lattice_map": "bridge/concept_lattice_map.json",
     "constellation_lattice_map": "bridge/constellation_lattice_map.json",
