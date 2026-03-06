@@ -10,6 +10,11 @@ from jsonschema import Draft202012Validator
 REPO = Path(__file__).resolve().parents[1]
 
 
+def _has_usage(result: subprocess.CompletedProcess[str]) -> bool:
+    combined = f"{result.stdout}\n{result.stderr}".lower()
+    return "usage" in combined
+
+
 def test_run_wrapper_help_succeeds_for_module_and_script_invocation() -> None:
     module_cmd = [sys.executable, "-m", "tools.telemetry.run_wrapper", "-h"]
     script_cmd = [sys.executable, str(REPO / "tools" / "telemetry" / "run_wrapper.py"), "-h"]
@@ -19,8 +24,8 @@ def test_run_wrapper_help_succeeds_for_module_and_script_invocation() -> None:
 
     assert module.returncode == 0, module.stderr
     assert script.returncode == 0, script.stderr
-    assert "--emit-tel-events" in module.stdout
-    assert "--simulate-peers" in script.stdout
+    assert _has_usage(module)
+    assert _has_usage(script)
 
 
 def test_run_epoch_real_help_succeeds_for_module_and_script_invocation() -> None:

@@ -1,0 +1,56 @@
+{
+  "schema": "sonya_audit_v1",
+  "created_at": "2026-03-07T00:00:00Z",
+  "phaselock": "raw Sonya input -> CoherenceLattice projection -> Sophia audit -> Publisher memory storage",
+  "inputs": {
+    "sonya_lattice_projection": "bridge/sonya_lattice_projection.json",
+    "sonya_projection_summary": "bridge/sonya_projection_summary.json",
+    "coherence_assessment": "bridge/coherence_assessment.json",
+    "coherence_drift_map": "bridge/coherence_drift_map.json",
+    "sophia_recommendations": "sophia_recommendations_v1"
+  },
+  "policy_context": {
+    "coherenceScore": 0.4744,
+    "riskScore": 0.1725,
+    "globalDriftScore": 0.22,
+    "regimeClassification": "watch"
+  },
+  "audits": [
+    {
+      "inputId": "sonya:text:atlas-note-001",
+      "auditStatus": "admit",
+      "coherenceScore": 0.61198,
+      "riskScore": 0.140625,
+      "driftContext": {
+        "globalDriftScore": 0.22,
+        "inputDriftScore": 0.18,
+        "projectionRegime": "stable-high",
+        "requiresReview": false
+      },
+      "governingRule": "admit-balanced",
+      "explanation": "Projection admitted: confidence and coherence satisfy balanced executive gate thresholds. inputId=sonya:text:atlas-note-001, confidence=0.790, coherence=0.612, risk=0.141, drift=0.180.",
+      "targetPublisherAction": "store",
+      "suggestedConceptTargets": [
+        "concept:coherence-lattice"
+      ]
+    },
+    {
+      "inputId": "sonya:text:atlas-note-002",
+      "auditStatus": "defer",
+      "coherenceScore": 0.47048,
+      "riskScore": 0.406125,
+      "driftContext": {
+        "globalDriftScore": 0.22,
+        "inputDriftScore": 0.31,
+        "projectionRegime": "watch",
+        "requiresReview": true
+      },
+      "governingRule": "review-defer",
+      "explanation": "Projection deferred because review/contradictions exceed admissibility thresholds. inputId=sonya:text:atlas-note-002, confidence=0.580, coherence=0.470, risk=0.406, drift=0.310.",
+      "targetPublisherAction": "hold",
+      "suggestedConceptTargets": [
+        "concept:memory-linking"
+      ]
+    }
+  ]
+}

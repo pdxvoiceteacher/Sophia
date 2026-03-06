@@ -1,0 +1,29 @@
+{
+  "schema": "sonya_inputs_v1",
+  "inputs": [
+    {
+      "inputId": "sonya:text:atlas-note-001",
+      "modality": "text",
+      "ingestedAt": "2026-03-07",
+      "source": "notes/atlas_note_001.md",
+      "payload": {
+        "text": "Coherence lattice appears central to formal coherence mapping."
+      },
+      "declaredConceptHints": [
+        "concept:coherence-lattice"
+      ]
+    },
+    {
+      "inputId": "sonya:text:atlas-note-002",
+      "modality": "text",
+      "ingestedAt": "2026-03-07",
+      "source": "notes/atlas_note_002.md",
+      "payload": {
+        "text": "Unresolved contradiction in memory links requires review."
+      },
+      "declaredConceptHints": [
+        "concept:memory-linking"
+      ]
+    }
+  ]
+}
