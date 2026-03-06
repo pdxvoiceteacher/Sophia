@@ -38,3 +38,16 @@ Required intake order:
 `raw Sonya input -> CoherenceLattice projection -> Sophia audit -> Publisher memory storage`
 
 Publisher must consume `bridge/sonya_admission_decisions.json` as the canonical executive decision artifact and must not bypass or re-author admission logic.
+
+
+## Reasoning-thread audit (Phase D)
+
+Sophia reasoning audit is **observational and governance-oriented**. It evaluates CoherenceLattice formalized reasoning threads and emits watch/candidate artifacts for Publisher presentation controls.
+
+`bridge/recursive_reasoning_candidates.json` is a candidate/watch artifact only and **must not** be interpreted as an AGI declaration or autonomy escalation signal.
+
+Required order remains:
+
+`CoherenceLattice formalization -> Sophia recursive audit -> Publisher presentation`
+
+Publisher may surface audited overlays, but must not mutate graph truth or elevate candidate threads into canonical memory without explicit executive admission pathways.
