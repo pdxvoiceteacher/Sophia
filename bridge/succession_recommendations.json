@@ -1,0 +1,48 @@
+{
+  "schema": "succession_recommendations_v1",
+  "created_at": "2026-03-17T00:00:00Z",
+  "phaselock": "CoherenceLattice succession/resilience formalization -> Sophia resilience audit -> Publisher succession docket",
+  "caution": "Degraded mode means constrained continuity, not sovereignty; succession candidates remain human/community reviewed.",
+  "recommendations": [
+    {
+      "resilienceStatus": "stable",
+      "auditStatus": "queue-continuity-review",
+      "coherenceScore": 0.737,
+      "riskScore": 0.317287,
+      "quorumDepthContext": {
+        "quorumDepthScore": 0.61,
+        "continuityStressScore": 0.46
+      },
+      "antiCaptureRisk": 0.328218,
+      "governanceFragilityContext": {
+        "successionReadinessScore": 0.76,
+        "conflictRisk": 0.24,
+        "reliabilityScore": 0.78
+      },
+      "governingRule": "roster-bounded-readiness",
+      "explanation": "Continuity roster candidate appears stable enough for advisory queueing; no automatic authority transfer occurs. reviewerId=reviewer:example-001, coherence=0.737, risk=0.317, antiCaptureRisk=0.328.",
+      "targetPublisherAction": "docket",
+      "reviewerId": "reviewer:example-001"
+    },
+    {
+      "resilienceStatus": "thinning",
+      "auditStatus": "increase-watch",
+      "coherenceScore": 0.551,
+      "riskScore": 0.460087,
+      "quorumDepthContext": {
+        "quorumDepthScore": 0.61,
+        "continuityStressScore": 0.46
+      },
+      "antiCaptureRisk": 0.467718,
+      "governanceFragilityContext": {
+        "successionReadinessScore": 0.51,
+        "conflictRisk": 0.46,
+        "reliabilityScore": 0.57
+      },
+      "governingRule": "roster-watch",
+      "explanation": "Continuity roster candidate remains on watch pending stronger redundancy and anti-capture margin. reviewerId=reviewer:example-002, coherence=0.551, risk=0.460, antiCaptureRisk=0.468.",
+      "targetPublisherAction": "watch",
+      "reviewerId": "reviewer:example-002"
+    }
+  ]
+}

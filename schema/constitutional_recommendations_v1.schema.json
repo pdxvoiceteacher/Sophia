@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/constitutional_recommendations_v1.schema.json",
+  "title": "Constitutional Recommendations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "recommendations"],
+  "properties": {
+    "schema": {"const": "constitutional_recommendations_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "recommendations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/evaluation"}
+    }
+  },
+  "$defs": {
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constitutionalStatus",
+        "governanceRisk",
+        "contradictionContext",
+        "captureRisk",
+        "continuityModeContext",
+        "governingRule",
+        "explanation",
+        "recommendedAction"
+      ],
+      "oneOf": [
+        {"required": ["principleId"]},
+        {"required": ["systemTargetId"]}
+      ],
+      "properties": {
+        "principleId": {"type": "string"},
+        "systemTargetId": {"type": "string"},
+        "constitutionalStatus": {"enum": ["aligned", "strained", "violated", "indeterminate"]},
+        "governanceRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "contradictionContext": {"type": "object", "additionalProperties": true},
+        "captureRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "continuityModeContext": {"type": "object", "additionalProperties": true},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "recommendedAction": {
+          "enum": [
+            "continue",
+            "increase-watch",
+            "freeze-promotions",
+            "freeze-governance-intake",
+            "preservation-mode",
+            "require-human-emergency-review"
+          ]
+        }
+      }
+    }
+  }
+}

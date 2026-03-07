@@ -1,0 +1,8 @@
+{
+  "schema": "deliberation_state_summary_v1",
+  "created_at": "2026-03-16T00:00:00Z",
+  "deliberationCount": 2,
+  "meanParticipationRatio": 0.60,
+  "meanRepresentationScore": 0.585,
+  "caution": "Deliberation state mapping is procedural and advisory only."
+}

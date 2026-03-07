@@ -1,0 +1,8 @@
+{
+  "schema": "reviewer_integrity_summary_v1",
+  "created_at": "2026-03-14T00:00:00Z",
+  "candidateCount": 2,
+  "meanIntegrityScore": 0.71,
+  "meanPromotionRisk": 0.31,
+  "caution": "Summary is advisory for human/community governance review only."
+}

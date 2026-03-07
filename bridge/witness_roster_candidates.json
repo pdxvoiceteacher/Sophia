@@ -1,0 +1,20 @@
+{
+  "schema": "witness_roster_candidates_v1",
+  "created_at": "2026-03-19T00:00:00Z",
+  "witnesses": [
+    {
+      "witnessId": "witness:node-a-001",
+      "witnessSufficiencyScore": 0.77,
+      "conflictRisk": 0.24,
+      "distributionScore": 0.74,
+      "evidenceChainScore": 0.81
+    },
+    {
+      "witnessId": "witness:node-b-002",
+      "witnessSufficiencyScore": 0.49,
+      "conflictRisk": 0.43,
+      "distributionScore": 0.52,
+      "evidenceChainScore": 0.56
+    }
+  ]
+}

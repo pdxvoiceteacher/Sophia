@@ -1,0 +1,92 @@
+{
+  "schema": "quorum_audit_v1",
+  "created_at": "2026-03-16T00:00:00Z",
+  "phaselock": "constitutional state -> CoherenceLattice deliberation/amendment formalization -> Sophia quorum/amendment audit -> Publisher deliberation docket + amendment queue -> human/community constitutional review",
+  "caution": "Quorum and amendment outputs are advisory only; anti-capture procedural review remains central.",
+  "records": [
+    {
+      "quorumStatus": "strained",
+      "amendmentStatus": "require-broader-human-review",
+      "coherenceScore": 0.5455,
+      "riskScore": 0.416273,
+      "antiCaptureRisk": 0.432961,
+      "conflictContext": {
+        "linkedDeliberationId": "deliberation:emergency-interpretation-002",
+        "linkedQuorumStatus": "strained",
+        "contradictionScore": 0.33,
+        "scopeRisk": 0.58
+      },
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "broaden-deliberative-participation",
+      "explanation": "Amendment candidate requires broader human/community review before any constitutional revision pathway is considered. amendmentId=amendment:emergency-authority-expansion-002, coherence=0.545, risk=0.416, antiCaptureRisk=0.433.",
+      "targetPublisherAction": "docket",
+      "amendmentId": "amendment:emergency-authority-expansion-002"
+    },
+    {
+      "quorumStatus": "sufficient",
+      "amendmentStatus": "recommend-deliberation",
+      "coherenceScore": 0.77885,
+      "riskScore": 0.331554,
+      "antiCaptureRisk": 0.372961,
+      "conflictContext": {
+        "linkedDeliberationId": "deliberation:charter-procedural-001",
+        "linkedQuorumStatus": "sufficient",
+        "contradictionScore": 0.14,
+        "scopeRisk": 0.28
+      },
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "sufficient-quorum-recommend-deliberation",
+      "explanation": "Amendment candidate is procedurally suitable for advisory human/community deliberation review. amendmentId=amendment:slow-amendment-clause-001, coherence=0.779, risk=0.332, antiCaptureRisk=0.373.",
+      "targetPublisherAction": "docket",
+      "amendmentId": "amendment:slow-amendment-clause-001"
+    },
+    {
+      "quorumStatus": "sufficient",
+      "amendmentStatus": "recommend-deliberation",
+      "coherenceScore": 0.7695,
+      "riskScore": 0.32407,
+      "antiCaptureRisk": 0.383488,
+      "conflictContext": {
+        "declaredConflictCount": 1,
+        "contradictionScore": 0.15
+      },
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "legitimate-quorum-procedural",
+      "explanation": "Deliberation quorum appears procedurally legitimate for advisory human/community constitutional review. deliberationId=deliberation:charter-procedural-001, coherence=0.770, risk=0.324, antiCaptureRisk=0.383.",
+      "targetPublisherAction": "docket",
+      "deliberationId": "deliberation:charter-procedural-001"
+    },
+    {
+      "quorumStatus": "strained",
+      "amendmentStatus": "require-broader-human-review",
+      "coherenceScore": 0.48,
+      "riskScore": 0.426945,
+      "antiCaptureRisk": 0.420988,
+      "conflictContext": {
+        "declaredConflictCount": 0,
+        "contradictionScore": 0.35
+      },
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "broaden-review-before-amendment",
+      "explanation": "Quorum legitimacy is limited; broader human/community review is required before amendment consideration. deliberationId=deliberation:emergency-interpretation-002, coherence=0.480, risk=0.427, antiCaptureRisk=0.421.",
+      "targetPublisherAction": "docket",
+      "deliberationId": "deliberation:emergency-interpretation-002"
+    }
+  ]
+}
