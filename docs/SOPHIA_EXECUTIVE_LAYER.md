@@ -305,3 +305,27 @@ Publisher requirements:
 Required sequence for this phase:
 
 `docket / outcome / recommendation state -> CoherenceLattice closure and repair formalization -> Sophia closure audit -> Publisher closure and repair overlays -> human/community review of outcome durability`
+
+## Multi-axial symbolic field and early-warning protocol (Phase T)
+
+Phase T audits symbolic field state and early-warning regime signals conservatively.
+
+Symbolic field recommendations are bounded interpretive guidance only and do **not** automatically mutate memory, close cases, or reconfigure triadic governance.
+
+Additional procedural principles:
+
+- symbolic working-memory interpretations must remain architecture-sensitive and auditable
+- early-warning escalation should be evidence-bound and reversible
+- regime-transition interpretation should favor caution under ambiguity
+- symbolic overlays are interpretive aids, not canonical edits
+- contested field interpretations should route to human/community review
+
+Publisher requirements:
+
+- surface only Sophia-audited symbolic-field and early-warning overlays
+- keep warning-watch overlays separate from action-oriented governance artifacts
+- do not mutate queues, memory, or canonical truth automatically
+
+Required sequence for this phase:
+
+`symbolic / regime / warning state -> CoherenceLattice symbolic field and early-warning formalization -> Sophia symbolic field audit -> Publisher symbolic overlays -> human/community review`
