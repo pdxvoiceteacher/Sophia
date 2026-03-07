@@ -66,3 +66,19 @@ Strict order remains:
 `CoherenceLattice monitor -> Sophia stability audit -> Publisher monitoring overlays`
 
 Publisher may surface monitored overlays only from Sophia-audited outputs and must keep observational watch data separate from canonical structural truth.
+
+## Promotion recommendation gate (Phase G)
+
+Phase G is the first **human review interface** phase.
+
+Sophia audits CoherenceLattice promotion candidates and emits **human-review recommendations only**. In this phase, `recommend-human-review` means the candidate should be queued for editorial review in Publisher; it does **not** imply approval, certification, or canonical promotion.
+
+Strict sequence for this phase:
+
+`CoherenceLattice candidate formalization -> Sophia promotion audit -> Publisher review docket`
+
+Additional constraints:
+
+- no automatic canonical promotion occurs in this phase
+- no direct graph mutation occurs from promotion recommendations
+- watch/hold outputs remain governance overlays and must stay separate from canonical truth artifacts
