@@ -136,3 +136,23 @@ Succession candidates remain human/community reviewed through continuity dockets
 Required sequence for this phase:
 
 `governance body state -> CoherenceLattice succession/resilience formalization -> Sophia resilience audit -> Publisher continuity/succession overlays -> human/community continuity decision`
+
+## Evidence escrow, replication, and recovery protocol (Phase L)
+
+Phase L audits preservation and recovery candidates as a bounded, anti-tamper governance layer.
+
+Recovery recommendations are review-oriented and anti-tamper. They do not authorize autonomous replication, hidden persistence, or system self-resurrection.
+
+Lawful human/community review remains the path for recovery actions and escrow progression.
+
+Additional procedural guardrails:
+
+- evidence escrow over opaque persistence
+- recovery by review, not silent resurrection
+- freeze + watch + review under tamper ambiguity
+- dependency transparency for critical recovery paths
+- distributed preservation over concentrated custody
+
+Required sequence for this phase:
+
+`artifact / governance / continuity state -> CoherenceLattice preservation and recovery formalization -> Sophia recovery audit -> Publisher escrow/recovery overlays -> human/community recovery action`
