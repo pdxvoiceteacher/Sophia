@@ -212,3 +212,24 @@ Additional procedural guardrails:
 Required sequence for this phase:
 
 `current system state -> CoherenceLattice scenario formalization -> Sophia scenario audit -> Publisher scenario and stress-test overlays -> human/community preparedness review`
+
+## Institutional synthesis and bounded institutional state protocol (Phase P)
+
+Phase P consumes CoherenceLattice institutional synthesis artifacts and emits bounded institutional audit recommendations.
+
+Institutional statuses are constrained to:
+
+- `stable`
+- `monitor`
+- `caution`
+- `freeze-pathways`
+- `require-human-review`
+- `preservation-mode`
+
+Institutional recommendations are advisory and bounded. They do not authorize autonomous institutional rewrites, canonical mutation, or sovereignty transfer.
+
+Publisher must surface institutional state from Sophia outputs as read-only overlays and must not mutate canonical truth.
+
+Required sequence for this phase:
+
+`CoherenceLattice institutional synthesis -> Sophia institutional audit -> Publisher institutional state surfacing without canonical mutation`
