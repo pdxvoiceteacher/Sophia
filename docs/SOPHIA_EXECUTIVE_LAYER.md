@@ -98,3 +98,15 @@ Additional constraints:
 - no automatic reviewer appointment occurs from these artifacts
 - reviewer behavior oversight remains auditable and reversible
 - watch/hold governance queues must remain separate from canonical truth artifacts
+
+## Constitutional charter & continuity protocol (Phase I)
+
+Phase I adds a constitutional conscience and continuity recommendation layer over governance/reviewer/promotion state.
+
+Constitutional outputs are **governance constraints and continuity recommendations**. They do not authorize unconstrained self-governance, autonomous constitutional rewriting, or human displacement.
+
+When preservation mode is recommended, it means **freeze-and-preserve**: preserve evidence, freeze sensitive intake/promotion pathways, and route to bounded human/community review.
+
+Required sequence for this phase:
+
+`governance / reviewer / promotion state -> CoherenceLattice constitutional formalization -> Sophia constitutional audit -> Publisher constitutional overlays -> human/community response if available -> continuity mode if governance is degraded`
