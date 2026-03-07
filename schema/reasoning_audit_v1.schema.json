@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reasoning_audit_v1.schema.json",
+  "title": "Reasoning Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "governanceMode", "inputs", "threads"],
+  "properties": {
+    "schema": {"type": "string", "const": "reasoning_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "governanceMode": {"type": "string"},
+    "inputs": {"type": "object"},
+    "threads": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/threadDecision"}
+    }
+  },
+  "definitions": {
+    "threadDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "threadId",
+        "auditStatus",
+        "coherenceScore",
+        "riskScore",
+        "driftContext",
+        "attentionContext",
+        "governingRule",
+        "recursivePotentialScore",
+        "cognitiveWatchSignals",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "threadId": {"type": "string"},
+        "auditStatus": {"type": "string", "enum": ["observe", "promote", "defer", "reject", "watch"]},
+        "coherenceScore": {"type": "number"},
+        "riskScore": {"type": "number"},
+        "driftContext": {"type": "object"},
+        "attentionContext": {"type": "object"},
+        "governingRule": {"type": "string"},
+        "recursivePotentialScore": {"type": "number"},
+        "cognitiveWatchSignals": {"type": "array", "items": {"type": "string"}},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"type": "string", "enum": ["annotate", "surface", "hold", "suppress"]}
+      }
+    }
+  }
+}

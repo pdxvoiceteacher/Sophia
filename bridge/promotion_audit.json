@@ -1,0 +1,66 @@
+{
+  "schema": "promotion_audit_v1",
+  "created_at": "2026-03-13T00:00:00Z",
+  "phaselock": "raw input -> CoherenceLattice projection -> Sophia admission -> Publisher memory -> reasoning / monitoring / multimodal overlays -> CoherenceLattice promotion candidate formalization -> Sophia promotion audit -> Publisher review docket -> human review",
+  "governanceMode": "human-review-recommendation-only",
+  "caution": "No automatic canonical promotion occurs in this phase; recommendations only prepare a human review docket.",
+  "audits": [
+    {
+      "candidateId": "candidate:concept-relation:coherence-lattice-delta-syn-001",
+      "candidateType": "concept-relation",
+      "auditStatus": "hold",
+      "coherenceScore": 0.7225,
+      "riskScore": 0.307,
+      "persistenceScore": 0.8,
+      "cognitiveWatchSignals": [
+        "cross-modal support present",
+        "low contradiction",
+        "recursive watch escalation linkage",
+        "repeated multi-cycle coherence"
+      ],
+      "governingRule": "hold-for-more-evidence",
+      "explanation": "Candidate remains in hold state while additional observations are gathered before any human review recommendation. candidateId=candidate:concept-relation:coherence-lattice-delta-syn-001, type=concept-relation, coherence=0.723, risk=0.307, persistence=0.800.",
+      "targetPublisherAction": "watch",
+      "multimodalContext": {
+        "linkedDonationIds": [
+          "donation:guide-001:coherence-lattice"
+        ],
+        "linkedDonationStatuses": [
+          "annotate"
+        ],
+        "meanReinforcementScore": 0.75,
+        "meanDonationRisk": 0.22
+      },
+      "reasoningContext": {
+        "linkedThreadIds": [
+          "thread:coherence-lattice-001"
+        ],
+        "escalationCount": 1,
+        "meanThreadCoherence": 0.738253,
+        "meanThreadPersistence": 0.79,
+        "meanThreadRisk": 0.28
+      }
+    },
+    {
+      "candidateId": "candidate:concept-relation:memory-linking-fragile-002",
+      "candidateType": "concept-relation",
+      "auditStatus": "watch",
+      "coherenceScore": 0.392,
+      "riskScore": 0.627,
+      "persistenceScore": 0.4,
+      "cognitiveWatchSignals": [],
+      "governingRule": "watch-observational",
+      "explanation": "Candidate remains on promotion watch queue as an observational signal with insufficient governance margin for docketing. candidateId=candidate:concept-relation:memory-linking-fragile-002, type=concept-relation, coherence=0.392, risk=0.627, persistence=0.400.",
+      "targetPublisherAction": "watch",
+      "reasoningContext": {
+        "linkedThreadIds": [
+          "thread:memory-linking-002"
+        ],
+        "escalationCount": 0,
+        "meanThreadCoherence": 0.430382,
+        "meanThreadPersistence": 0.32,
+        "meanThreadRisk": 0.592
+      }
+    }
+  ]
+}

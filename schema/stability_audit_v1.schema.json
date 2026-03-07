@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stability_audit_v1.schema.json",
+  "title": "Stability Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "threads"],
+  "properties": {
+    "schema": {"type": "string", "const": "stability_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "threads": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/threadAudit"}
+    }
+  },
+  "definitions": {
+    "threadAudit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "threadId",
+        "stabilityStatus",
+        "auditStatus",
+        "coherenceScore",
+        "riskScore",
+        "persistenceScore",
+        "driftContext",
+        "contradictionContext",
+        "cognitiveWatchSignals",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "threadId": {"type": "string"},
+        "stabilityStatus": {"type": "string", "enum": ["stable", "oscillating", "degrading", "emerging"]},
+        "auditStatus": {"type": "string", "enum": ["observe", "promote", "hold", "escalate-human-review", "suppress"]},
+        "coherenceScore": {"type": "number"},
+        "riskScore": {"type": "number"},
+        "persistenceScore": {"type": "number"},
+        "driftContext": {"type": "object"},
+        "contradictionContext": {"type": "object"},
+        "cognitiveWatchSignals": {"type": "array", "items": {"type": "string"}},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"type": "string", "enum": ["annotate", "surface", "watch", "hold"]}
+      }
+    }
+  }
+}

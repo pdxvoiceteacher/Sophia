@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "recursive_reasoning_candidates_v1.schema.json",
+  "title": "Recursive Reasoning Candidates v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "caution", "candidates"],
+  "properties": {
+    "schema": {"type": "string", "const": "recursive_reasoning_candidates_v1"},
+    "created_at": {"type": "string"},
+    "caution": {"type": "string"},
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "threadId",
+          "auditStatus",
+          "coherenceScore",
+          "riskScore",
+          "recursivePotentialScore",
+          "cognitiveWatchSignals",
+          "targetPublisherAction",
+          "explanation"
+        ],
+        "properties": {
+          "threadId": {"type": "string"},
+          "auditStatus": {"type": "string", "enum": ["observe", "promote", "defer", "reject", "watch"]},
+          "coherenceScore": {"type": "number"},
+          "riskScore": {"type": "number"},
+          "recursivePotentialScore": {"type": "number"},
+          "cognitiveWatchSignals": {"type": "array", "items": {"type": "string"}},
+          "targetPublisherAction": {"type": "string", "enum": ["annotate", "surface", "hold", "suppress"]},
+          "explanation": {"type": "string"}
+        }
+      }
+    }
+  }
+}
