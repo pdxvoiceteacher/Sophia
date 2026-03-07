@@ -82,3 +82,19 @@ Additional constraints:
 - no automatic canonical promotion occurs in this phase
 - no direct graph mutation occurs from promotion recommendations
 - watch/hold outputs remain governance overlays and must stay separate from canonical truth artifacts
+
+## Governance integrity protocol (Phase H)
+
+Phase H evaluates governance candidates and active reviewers using **bounded, consent-based governance evidence**.
+
+Outputs from governance integrity and reviewer behavior audits are **advisory** inputs for human/community selection. They support anti-capture monitoring and reversibility, and they do **not** automatically appoint reviewers.
+
+Required sequence for this phase:
+
+`candidate governance portfolio -> CoherenceLattice reviewer-integrity formalization -> Sophia governance audit -> Publisher governance review docket -> human/community decision -> ongoing reviewer behavior monitoring -> Sophia reviewer behavior audit -> Publisher reviewer monitor overlays`
+
+Additional constraints:
+
+- no automatic reviewer appointment occurs from these artifacts
+- reviewer behavior oversight remains auditable and reversible
+- watch/hold governance queues must remain separate from canonical truth artifacts
