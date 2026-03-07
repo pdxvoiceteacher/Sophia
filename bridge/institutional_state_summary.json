@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "institutional_bridge_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.institutional.state_summary",
+  "producerCommit": "fixture-0001",
+  "generatedAt": "2026-03-07T00:00:00Z",
+  "created_at": "2026-03-07T00:00:00Z",
+  "meanCoherenceScore": 0.56,
+  "meanPathwayIntegrity": 0.53,
+  "meanConflictScore": 0.49,
+  "meanHealthScore": 0.57,
+  "meanDecayRisk": 0.43
+}

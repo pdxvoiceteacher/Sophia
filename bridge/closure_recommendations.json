@@ -1,0 +1,129 @@
+{
+  "schema": "closure_recommendations_v1",
+  "created_at": "2026-03-24T00:00:00Z",
+  "phaselock": "docket / outcome / recommendation state -> CoherenceLattice closure and repair formalization -> Sophia closure audit -> Publisher closure and repair overlays -> human/community review of outcome durability",
+  "caution": "Closure recommendations are bounded outcome guidance only and do not automatically reopen, close, or repair anything.",
+  "metadata": {
+    "inputMode": "fixture",
+    "inputModeWarning": "Inputs are fixture closure artifacts; recommendations are non-canonical simulation guidance.",
+    "systemRisk": 0.440801,
+    "inputArtifacts": [
+      {
+        "path": "bridge/closure_state_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "closure_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.closure.state_map",
+        "producerCommit": "fixture-s-0001",
+        "generatedAt": "2026-03-24T00:00:00Z"
+      },
+      {
+        "path": "bridge/closure_state_summary.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "closure_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.closure.state_summary",
+        "producerCommit": "fixture-s-0001",
+        "generatedAt": "2026-03-24T00:00:00Z"
+      },
+      {
+        "path": "bridge/repair_candidate_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "closure_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.closure.repair_candidate_map",
+        "producerCommit": "fixture-s-0001",
+        "generatedAt": "2026-03-24T00:00:00Z"
+      },
+      {
+        "path": "bridge/reopen_signal_report.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "closure_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.closure.reopen_signal_report",
+        "producerCommit": "fixture-s-0001",
+        "generatedAt": "2026-03-24T00:00:00Z"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "targetId": "closure:conditional-003",
+      "targetType": "case",
+      "closureRecommendation": "provisional-close",
+      "coherenceScore": 0.6,
+      "riskScore": 0.43162,
+      "closureContext": "closureConfidence=0.630, reopenSignal=0.430; processed is not automatically resolved.",
+      "repairContext": "repairNeedScore=0.420, reversibilityScore=0.520; repair need is integrity work, not failure.",
+      "contradictionContext": "contradictionScore=0.410, evidenceQuality=0.570, systemRisk=0.441; closure must remain reviewable.",
+      "governingRule": "provisional-closure-with-watch",
+      "explanation": "Closure guidance is bounded and non-mutating. targetId=closure:conditional-003, recommendation=provisional-close, coherence=0.600, risk=0.432.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "closure:hard-contradiction-006",
+      "targetType": "case",
+      "closureRecommendation": "require-human-review",
+      "coherenceScore": 0.406,
+      "riskScore": 0.67662,
+      "closureContext": "closureConfidence=0.440, reopenSignal=0.670; processed is not automatically resolved.",
+      "repairContext": "repairNeedScore=0.640, reversibilityScore=0.290; repair need is integrity work, not failure.",
+      "contradictionContext": "contradictionScore=0.840, evidenceQuality=0.630, systemRisk=0.441; closure must remain reviewable.",
+      "governingRule": "contradiction-human-review",
+      "explanation": "Closure guidance is bounded and non-mutating. targetId=closure:hard-contradiction-006, recommendation=require-human-review, coherence=0.406, risk=0.677.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "closure:open-risk-002",
+      "targetType": "case",
+      "closureRecommendation": "keep-open",
+      "coherenceScore": 0.356,
+      "riskScore": 0.60612,
+      "closureContext": "closureConfidence=0.310, reopenSignal=0.620; processed is not automatically resolved.",
+      "repairContext": "repairNeedScore=0.510, reversibilityScore=0.310; repair need is integrity work, not failure.",
+      "contradictionContext": "contradictionScore=0.740, evidenceQuality=0.410, systemRisk=0.441; closure must remain reviewable.",
+      "governingRule": "keep-open-under-instability",
+      "explanation": "Closure guidance is bounded and non-mutating. targetId=closure:open-risk-002, recommendation=keep-open, coherence=0.356, risk=0.606.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "closure:reopen-evidence-004",
+      "targetType": "case",
+      "closureRecommendation": "reopen-for-review",
+      "coherenceScore": 0.548,
+      "riskScore": 0.54062,
+      "closureContext": "closureConfidence=0.480, reopenSignal=0.790; processed is not automatically resolved.",
+      "repairContext": "repairNeedScore=0.470, reversibilityScore=0.440; repair need is integrity work, not failure.",
+      "contradictionContext": "contradictionScore=0.460, evidenceQuality=0.710, systemRisk=0.441; closure must remain reviewable.",
+      "governingRule": "evidence-bound-reopen",
+      "explanation": "Closure guidance is bounded and non-mutating. targetId=closure:reopen-evidence-004, recommendation=reopen-for-review, coherence=0.548, risk=0.541.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "closure:repair-path-005",
+      "targetType": "artifact",
+      "closureRecommendation": "queue-repair",
+      "coherenceScore": 0.472,
+      "riskScore": 0.52562,
+      "closureContext": "closureConfidence=0.520, reopenSignal=0.460; processed is not automatically resolved.",
+      "repairContext": "repairNeedScore=0.810, reversibilityScore=0.550; repair need is integrity work, not failure.",
+      "contradictionContext": "contradictionScore=0.390, evidenceQuality=0.520, systemRisk=0.441; closure must remain reviewable.",
+      "governingRule": "repair-before-reopen",
+      "explanation": "Closure guidance is bounded and non-mutating. targetId=closure:repair-path-005, recommendation=queue-repair, coherence=0.472, risk=0.526.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "closure:stable-001",
+      "targetType": "case",
+      "closureRecommendation": "confirm-closure",
+      "coherenceScore": 0.802,
+      "riskScore": 0.23262,
+      "closureContext": "closureConfidence=0.830, reopenSignal=0.190; processed is not automatically resolved.",
+      "repairContext": "repairNeedScore=0.210, reversibilityScore=0.760; repair need is integrity work, not failure.",
+      "contradictionContext": "contradictionScore=0.160, evidenceQuality=0.720, systemRisk=0.441; closure must remain reviewable.",
+      "governingRule": "confirm-stable-closure",
+      "explanation": "Closure guidance is bounded and non-mutating. targetId=closure:stable-001, recommendation=confirm-closure, coherence=0.802, risk=0.233.",
+      "targetPublisherAction": "docket"
+    }
+  ]
+}

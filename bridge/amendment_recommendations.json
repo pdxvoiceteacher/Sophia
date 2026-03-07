@@ -1,0 +1,52 @@
+{
+  "schema": "amendment_recommendations_v1",
+  "created_at": "2026-03-16T00:00:00Z",
+  "phaselock": "CoherenceLattice deliberation/amendment formalization -> Sophia quorum/amendment audit -> Publisher amendment queue",
+  "caution": "No constitutional revision is automatic; emergency interpretation is not equivalent to amendment.",
+  "recommendations": [
+    {
+      "quorumStatus": "strained",
+      "amendmentStatus": "require-broader-human-review",
+      "coherenceScore": 0.5455,
+      "riskScore": 0.416273,
+      "antiCaptureRisk": 0.432961,
+      "conflictContext": {
+        "linkedDeliberationId": "deliberation:emergency-interpretation-002",
+        "linkedQuorumStatus": "strained",
+        "contradictionScore": 0.33,
+        "scopeRisk": 0.58
+      },
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "broaden-deliberative-participation",
+      "explanation": "Amendment candidate requires broader human/community review before any constitutional revision pathway is considered. amendmentId=amendment:emergency-authority-expansion-002, coherence=0.545, risk=0.416, antiCaptureRisk=0.433.",
+      "targetPublisherAction": "docket",
+      "amendmentId": "amendment:emergency-authority-expansion-002"
+    },
+    {
+      "quorumStatus": "sufficient",
+      "amendmentStatus": "recommend-deliberation",
+      "coherenceScore": 0.77885,
+      "riskScore": 0.331554,
+      "antiCaptureRisk": 0.372961,
+      "conflictContext": {
+        "linkedDeliberationId": "deliberation:charter-procedural-001",
+        "linkedQuorumStatus": "sufficient",
+        "contradictionScore": 0.14,
+        "scopeRisk": 0.28
+      },
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "sufficient-quorum-recommend-deliberation",
+      "explanation": "Amendment candidate is procedurally suitable for advisory human/community deliberation review. amendmentId=amendment:slow-amendment-clause-001, coherence=0.779, risk=0.332, antiCaptureRisk=0.373.",
+      "targetPublisherAction": "docket",
+      "amendmentId": "amendment:slow-amendment-clause-001"
+    }
+  ]
+}

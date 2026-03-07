@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "public_record_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.public_record.relationship_edge_map",
+  "producerCommit": "fixture-v-0001",
+  "generatedAt": "2026-03-27T00:00:00Z",
+  "created_at": "2026-03-27T00:00:00Z",
+  "targets": [
+    {
+      "targetId": "record:sound-001",
+      "edgeConfidence": 0.83,
+      "edgeAmbiguity": 0.17
+    },
+    {
+      "targetId": "record:monitor-002",
+      "edgeConfidence": 0.62,
+      "edgeAmbiguity": 0.43
+    },
+    {
+      "targetId": "record:ambiguous-003",
+      "edgeConfidence": 0.49,
+      "edgeAmbiguity": 0.77
+    },
+    {
+      "targetId": "record:verifyfirst-004",
+      "edgeConfidence": 0.38,
+      "edgeAmbiguity": 0.54
+    },
+    {
+      "targetId": "record:humanreview-005",
+      "edgeConfidence": 0.41,
+      "edgeAmbiguity": 0.83
+    }
+  ]
+}

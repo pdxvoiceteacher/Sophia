@@ -1,0 +1,18 @@
+{
+  "schema": "case_analogy_candidates_v1",
+  "created_at": "2026-03-20T00:00:00Z",
+  "cases": [
+    {
+      "caseId": "case:governance-intake-threshold-001",
+      "similarityScore": 0.79,
+      "noveltyScore": 0.22,
+      "conflictExposure": 0.19
+    },
+    {
+      "caseId": "case:attestation-divergence-review-002",
+      "similarityScore": 0.58,
+      "noveltyScore": 0.44,
+      "conflictExposure": 0.37
+    }
+  ]
+}

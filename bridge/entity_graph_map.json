@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "public_record_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.public_record.entity_graph_map",
+  "producerCommit": "fixture-v-0001",
+  "generatedAt": "2026-03-27T00:00:00Z",
+  "created_at": "2026-03-27T00:00:00Z",
+  "targets": [
+    {"targetId": "record:sound-001", "entityAmbiguity": 0.18, "nodeConsistency": 0.88},
+    {"targetId": "record:monitor-002", "entityAmbiguity": 0.42, "nodeConsistency": 0.64},
+    {"targetId": "record:ambiguous-003", "entityAmbiguity": 0.59, "nodeConsistency": 0.52},
+    {"targetId": "record:verifyfirst-004", "entityAmbiguity": 0.53, "nodeConsistency": 0.48},
+    {"targetId": "record:humanreview-005", "entityAmbiguity": 0.86, "nodeConsistency": 0.45}
+  ]
+}
