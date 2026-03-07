@@ -4,15 +4,53 @@
   "title": "Institutional Audit v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "created_at", "phaselock", "caution", "records"],
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "records"],
   "properties": {
     "schema": {"const": "institutional_audit_v1"},
     "created_at": {"type": "string"},
     "phaselock": {"type": "string"},
     "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
     "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
   },
   "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputMode", "inputModeWarning", "phaselockContractStatus", "inputArtifacts"],
+      "properties": {
+        "inputMode": {"enum": ["live", "fixture", "mixed"]},
+        "inputModeWarning": {"type": "string"},
+        "phaselockContractStatus": {"type": "string"},
+        "inputArtifacts": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/inputArtifact"},
+          "minItems": 4
+        }
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sourceMode",
+        "schemaVersion",
+        "producerRepo",
+        "producerModule",
+        "producerCommit",
+        "generatedAt"
+      ],
+      "properties": {
+        "path": {"type": "string"},
+        "sourceMode": {"enum": ["canonical", "compatibility"]},
+        "schemaVersion": {"type": "string"},
+        "producerRepo": {"type": "string"},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
     "record": {
       "type": "object",
       "additionalProperties": false,

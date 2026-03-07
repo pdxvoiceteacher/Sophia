@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,12 +16,29 @@ INSTITUTIONAL_STATE_MAP_PATH = BRIDGE_DIR / "institutional_state_map.json"
 INSTITUTIONAL_STATE_SUMMARY_PATH = BRIDGE_DIR / "institutional_state_summary.json"
 INSTITUTIONAL_CONFLICT_REPORT_PATH = BRIDGE_DIR / "institutional_conflict_report.json"
 INSTITUTIONAL_HEALTH_PROJECTION_PATH = BRIDGE_DIR / "institutional_health_projection.json"
+PHASELOCK_CONTRACT_REPORT_PATH = BRIDGE_DIR / "phaselock_contract_report.json"
 
 INSTITUTIONAL_AUDIT_OUT = BRIDGE_DIR / "institutional_audit.json"
 INSTITUTIONAL_RECOMMENDATIONS_OUT = BRIDGE_DIR / "institutional_recommendations.json"
 
 INSTITUTIONAL_AUDIT_SCHEMA_PATH = SCHEMA_DIR / "institutional_audit_v1.schema.json"
 INSTITUTIONAL_RECOMMENDATIONS_SCHEMA_PATH = SCHEMA_DIR / "institutional_recommendations_v1.schema.json"
+
+SUPPORTED_SCHEMA_VERSION = "institutional_bridge_v1"
+LIVE_PRODUCER_REPO = "Sophia"
+FIXTURE_PRODUCER_REPO = "Sophia-Fixtures"
+EXPECTED_PRODUCER_REPOS = {LIVE_PRODUCER_REPO, FIXTURE_PRODUCER_REPO}
+REQUIRED_PROVENANCE_FIELDS = (
+    "schemaVersion",
+    "producerRepo",
+    "producerModule",
+    "producerCommit",
+    "generatedAt",
+)
+
+
+class InstitutionalInputError(RuntimeError):
+    """Raised when institutional bridge inputs fail hardening checks."""
 
 
 @dataclass(slots=True)
@@ -36,6 +54,13 @@ class InstitutionalDecision:
     target_publisher_action: str
 
 
+@dataclass(slots=True)
+class LoadedArtifact:
+    path: Path
+    payload: dict[str, Any]
+    source_mode: str
+
+
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
@@ -46,9 +71,12 @@ def _clamp01(v: float) -> float:
 
 def _resolve_created_at(*docs: dict[str, Any]) -> str:
     for d in docs:
-        ts = d.get("created_at") if isinstance(d, dict) else None
+        ts = d.get("generatedAt") if isinstance(d, dict) else None
         if isinstance(ts, str) and ts:
             return ts
+        ts_legacy = d.get("created_at") if isinstance(d, dict) else None
+        if isinstance(ts_legacy, str) and ts_legacy:
+            return ts_legacy
     return "1970-01-01T00:00:00Z"
 
 
@@ -61,6 +89,64 @@ def _status_to_action(status: str) -> str:
         "require-human-review": "docket",
         "preservation-mode": "suppress",
     }[status]
+
+
+def _validate_provenance(payload: dict[str, Any], *, path: Path) -> None:
+    missing = [field for field in REQUIRED_PROVENANCE_FIELDS if not isinstance(payload.get(field), str) or not payload.get(field)]
+    if missing:
+        raise InstitutionalInputError(f"Missing required provenance fields in {path}: {', '.join(missing)}")
+
+    schema_version = str(payload.get("schemaVersion"))
+    if schema_version != SUPPORTED_SCHEMA_VERSION:
+        raise InstitutionalInputError(
+            f"Unsupported schemaVersion in {path}: {schema_version}; supported={SUPPORTED_SCHEMA_VERSION}"
+        )
+
+    producer_repo = str(payload.get("producerRepo"))
+    if producer_repo not in EXPECTED_PRODUCER_REPOS:
+        raise InstitutionalInputError(
+            f"Unexpected producerRepo in {path}: {producer_repo}; expected one of {sorted(EXPECTED_PRODUCER_REPOS)}"
+        )
+
+
+def _load_required_artifact(
+    canonical_path: Path,
+    *,
+    compatibility_paths: tuple[Path, ...],
+    allow_compatibility_names: bool,
+) -> LoadedArtifact:
+    if canonical_path.exists():
+        payload = _load_json(canonical_path)
+        _validate_provenance(payload, path=canonical_path)
+        return LoadedArtifact(path=canonical_path, payload=payload, source_mode="canonical")
+
+    available_compat = [path for path in compatibility_paths if path.exists()]
+    if not available_compat:
+        raise InstitutionalInputError(f"Missing required canonical artifact: {canonical_path}")
+
+    if not allow_compatibility_names:
+        names = ", ".join(str(path) for path in available_compat)
+        raise InstitutionalInputError(
+            f"Canonical artifact missing ({canonical_path}) and deprecated/ambiguous alternatives found: {names}. "
+            "Re-run with --allow-compatibility-names only for explicit migration fallback."
+        )
+
+    compat_path = available_compat[0]
+    payload = _load_json(compat_path)
+    _validate_provenance(payload, path=compat_path)
+    return LoadedArtifact(path=compat_path, payload=payload, source_mode="compatibility")
+
+
+def _classify_input_mode(artifacts: list[LoadedArtifact]) -> tuple[str, str]:
+    repos = {str(item.payload.get("producerRepo")) for item in artifacts}
+    if repos == {LIVE_PRODUCER_REPO}:
+        return "live", ""
+    if repos == {FIXTURE_PRODUCER_REPO}:
+        return "fixture", "Inputs are fixture artifacts; output is for simulation/testing and must not be treated as canonical truth."
+    return (
+        "mixed",
+        "MIXED MODE WARNING: Inputs combine live and fixture producers; review provenance before acting on recommendations.",
+    )
 
 
 def evaluate_institution(
@@ -141,11 +227,35 @@ def _to_payload(item: InstitutionalDecision) -> dict[str, Any]:
     }
 
 
-def build_outputs() -> tuple[dict[str, Any], dict[str, Any]]:
-    state_map = _load_json(INSTITUTIONAL_STATE_MAP_PATH)
-    state_summary = _load_json(INSTITUTIONAL_STATE_SUMMARY_PATH)
-    conflict_report = _load_json(INSTITUTIONAL_CONFLICT_REPORT_PATH)
-    health_projection = _load_json(INSTITUTIONAL_HEALTH_PROJECTION_PATH)
+def build_outputs(*, allow_compatibility_names: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
+    state_map_artifact = _load_required_artifact(
+        INSTITUTIONAL_STATE_MAP_PATH,
+        compatibility_paths=(BRIDGE_DIR / "institutional_map.json",),
+        allow_compatibility_names=allow_compatibility_names,
+    )
+    state_summary_artifact = _load_required_artifact(
+        INSTITUTIONAL_STATE_SUMMARY_PATH,
+        compatibility_paths=(BRIDGE_DIR / "institutional_summary.json",),
+        allow_compatibility_names=allow_compatibility_names,
+    )
+    conflict_report_artifact = _load_required_artifact(
+        INSTITUTIONAL_CONFLICT_REPORT_PATH,
+        compatibility_paths=(BRIDGE_DIR / "institutional_conflicts.json",),
+        allow_compatibility_names=allow_compatibility_names,
+    )
+    health_projection_artifact = _load_required_artifact(
+        INSTITUTIONAL_HEALTH_PROJECTION_PATH,
+        compatibility_paths=(BRIDGE_DIR / "institutional_health.json",),
+        allow_compatibility_names=allow_compatibility_names,
+    )
+
+    state_map = state_map_artifact.payload
+    state_summary = state_summary_artifact.payload
+    conflict_report = conflict_report_artifact.payload
+    health_projection = health_projection_artifact.payload
+
+    loaded = [state_map_artifact, state_summary_artifact, conflict_report_artifact, health_projection_artifact]
+    input_mode, mode_warning = _classify_input_mode(loaded)
 
     conflict_rows = {
         str(r.get("institutionId")): r
@@ -171,11 +281,35 @@ def build_outputs() -> tuple[dict[str, Any], dict[str, Any]]:
     ]
     decisions = sorted(decisions, key=lambda item: item.institution_id)
 
+    phaselock_contract_status = "not-present"
+    if PHASELOCK_CONTRACT_REPORT_PATH.exists():
+        phaselock_payload = _load_json(PHASELOCK_CONTRACT_REPORT_PATH)
+        if isinstance(phaselock_payload.get("status"), str) and phaselock_payload.get("status"):
+            phaselock_contract_status = str(phaselock_payload.get("status"))
+
     created_at = _resolve_created_at(state_summary, state_map, conflict_report, health_projection)
     phaselock = (
         "CoherenceLattice institutional synthesis -> Sophia institutional audit -> "
         "Publisher institutional overlays (read-only over canonical truth)"
     )
+
+    metadata = {
+        "inputMode": input_mode,
+        "inputModeWarning": mode_warning,
+        "phaselockContractStatus": phaselock_contract_status,
+        "inputArtifacts": [
+            {
+                "path": (str(item.path.relative_to(REPO_ROOT)) if item.path.is_relative_to(REPO_ROOT) else str(item.path)),
+                "sourceMode": item.source_mode,
+                "schemaVersion": str(item.payload.get("schemaVersion")),
+                "producerRepo": str(item.payload.get("producerRepo")),
+                "producerModule": str(item.payload.get("producerModule")),
+                "producerCommit": str(item.payload.get("producerCommit")),
+                "generatedAt": str(item.payload.get("generatedAt")),
+            }
+            for item in loaded
+        ],
+    }
 
     audit_payload = {
         "schema": "institutional_audit_v1",
@@ -185,6 +319,7 @@ def build_outputs() -> tuple[dict[str, Any], dict[str, Any]]:
             "Institutional audit is bounded and advisory; it does not mutate canonical truth "
             "and does not authorize autonomous institutional pathway changes."
         ),
+        "metadata": metadata,
         "records": [_to_payload(item) for item in decisions],
     }
 
@@ -199,6 +334,7 @@ def build_outputs() -> tuple[dict[str, Any], dict[str, Any]]:
             "Recommendations are bounded advisory outputs for human/community governance review; "
             "Publisher must surface institutional state without mutating canonical truth."
         ),
+        "metadata": metadata,
         "recommendations": [_to_payload(item) for item in decisions],
     }
 
@@ -207,8 +343,16 @@ def build_outputs() -> tuple[dict[str, Any], dict[str, Any]]:
     return audit_payload, recommendations_payload
 
 
-def main() -> int:
-    audit_payload, recommendations_payload = build_outputs()
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Run Sophia institutional state audit")
+    parser.add_argument(
+        "--allow-compatibility-names",
+        action="store_true",
+        help="Allow deprecated artifact names as an explicit compatibility fallback.",
+    )
+    args = parser.parse_args(argv)
+
+    audit_payload, recommendations_payload = build_outputs(allow_compatibility_names=args.allow_compatibility_names)
     BRIDGE_DIR.mkdir(parents=True, exist_ok=True)
     INSTITUTIONAL_AUDIT_OUT.write_text(json.dumps(audit_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     INSTITUTIONAL_RECOMMENDATIONS_OUT.write_text(

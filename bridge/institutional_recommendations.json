@@ -3,6 +3,49 @@
   "created_at": "2026-03-07T00:00:00Z",
   "phaselock": "CoherenceLattice institutional synthesis -> Sophia bounded recommendations -> Publisher state surfacing without mutating canonical truth",
   "caution": "Recommendations are bounded advisory outputs for human/community governance review; Publisher must surface institutional state without mutating canonical truth.",
+  "metadata": {
+    "inputMode": "fixture",
+    "inputModeWarning": "Inputs are fixture artifacts; output is for simulation/testing and must not be treated as canonical truth.",
+    "phaselockContractStatus": "not-present",
+    "inputArtifacts": [
+      {
+        "path": "bridge/institutional_state_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "institutional_bridge_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.institutional.state_map",
+        "producerCommit": "fixture-0001",
+        "generatedAt": "2026-03-07T00:00:00Z"
+      },
+      {
+        "path": "bridge/institutional_state_summary.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "institutional_bridge_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.institutional.state_summary",
+        "producerCommit": "fixture-0001",
+        "generatedAt": "2026-03-07T00:00:00Z"
+      },
+      {
+        "path": "bridge/institutional_conflict_report.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "institutional_bridge_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.institutional.conflict_report",
+        "producerCommit": "fixture-0001",
+        "generatedAt": "2026-03-07T00:00:00Z"
+      },
+      {
+        "path": "bridge/institutional_health_projection.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "institutional_bridge_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.institutional.health_projection",
+        "producerCommit": "fixture-0001",
+        "generatedAt": "2026-03-07T00:00:00Z"
+      }
+    ]
+  },
   "recommendations": [
     {
       "institutionId": "inst:alpha",
