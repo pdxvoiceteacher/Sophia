@@ -156,3 +156,21 @@ Additional procedural guardrails:
 Required sequence for this phase:
 
 `artifact / governance / continuity state -> CoherenceLattice preservation and recovery formalization -> Sophia recovery audit -> Publisher escrow/recovery overlays -> human/community recovery action`
+
+## Federated witness & external attestation protocol (Phase M)
+
+Phase M evaluates witness sufficiency and attestation legitimacy as an integrity-oriented, anti-capture advisory layer.
+
+Attestation recommendations are advisory and review-oriented. Witnessing does not transfer sovereignty, does not grant canonical mutation rights, and does not authorize automatic state transition.
+
+Additional procedural guardrails:
+
+- witnessing over secrecy for critical continuity/recovery states
+- distribution over monopoly for witness/custody roles
+- attestation without sovereignty
+- freeze/hold/watch under attestation ambiguity
+- evidence-first continuity via inspectable artifact chains
+
+Required sequence for this phase:
+
+`canonical / continuity / recovery state -> CoherenceLattice attestation formalization -> Sophia witness/attestation audit -> Publisher attestation overlays -> external human/community witnessing`
