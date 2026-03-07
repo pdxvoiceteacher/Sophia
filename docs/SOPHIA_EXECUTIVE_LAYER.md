@@ -51,3 +51,18 @@ Required order remains:
 `CoherenceLattice formalization -> Sophia recursive audit -> Publisher presentation`
 
 Publisher may surface audited overlays, but must not mutate graph truth or elevate candidate threads into canonical memory without explicit executive admission pathways.
+
+
+## Longitudinal recursive coherence monitoring (Phase E)
+
+Phase E performs **longitudinal audit** of recursive reasoning structures.
+
+- Escalation in this phase means **audit visibility / human review priority**.
+- Escalation does **not** mean autonomy escalation.
+- `recursive_watch_escalations.json` is a governance-monitoring artifact for cautious presentation control.
+
+Strict order remains:
+
+`CoherenceLattice monitor -> Sophia stability audit -> Publisher monitoring overlays`
+
+Publisher may surface monitored overlays only from Sophia-audited outputs and must keep observational watch data separate from canonical structural truth.
