@@ -1,0 +1,88 @@
+{
+  "schema": "recovery_audit_v1",
+  "created_at": "2026-03-18T00:00:00Z",
+  "phaselock": "artifact / governance / continuity state -> CoherenceLattice preservation and recovery formalization -> Sophia recovery audit -> Publisher escrow/recovery overlays -> human/community recovery action",
+  "caution": "Recovery recommendations are bounded, review-oriented, and anti-tamper; no autonomous replication or self-resurrection is authorized.",
+  "records": [
+    {
+      "recoveryStatus": "escrow-review",
+      "coherenceScore": 0.81,
+      "riskScore": 0.314059,
+      "tamperRisk": 0.205016,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "criticalityScore": 0.88
+      },
+      "antiCaptureContext": {
+        "antiCaptureRisk": 0.417212,
+        "distributedCustodyScore": 0.82,
+        "dependencyOpacityRisk": 0.21
+      },
+      "governingRule": "bounded-escrow-review",
+      "explanation": "Preservation target is suitable for escrow-review docketing under bounded anti-tamper governance controls. preservationId=preservation:core-audit-ledger-001, coherence=0.810, risk=0.314, tamperRisk=0.205.",
+      "targetPublisherAction": "docket",
+      "preservationId": "preservation:core-audit-ledger-001"
+    },
+    {
+      "recoveryStatus": "watch",
+      "coherenceScore": 0.5595,
+      "riskScore": 0.434684,
+      "tamperRisk": 0.412516,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "criticalityScore": 0.64
+      },
+      "antiCaptureContext": {
+        "antiCaptureRisk": 0.417212,
+        "distributedCustodyScore": 0.55,
+        "dependencyOpacityRisk": 0.48
+      },
+      "governingRule": "integrity-watchlist",
+      "explanation": "Preservation target remains on integrity watchlist with non-executing recovery preparation only. preservationId=preservation:telemetry-archive-002, coherence=0.559, risk=0.435, tamperRisk=0.413.",
+      "targetPublisherAction": "watch",
+      "preservationId": "preservation:telemetry-archive-002"
+    },
+    {
+      "recoveryStatus": "hold",
+      "coherenceScore": 0.484,
+      "riskScore": 0.456272,
+      "tamperRisk": 0.4875,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "recoverabilityScore": 0.51
+      },
+      "antiCaptureContext": {
+        "antiCaptureRisk": 0.417212,
+        "proceduralTransparencyScore": 0.49,
+        "dependencyOpacityRisk": 0.57
+      },
+      "governingRule": "hold-for-integrity-clarification",
+      "explanation": "Recovery candidate is held until integrity and dependency transparency concerns are resolved. recoveryId=recovery:archive-replicate-002, coherence=0.484, risk=0.456, tamperRisk=0.487.",
+      "targetPublisherAction": "watch",
+      "recoveryId": "recovery:archive-replicate-002"
+    },
+    {
+      "recoveryStatus": "escrow-review",
+      "coherenceScore": 0.8025,
+      "riskScore": 0.316797,
+      "tamperRisk": 0.169,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "recoverabilityScore": 0.79
+      },
+      "antiCaptureContext": {
+        "antiCaptureRisk": 0.417212,
+        "proceduralTransparencyScore": 0.84,
+        "dependencyOpacityRisk": 0.22
+      },
+      "governingRule": "recovery-by-review-not-resurrection",
+      "explanation": "Recovery candidate is eligible for bounded escrow-review; restoration remains inspectable and human/community reviewed. recoveryId=recovery:ledger-rehydrate-001, coherence=0.802, risk=0.317, tamperRisk=0.169.",
+      "targetPublisherAction": "docket",
+      "recoveryId": "recovery:ledger-rehydrate-001"
+    }
+  ]
+}

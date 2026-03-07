@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "priority_state_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.priority.state_map",
+  "producerCommit": "fixture-r-0001",
+  "generatedAt": "2026-03-23T00:00:00Z",
+  "created_at": "2026-03-23T00:00:00Z",
+  "targets": [
+    {"targetId": "triage:core-capture-001", "targetType": "governance-critical", "priorityScore": 0.74, "queuePressureScore": 0.64},
+    {"targetId": "triage:irreversible-recovery-002", "targetType": "recovery-critical", "priorityScore": 0.61, "queuePressureScore": 0.60},
+    {"targetId": "triage:scenario-warning-003", "targetType": "scenario", "priorityScore": 0.57, "queuePressureScore": 0.58},
+    {"targetId": "triage:watchlist-low-004", "targetType": "watchlist", "priorityScore": 0.46, "queuePressureScore": 0.52},
+    {"targetId": "triage:reversible-backlog-005", "targetType": "maintenance", "priorityScore": 0.39, "queuePressureScore": 0.30},
+    {"targetId": "triage:queue-surge-006", "targetType": "intake", "priorityScore": 0.51, "queuePressureScore": 0.85}
+  ]
+}

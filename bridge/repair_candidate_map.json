@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "closure_state_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.closure.repair_candidate_map",
+  "producerCommit": "fixture-s-0001",
+  "generatedAt": "2026-03-24T00:00:00Z",
+  "created_at": "2026-03-24T00:00:00Z",
+  "targets": [
+    {"targetId": "closure:stable-001", "repairNeedScore": 0.21, "reversibilityScore": 0.76},
+    {"targetId": "closure:open-risk-002", "repairNeedScore": 0.51, "reversibilityScore": 0.31},
+    {"targetId": "closure:conditional-003", "repairNeedScore": 0.42, "reversibilityScore": 0.52},
+    {"targetId": "closure:reopen-evidence-004", "repairNeedScore": 0.47, "reversibilityScore": 0.44},
+    {"targetId": "closure:repair-path-005", "repairNeedScore": 0.81, "reversibilityScore": 0.55},
+    {"targetId": "closure:hard-contradiction-006", "repairNeedScore": 0.64, "reversibilityScore": 0.29}
+  ]
+}

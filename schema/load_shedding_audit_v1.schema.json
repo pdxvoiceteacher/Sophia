@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/load_shedding_audit_v1.schema.json",
+  "title": "Load Shedding Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "records"],
+  "properties": {
+    "schema": {"const": "load_shedding_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputMode", "inputModeWarning", "systemRisk", "inputArtifacts", "upstreamArtifacts"],
+      "properties": {
+        "inputMode": {"enum": ["live", "fixture", "mixed"]},
+        "inputModeWarning": {"type": "string"},
+        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/inputArtifact"},
+          "minItems": 4
+        },
+        "upstreamArtifacts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "institutionalAuditSchema",
+            "institutionalRecommendationsSchema",
+            "governanceAuditSchema",
+            "reviewerBehaviorAuditSchema",
+            "scenarioAuditSchema",
+            "precedentAuditSchema",
+            "constitutionalAuditSchema"
+          ],
+          "properties": {
+            "institutionalAuditSchema": {"type": ["string", "null"]},
+            "institutionalRecommendationsSchema": {"type": ["string", "null"]},
+            "governanceAuditSchema": {"type": ["string", "null"]},
+            "reviewerBehaviorAuditSchema": {"type": ["string", "null"]},
+            "scenarioAuditSchema": {"type": ["string", "null"]},
+            "precedentAuditSchema": {"type": ["string", "null"]},
+            "constitutionalAuditSchema": {"type": ["string", "null"]}
+          }
+        }
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sourceMode", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "sourceMode": {"enum": ["canonical", "compatibility"]},
+        "schemaVersion": {"type": "string"},
+        "producerRepo": {"type": "string"},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetId", "targetType", "operationalStatus", "preparednessRecommendation", "coherenceScore", "riskScore", "fatigueContext", "backlogContext", "goodhartContext", "dominanceContext", "governingRule", "explanation", "targetPublisherAction"],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"type": "string"},
+        "operationalStatus": {"enum": ["healthy", "monitor", "overloaded", "stalled", "gaming-risk", "capture-risk"]},
+        "preparednessRecommendation": {"enum": ["continue", "reprioritize", "archive-low-priority", "freeze-intake", "broaden-review", "require-human-review"]},
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "fatigueContext": {"type": "string"},
+        "backlogContext": {"type": "string"},
+        "goodhartContext": {"type": "string"},
+        "dominanceContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}

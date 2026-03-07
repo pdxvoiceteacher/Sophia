@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/recovery_audit_v1.schema.json",
+  "title": "Recovery Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "records"],
+  "properties": {
+    "schema": {"const": "recovery_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recoveryStatus",
+        "coherenceScore",
+        "riskScore",
+        "tamperRisk",
+        "continuityContext",
+        "antiCaptureContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "oneOf": [{"required": ["preservationId"]}, {"required": ["recoveryId"]}],
+      "properties": {
+        "preservationId": {"type": "string"},
+        "recoveryId": {"type": "string"},
+        "recoveryStatus": {
+          "enum": [
+            "maintain",
+            "escrow-review",
+            "watch",
+            "hold",
+            "reject",
+            "require-human-emergency-review"
+          ]
+        },
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "tamperRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "continuityContext": {"type": "object", "additionalProperties": true},
+        "antiCaptureContext": {"type": "object", "additionalProperties": true},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}
