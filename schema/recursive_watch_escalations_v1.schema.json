@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "recursive_watch_escalations_v1.schema.json",
+  "title": "Recursive Watch Escalations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "caution", "escalations"],
+  "properties": {
+    "schema": {"type": "string", "const": "recursive_watch_escalations_v1"},
+    "created_at": {"type": "string"},
+    "caution": {"type": "string"},
+    "escalations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "threadId",
+          "stabilityStatus",
+          "auditStatus",
+          "coherenceScore",
+          "riskScore",
+          "persistenceScore",
+          "cognitiveWatchSignals",
+          "governingRule",
+          "targetPublisherAction",
+          "explanation"
+        ],
+        "properties": {
+          "threadId": {"type": "string"},
+          "stabilityStatus": {"type": "string", "enum": ["stable", "oscillating", "degrading", "emerging"]},
+          "auditStatus": {"type": "string", "enum": ["observe", "promote", "hold", "escalate-human-review", "suppress"]},
+          "coherenceScore": {"type": "number"},
+          "riskScore": {"type": "number"},
+          "persistenceScore": {"type": "number"},
+          "cognitiveWatchSignals": {"type": "array", "items": {"type": "string"}},
+          "governingRule": {"type": "string"},
+          "targetPublisherAction": {"type": "string", "enum": ["annotate", "surface", "watch", "hold"]},
+          "explanation": {"type": "string"}
+        }
+      }
+    }
+  }
+}

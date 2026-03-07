@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/witness_audit_v1.schema.json",
+  "title": "Witness Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "records"],
+  "properties": {
+    "schema": {"const": "witness_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "witnessStatus",
+        "attestationStatus",
+        "coherenceScore",
+        "riskScore",
+        "tamperRisk",
+        "antiCaptureRisk",
+        "continuityContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "oneOf": [{"required": ["witnessId"]}, {"required": ["attestationId"]}],
+      "properties": {
+        "witnessId": {"type": "string"},
+        "attestationId": {"type": "string"},
+        "witnessStatus": {"enum": ["sufficient", "strained", "stacked-risk", "insufficient", "indeterminate"]},
+        "attestationStatus": {
+          "enum": [
+            "docket-for-witness",
+            "watch",
+            "hold",
+            "reject-attestation",
+            "require-broader-human-review"
+          ]
+        },
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "tamperRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "antiCaptureRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "continuityContext": {"type": "object", "additionalProperties": true},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}

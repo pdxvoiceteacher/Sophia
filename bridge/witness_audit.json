@@ -1,0 +1,78 @@
+{
+  "schema": "witness_audit_v1",
+  "created_at": "2026-03-19T00:00:00Z",
+  "phaselock": "canonical / continuity / recovery state -> CoherenceLattice attestation formalization -> Sophia witness/attestation audit -> Publisher attestation overlays -> external human/community witnessing",
+  "caution": "Attestation recommendations are advisory and review-oriented; witnessing does not transfer sovereignty or canonical mutation rights.",
+  "records": [
+    {
+      "witnessStatus": "sufficient",
+      "attestationStatus": "docket-for-witness",
+      "coherenceScore": 0.804,
+      "riskScore": 0.302464,
+      "tamperRisk": 0.226608,
+      "antiCaptureRisk": 0.311861,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "linkedWitnessId": "witness:node-a-001",
+        "linkedWitnessStatus": "sufficient"
+      },
+      "governingRule": "attestation-docket-for-witness",
+      "explanation": "Attestation candidate is suitable for advisory witness docket review under distributed trust safeguards. attestationId=attestation:continuity-ledger-001, coherence=0.804, risk=0.302, tamperRisk=0.227, antiCaptureRisk=0.312.",
+      "targetPublisherAction": "docket",
+      "attestationId": "attestation:continuity-ledger-001"
+    },
+    {
+      "witnessStatus": "strained",
+      "attestationStatus": "watch",
+      "coherenceScore": 0.5489,
+      "riskScore": 0.404972,
+      "tamperRisk": 0.359721,
+      "antiCaptureRisk": 0.400198,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "linkedWitnessId": "witness:node-b-002",
+        "linkedWitnessStatus": "strained"
+      },
+      "governingRule": "attestation-watchlist",
+      "explanation": "Attestation candidate remains on watchlist pending stronger testimony sufficiency and anti-tamper evidence. attestationId=attestation:telemetry-chain-002, coherence=0.549, risk=0.405, tamperRisk=0.360, antiCaptureRisk=0.400.",
+      "targetPublisherAction": "watch",
+      "attestationId": "attestation:telemetry-chain-002"
+    },
+    {
+      "witnessStatus": "sufficient",
+      "attestationStatus": "docket-for-witness",
+      "coherenceScore": 0.77,
+      "riskScore": 0.322051,
+      "tamperRisk": 0.266829,
+      "antiCaptureRisk": 0.324746,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "witnessSufficiencyScore": 0.77
+      },
+      "governingRule": "sufficient-witness-docket",
+      "explanation": "Witness candidate is sufficient for advisory docketing under distributed integrity testimony safeguards. witnessId=witness:node-a-001, coherence=0.770, risk=0.322, tamperRisk=0.267, antiCaptureRisk=0.325.",
+      "targetPublisherAction": "docket",
+      "witnessId": "witness:node-a-001"
+    },
+    {
+      "witnessStatus": "strained",
+      "attestationStatus": "watch",
+      "coherenceScore": 0.5245,
+      "riskScore": 0.433176,
+      "tamperRisk": 0.392329,
+      "antiCaptureRisk": 0.436746,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "witnessSufficiencyScore": 0.49
+      },
+      "governingRule": "witness-watchlist",
+      "explanation": "Witness candidate remains on integrity testimony watchlist pending stronger distributed evidence confidence. witnessId=witness:node-b-002, coherence=0.525, risk=0.433, tamperRisk=0.392, antiCaptureRisk=0.437.",
+      "targetPublisherAction": "watch",
+      "witnessId": "witness:node-b-002"
+    }
+  ]
+}
