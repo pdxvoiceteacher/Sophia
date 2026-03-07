@@ -1,0 +1,59 @@
+{
+  "schema": "governance_recommendations_v1",
+  "created_at": "2026-03-14T00:00:00Z",
+  "phaselock": "CoherenceLattice reviewer-integrity formalization -> Sophia governance audit -> Publisher governance review docket",
+  "caution": "Governance recommendations are advisory and reversible; reviewer selection remains human/community controlled.",
+  "recommendations": [
+    {
+      "reviewerId": "reviewer:example-001",
+      "governanceStatus": "recommend-human-review",
+      "coherenceScore": 0.8145,
+      "riskScore": 0.24208,
+      "conflictRisk": 0.23,
+      "volatilityContext": {
+        "behaviorVolatility": 0.16,
+        "overrideRisk": 0.18,
+        "globalGovernanceVolatility": 0.436
+      },
+      "contradictionContext": {
+        "contradictionFlags": [],
+        "contradictionCount": 0
+      },
+      "integritySignals": [
+        "consent-based governance participation",
+        "declared conflicts are bounded",
+        "low contradiction exposure",
+        "low override risk",
+        "stable reviewer behavior"
+      ],
+      "governingRule": "high-integrity-low-risk",
+      "explanation": "Candidate is suitable for human/community governance review based on bounded, consent-based evidence. reviewerId=reviewer:example-001, coherence=0.814, risk=0.242, conflictRisk=0.230.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "reviewerId": "reviewer:example-002",
+      "governanceStatus": "watch",
+      "coherenceScore": 0.5785,
+      "riskScore": 0.50808,
+      "conflictRisk": 0.41,
+      "volatilityContext": {
+        "behaviorVolatility": 0.48,
+        "overrideRisk": 0.44,
+        "globalGovernanceVolatility": 0.436
+      },
+      "contradictionContext": {
+        "contradictionFlags": [
+          "inconsistent rationale under similar cases"
+        ],
+        "contradictionCount": 1
+      },
+      "integritySignals": [
+        "consent-based governance participation",
+        "declared conflicts are bounded"
+      ],
+      "governingRule": "watch-governance-queue",
+      "explanation": "Candidate remains in governance watch queue pending additional bounded evidence. reviewerId=reviewer:example-002, coherence=0.579, risk=0.508, conflictRisk=0.410.",
+      "targetPublisherAction": "watch"
+    }
+  ]
+}
