@@ -257,3 +257,27 @@ Publisher requirements:
 Required sequence for this phase:
 
 `queue / review / watchlist state -> CoherenceLattice operational pressure formalization -> Sophia load-shedding and anti-Goodhart audit -> Publisher queue-health and backlog overlays -> human/community operational review`
+
+## Resolution priority and triage protocol (Phase R)
+
+Phase R audits triage candidates and emits bounded ordering recommendations for scarce reviewer attention.
+
+Triage recommendations are bounded ordering guidance only and do **not** automatically reconfigure queues or canonical truth.
+
+Additional procedural principles:
+
+- attention is a constitutional resource
+- priority must be explicit; silent prioritization is hidden power
+- reversible issues can usually wait longer than irreversible ones
+- capture risk increases priority because integrity threats affect the review process itself
+- triage must remain traceable, contestable, and revisable
+
+Publisher requirements:
+
+- surface only Sophia-audited priority and triage overlays
+- keep watch items separate from action-oriented triage artifacts
+- do not mutate queues or canonical truth automatically
+
+Required sequence for this phase:
+
+`institutional / queue / watchlist state -> CoherenceLattice priority formalization -> Sophia triage audit -> Publisher priority and triage overlays -> human/community ordered review`
