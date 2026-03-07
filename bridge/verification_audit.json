@@ -1,0 +1,116 @@
+{
+  "schema": "verification_audit_v1",
+  "created_at": "2026-03-26T00:00:00Z",
+  "phaselock": "claim / entity / verification-task state -> CoherenceLattice claim typing and resolution formalization -> Sophia verification audit -> Publisher verification overlays -> human/community evidence review",
+  "caution": "Verification recommendations are bounded evidence-guidance only and do not accuse, defame, or automatically resolve identity.",
+  "metadata": {
+    "inputMode": "fixture",
+    "inputModeWarning": "Inputs are fixture verification artifacts; recommendations are non-canonical simulation guidance.",
+    "systemRisk": 0.469018,
+    "inputArtifacts": [
+      {
+        "path": "bridge/claim_type_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "verification_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.verification.claim_type_map",
+        "producerCommit": "fixture-u-0001",
+        "generatedAt": "2026-03-26T00:00:00Z"
+      },
+      {
+        "path": "bridge/entity_resolution_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "verification_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.verification.entity_resolution_map",
+        "producerCommit": "fixture-u-0001",
+        "generatedAt": "2026-03-26T00:00:00Z"
+      },
+      {
+        "path": "bridge/entity_resolution_summary.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "verification_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.verification.entity_resolution_summary",
+        "producerCommit": "fixture-u-0001",
+        "generatedAt": "2026-03-26T00:00:00Z"
+      },
+      {
+        "path": "bridge/verification_task_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "verification_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.verification.verification_task_map",
+        "producerCommit": "fixture-u-0001",
+        "generatedAt": "2026-03-26T00:00:00Z"
+      }
+    ]
+  },
+  "records": [
+    {
+      "targetId": "verify:defer-004",
+      "targetType": "low-impact-claim",
+      "verificationStatus": "defer",
+      "coherenceScore": 0.818,
+      "riskScore": 0.208321,
+      "claimContext": "claimConfidence=0.810, sensitivityScore=0.210, verificationUrgency=0.200; recommendations are evidence-guidance only.",
+      "entityContext": "entityAmbiguity=0.190, identityCollisionRisk=0.160; no automatic identity resolution is performed.",
+      "contradictionContext": "contradictionScore=0.180, systemRisk=0.469; claims remain contestable and reviewable.",
+      "governingRule": "defer-high-confidence-low-risk",
+      "explanation": "Verification guidance is bounded and non-accusatory. targetId=verify:defer-004, verificationStatus=defer, coherence=0.818, risk=0.208.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "verify:human-005",
+      "targetType": "contested-identity",
+      "verificationStatus": "require-human-review",
+      "coherenceScore": 0.3385,
+      "riskScore": 0.700721,
+      "claimContext": "claimConfidence=0.490, sensitivityScore=0.780, verificationUrgency=0.640; recommendations are evidence-guidance only.",
+      "entityContext": "entityAmbiguity=0.860, identityCollisionRisk=0.820; no automatic identity resolution is performed.",
+      "contradictionContext": "contradictionScore=0.520, systemRisk=0.469; claims remain contestable and reviewable.",
+      "governingRule": "entity-ambiguity-human-review",
+      "explanation": "Verification guidance is bounded and non-accusatory. targetId=verify:human-005, verificationStatus=require-human-review, coherence=0.339, risk=0.701.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "verify:monitor-003",
+      "targetType": "attribution-claim",
+      "verificationStatus": "monitor",
+      "coherenceScore": 0.586,
+      "riskScore": 0.422921,
+      "claimContext": "claimConfidence=0.570, sensitivityScore=0.440, verificationUrgency=0.460; recommendations are evidence-guidance only.",
+      "entityContext": "entityAmbiguity=0.470, identityCollisionRisk=0.320; no automatic identity resolution is performed.",
+      "contradictionContext": "contradictionScore=0.410, systemRisk=0.469; claims remain contestable and reviewable.",
+      "governingRule": "monitor-verification-state",
+      "explanation": "Verification guidance is bounded and non-accusatory. targetId=verify:monitor-003, verificationStatus=monitor, coherence=0.586, risk=0.423.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "verify:nearterm-002",
+      "targetType": "identity-claim",
+      "verificationStatus": "near-term-verify",
+      "coherenceScore": 0.4725,
+      "riskScore": 0.567121,
+      "claimContext": "claimConfidence=0.530, sensitivityScore=0.580, verificationUrgency=0.630; recommendations are evidence-guidance only.",
+      "entityContext": "entityAmbiguity=0.580, identityCollisionRisk=0.550; no automatic identity resolution is performed.",
+      "contradictionContext": "contradictionScore=0.540, systemRisk=0.469; claims remain contestable and reviewable.",
+      "governingRule": "near-term-verification-queue",
+      "explanation": "Verification guidance is bounded and non-accusatory. targetId=verify:nearterm-002, verificationStatus=near-term-verify, coherence=0.472, risk=0.567.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "verify:urgent-001",
+      "targetType": "factual-claim",
+      "verificationStatus": "verify-now",
+      "coherenceScore": 0.4795,
+      "riskScore": 0.576321,
+      "claimContext": "claimConfidence=0.410, sensitivityScore=0.720, verificationUrgency=0.830; recommendations are evidence-guidance only.",
+      "entityContext": "entityAmbiguity=0.440, identityCollisionRisk=0.410; no automatic identity resolution is performed.",
+      "contradictionContext": "contradictionScore=0.610, systemRisk=0.469; claims remain contestable and reviewable.",
+      "governingRule": "urgent-contradiction-verify-now",
+      "explanation": "Verification guidance is bounded and non-accusatory. targetId=verify:urgent-001, verificationStatus=verify-now, coherence=0.480, risk=0.576.",
+      "targetPublisherAction": "docket"
+    }
+  ]
+}

@@ -329,3 +329,27 @@ Publisher requirements:
 Required sequence for this phase:
 
 `symbolic / regime / warning state -> CoherenceLattice symbolic field and early-warning formalization -> Sophia symbolic field audit -> Publisher symbolic overlays -> human/community review`
+
+## Claim typing, entity resolution, and verification-task protocol (Phase U)
+
+Phase U audits claim confidence, entity ambiguity, and verification urgency conservatively.
+
+Verification recommendations are bounded evidence-guidance only and do **not** accuse, defame, or automatically resolve identity.
+
+Additional procedural principles:
+
+- verification work should increase evidence quality, not force conclusions
+- entity ambiguity should escalate to review, not to accusation
+- contradiction signals should trigger verification tasks before adjudication
+- identity-sensitive claims require higher caution and auditability
+- verification overlays remain advisory and contestable
+
+Publisher requirements:
+
+- surface only Sophia-audited verification overlays
+- keep watch items separate from action-oriented verification dockets
+- do not mutate identity, queue state, or canonical truth automatically
+
+Required sequence for this phase:
+
+`claim / entity / verification-task state -> CoherenceLattice claim typing and resolution formalization -> Sophia verification audit -> Publisher verification overlays -> human/community evidence review`
