@@ -281,3 +281,27 @@ Publisher requirements:
 Required sequence for this phase:
 
 `institutional / queue / watchlist state -> CoherenceLattice priority formalization -> Sophia triage audit -> Publisher priority and triage overlays -> human/community ordered review`
+
+## Closure, outcome logging, and repair protocol (Phase S)
+
+Phase S audits closure quality, reopening need, and repair-worthiness conservatively.
+
+Closure recommendations are bounded outcome guidance only and do **not** automatically reopen, close, or repair anything.
+
+Additional procedural principles:
+
+- processed is not the same as resolved
+- closure must remain reviewable
+- provisional closure should be explicit
+- repair is part of integrity and should not be hidden
+- reopening must be evidence-bound
+
+Publisher requirements:
+
+- surface only Sophia-audited closure and repair overlays
+- keep reopen watch items separate from action-oriented artifacts
+- do not mutate queues or canonical truth automatically
+
+Required sequence for this phase:
+
+`docket / outcome / recommendation state -> CoherenceLattice closure and repair formalization -> Sophia closure audit -> Publisher closure and repair overlays -> human/community review of outcome durability`
