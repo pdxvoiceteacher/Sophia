@@ -110,3 +110,15 @@ When preservation mode is recommended, it means **freeze-and-preserve**: preserv
 Required sequence for this phase:
 
 `governance / reviewer / promotion state -> CoherenceLattice constitutional formalization -> Sophia constitutional audit -> Publisher constitutional overlays -> human/community response if available -> continuity mode if governance is degraded`
+
+## Deliberative quorum & amendment protocol (Phase J)
+
+Phase J evaluates deliberation legitimacy and amendment-worthiness as a **procedural advisory layer**.
+
+Quorum and amendment outputs are advisory only. No constitutional revision is automatic, and emergency interpretation is explicitly distinct from amendment.
+
+Anti-capture review remains central: if stacked-risk conditions are detected, amendment pathways should freeze rather than accelerate.
+
+Required sequence for this phase:
+
+`constitutional state -> CoherenceLattice deliberation/amendment formalization -> Sophia quorum/amendment audit -> Publisher deliberation docket + amendment queue -> human/community constitutional review`
