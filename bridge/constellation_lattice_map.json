@@ -1,0 +1,7 @@
+{
+  "schema": "constellation_lattice_map_v1",
+  "constellations": [
+    {"source": "c1", "target": "c2", "weight": 0.8},
+    {"source": "c2", "target": "c3", "weight": 0.7}
+  ]
+}

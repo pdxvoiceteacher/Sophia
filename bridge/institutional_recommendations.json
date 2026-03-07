@@ -1,0 +1,117 @@
+{
+  "schema": "institutional_recommendations_v1",
+  "created_at": "2026-03-07T00:00:00Z",
+  "phaselock": "CoherenceLattice institutional synthesis -> Sophia bounded recommendations -> Publisher state surfacing without mutating canonical truth",
+  "caution": "Recommendations are bounded advisory outputs for human/community governance review; Publisher must surface institutional state without mutating canonical truth.",
+  "metadata": {
+    "inputMode": "fixture",
+    "inputModeWarning": "Inputs are fixture artifacts; output is for simulation/testing and must not be treated as canonical truth.",
+    "phaselockContractStatus": "not-present",
+    "inputArtifacts": [
+      {
+        "path": "bridge/institutional_state_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "institutional_bridge_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.institutional.state_map",
+        "producerCommit": "fixture-0001",
+        "generatedAt": "2026-03-07T00:00:00Z"
+      },
+      {
+        "path": "bridge/institutional_state_summary.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "institutional_bridge_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.institutional.state_summary",
+        "producerCommit": "fixture-0001",
+        "generatedAt": "2026-03-07T00:00:00Z"
+      },
+      {
+        "path": "bridge/institutional_conflict_report.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "institutional_bridge_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.institutional.conflict_report",
+        "producerCommit": "fixture-0001",
+        "generatedAt": "2026-03-07T00:00:00Z"
+      },
+      {
+        "path": "bridge/institutional_health_projection.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "institutional_bridge_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.institutional.health_projection",
+        "producerCommit": "fixture-0001",
+        "generatedAt": "2026-03-07T00:00:00Z"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "institutionId": "inst:alpha",
+      "institutionalStatus": "stable",
+      "synthesisScore": 0.9195,
+      "riskScore": 0.1095,
+      "conflictScore": 0.14,
+      "healthScore": 0.93,
+      "governingRule": "sustain-healthy-institutional-state",
+      "explanation": "Institutional synthesis is coherent and low-risk; continue bounded monitoring without pathway mutation. institutionId=inst:alpha, synthesis=0.920, risk=0.110, conflict=0.140, health=0.930.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "institutionId": "inst:beta",
+      "institutionalStatus": "monitor",
+      "synthesisScore": 0.677,
+      "riskScore": 0.3325,
+      "conflictScore": 0.35,
+      "healthScore": 0.69,
+      "governingRule": "monitor-drift-before-escalation",
+      "explanation": "Institutional state is serviceable but requires drift monitoring to prevent latent governance degradation. institutionId=inst:beta, synthesis=0.677, risk=0.332, conflict=0.350, health=0.690.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "institutionId": "inst:delta",
+      "institutionalStatus": "freeze-pathways",
+      "synthesisScore": 0.4395,
+      "riskScore": 0.7,
+      "conflictScore": 0.79,
+      "healthScore": 0.42,
+      "governingRule": "freeze-under-high-institutional-risk",
+      "explanation": "Institutional risk is elevated; freeze high-impact pathways until review confirms safe re-entry conditions. institutionId=inst:delta, synthesis=0.440, risk=0.700, conflict=0.790, health=0.420.",
+      "targetPublisherAction": "suppress"
+    },
+    {
+      "institutionId": "inst:epsilon",
+      "institutionalStatus": "require-human-review",
+      "synthesisScore": 0.405,
+      "riskScore": 0.7045,
+      "conflictScore": 0.85,
+      "healthScore": 0.39,
+      "governingRule": "stacked-conflict-human-review-override",
+      "explanation": "Conflict accumulation is too high for automated pathway guidance and requires human/community adjudication. institutionId=inst:epsilon, synthesis=0.405, risk=0.705, conflict=0.850, health=0.390.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "institutionId": "inst:gamma",
+      "institutionalStatus": "caution",
+      "synthesisScore": 0.4825,
+      "riskScore": 0.5795,
+      "conflictScore": 0.65,
+      "healthScore": 0.45,
+      "governingRule": "caution-under-ambiguous-institutional-signals",
+      "explanation": "Institutional signals are mixed; maintain caution with bounded recommendations and explicit review checkpoints. institutionId=inst:gamma, synthesis=0.483, risk=0.579, conflict=0.650, health=0.450.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "institutionId": "inst:zeta",
+      "institutionalStatus": "preservation-mode",
+      "synthesisScore": 0.3115,
+      "riskScore": 0.72,
+      "conflictScore": 0.61,
+      "healthScore": 0.21,
+      "governingRule": "preserve-when-institutional-health-collapses",
+      "explanation": "Institutional health is in collapse-range; preserve evidence and continuity context while freezing fragile pathways. institutionId=inst:zeta, synthesis=0.311, risk=0.720, conflict=0.610, health=0.210.",
+      "targetPublisherAction": "suppress"
+    }
+  ]
+}

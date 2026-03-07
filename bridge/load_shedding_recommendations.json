@@ -1,0 +1,150 @@
+{
+  "schema": "load_shedding_recommendations_v1",
+  "created_at": "2026-03-22T00:00:00Z",
+  "phaselock": "queue / review / watchlist state -> CoherenceLattice operational pressure formalization -> Sophia load-shedding and anti-Goodhart audit -> Publisher queue-health and backlog overlays -> human/community operational review",
+  "caution": "Load-shedding recommendations are bounded operational guidance only and do not automatically delete, suppress, or canonically mutate queued material.",
+  "metadata": {
+    "inputMode": "fixture",
+    "inputModeWarning": "Inputs are fixture queue-pressure artifacts; results are non-canonical simulation guidance.",
+    "systemRisk": 0.407477,
+    "inputArtifacts": [
+      {
+        "path": "bridge/queue_pressure_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "queue_pressure_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.queue.pressure_map",
+        "producerCommit": "fixture-q-0001",
+        "generatedAt": "2026-03-22T00:00:00Z"
+      },
+      {
+        "path": "bridge/queue_pressure_summary.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "queue_pressure_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.queue.pressure_summary",
+        "producerCommit": "fixture-q-0001",
+        "generatedAt": "2026-03-22T00:00:00Z"
+      },
+      {
+        "path": "bridge/review_load_distribution.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "queue_pressure_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.queue.review_load_distribution",
+        "producerCommit": "fixture-q-0001",
+        "generatedAt": "2026-03-22T00:00:00Z"
+      },
+      {
+        "path": "bridge/goodhart_risk_report.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "queue_pressure_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.queue.goodhart_risk_report",
+        "producerCommit": "fixture-q-0001",
+        "generatedAt": "2026-03-22T00:00:00Z"
+      }
+    ],
+    "upstreamArtifacts": {
+      "institutionalAuditSchema": "institutional_audit_v1",
+      "institutionalRecommendationsSchema": "institutional_recommendations_v1",
+      "governanceAuditSchema": "governance_audit_v1",
+      "reviewerBehaviorAuditSchema": "reviewer_behavior_audit_v1",
+      "scenarioAuditSchema": "scenario_audit_v1",
+      "precedentAuditSchema": "precedent_audit_v1",
+      "constitutionalAuditSchema": "constitutional_audit_v1"
+    }
+  },
+  "recommendations": [
+    {
+      "targetId": "queue:attestation-intake",
+      "targetType": "attestation-queue",
+      "operationalStatus": "gaming-risk",
+      "preparednessRecommendation": "broaden-review",
+      "coherenceScore": 0.425,
+      "riskScore": 0.56,
+      "fatigueContext": "reviewFatigueScore=0.510; delay-driven fatigue can reduce review legitimacy.",
+      "backlogContext": "backlogScore=0.490, stalenessScore=0.480; queue overload is treated as governance signal.",
+      "goodhartContext": "gamingRiskScore=0.650, hollowPerformanceScore=0.560; metric performance is not integrity.",
+      "dominanceContext": "dominanceScore=0.730, systemRisk=0.407; persistent delay can become structural capture.",
+      "governingRule": "anti-goodhart-broaden-review",
+      "explanation": "Operational hygiene recommendation is bounded and auditable. targetId=queue:attestation-intake, status=gaming-risk, recommendation=broaden-review, coherence=0.425, risk=0.560.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "queue:escalation-docket",
+      "targetType": "escalation-queue",
+      "operationalStatus": "stalled",
+      "preparednessRecommendation": "freeze-intake",
+      "coherenceScore": 0.4755,
+      "riskScore": 0.5815,
+      "fatigueContext": "reviewFatigueScore=0.660; delay-driven fatigue can reduce review legitimacy.",
+      "backlogContext": "backlogScore=0.450, stalenessScore=0.810; queue overload is treated as governance signal.",
+      "goodhartContext": "gamingRiskScore=0.470, hollowPerformanceScore=0.390; metric performance is not integrity.",
+      "dominanceContext": "dominanceScore=0.540, systemRisk=0.407; persistent delay can become structural capture.",
+      "governingRule": "stalled-review-freeze-intake",
+      "explanation": "Operational hygiene recommendation is bounded and auditable. targetId=queue:escalation-docket, status=stalled, recommendation=freeze-intake, coherence=0.475, risk=0.582.",
+      "targetPublisherAction": "suppress"
+    },
+    {
+      "targetId": "queue:governance-review",
+      "targetType": "governance-queue",
+      "operationalStatus": "healthy",
+      "preparednessRecommendation": "continue",
+      "coherenceScore": 0.709,
+      "riskScore": 0.309622,
+      "fatigueContext": "reviewFatigueScore=0.310; delay-driven fatigue can reduce review legitimacy.",
+      "backlogContext": "backlogScore=0.330, stalenessScore=0.280; queue overload is treated as governance signal.",
+      "goodhartContext": "gamingRiskScore=0.240, hollowPerformanceScore=0.210; metric performance is not integrity.",
+      "dominanceContext": "dominanceScore=0.250, systemRisk=0.407; persistent delay can become structural capture.",
+      "governingRule": "continue-bounded-review",
+      "explanation": "Operational hygiene recommendation is bounded and auditable. targetId=queue:governance-review, status=healthy, recommendation=continue, coherence=0.709, risk=0.310.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "queue:precedent-watch",
+      "targetType": "watchlist",
+      "operationalStatus": "monitor",
+      "preparednessRecommendation": "reprioritize",
+      "coherenceScore": 0.481,
+      "riskScore": 0.5345,
+      "fatigueContext": "reviewFatigueScore=0.570; delay-driven fatigue can reduce review legitimacy.",
+      "backlogContext": "backlogScore=0.590, stalenessScore=0.620; queue overload is treated as governance signal.",
+      "goodhartContext": "gamingRiskScore=0.430, hollowPerformanceScore=0.440; metric performance is not integrity.",
+      "dominanceContext": "dominanceScore=0.420, systemRisk=0.407; persistent delay can become structural capture.",
+      "governingRule": "monitor-queue-pressure",
+      "explanation": "Operational hygiene recommendation is bounded and auditable. targetId=queue:precedent-watch, status=monitor, recommendation=reprioritize, coherence=0.481, risk=0.534.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "queue:promotion-fastlane",
+      "targetType": "promotion-queue",
+      "operationalStatus": "capture-risk",
+      "preparednessRecommendation": "require-human-review",
+      "coherenceScore": 0.363,
+      "riskScore": 0.603,
+      "fatigueContext": "reviewFatigueScore=0.580; delay-driven fatigue can reduce review legitimacy.",
+      "backlogContext": "backlogScore=0.520, stalenessScore=0.440; queue overload is treated as governance signal.",
+      "goodhartContext": "gamingRiskScore=0.730, hollowPerformanceScore=0.720; metric performance is not integrity.",
+      "dominanceContext": "dominanceScore=0.820, systemRisk=0.407; persistent delay can become structural capture.",
+      "governingRule": "anti-capture-under-dominance-and-gaming",
+      "explanation": "Operational hygiene recommendation is bounded and auditable. targetId=queue:promotion-fastlane, status=capture-risk, recommendation=require-human-review, coherence=0.363, risk=0.603.",
+      "targetPublisherAction": "suppress"
+    },
+    {
+      "targetId": "queue:scenario-intake",
+      "targetType": "scenario-queue",
+      "operationalStatus": "overloaded",
+      "preparednessRecommendation": "archive-low-priority",
+      "coherenceScore": 0.339,
+      "riskScore": 0.6535,
+      "fatigueContext": "reviewFatigueScore=0.780; delay-driven fatigue can reduce review legitimacy.",
+      "backlogContext": "backlogScore=0.760, stalenessScore=0.660; queue overload is treated as governance signal.",
+      "goodhartContext": "gamingRiskScore=0.510, hollowPerformanceScore=0.480; metric performance is not integrity.",
+      "dominanceContext": "dominanceScore=0.490, systemRisk=0.407; persistent delay can become structural capture.",
+      "governingRule": "load-shed-when-overloaded",
+      "explanation": "Operational hygiene recommendation is bounded and auditable. targetId=queue:scenario-intake, status=overloaded, recommendation=archive-low-priority, coherence=0.339, risk=0.654.",
+      "targetPublisherAction": "watch"
+    }
+  ]
+}

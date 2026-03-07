@@ -1,0 +1,10 @@
+{
+  "schema": "constitutional_health_report_v1",
+  "created_at": "2026-03-15T00:00:00Z",
+  "globalConstitutionalHealth": 0.73,
+  "principles": [
+    {"principleId": "principle:non-domination", "alignmentScore": 0.78, "contradictionScore": 0.12, "captureRisk": 0.24, "contradictionCount": 0},
+    {"principleId": "principle:anti-capture", "alignmentScore": 0.66, "contradictionScore": 0.23, "captureRisk": 0.50, "contradictionCount": 1},
+    {"principleId": "principle:preservation-under-stress", "alignmentScore": 0.62, "contradictionScore": 0.21, "captureRisk": 0.38, "contradictionCount": 1}
+  ]
+}
