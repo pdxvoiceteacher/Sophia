@@ -59,6 +59,10 @@ python tools/telemetry/sophia_audit.py \
 
 Audit history used for noise suppression is stored under `runs/history/`.
 
+## Evidence-authority guidance boundary
+
+Sophia evidence-authority recommendations are bounded institutional guidance only and do **not** automatically rewrite graph edges, identities, precedents, or closures. Authority-gating overlays are advisory outputs that remain auditable and reviewable by human/community governance.
+
 Lean: Core Coherence Lattice (formal)
 Coherence state + invariants
 
