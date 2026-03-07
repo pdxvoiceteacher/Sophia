@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt", "caution", "targets"],
+  "properties": {
+    "schemaVersion": {"const": "counter_hypothesis_map_v1"},
+    "producerRepo": {"type": "string"},
+    "producerModule": {"type": "string"},
+    "producerCommit": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "caution": {"type": "string"},
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["counterHypothesisId", "targetId", "primaryHypothesis", "counterHypotheses", "differentiationTasks", "ambiguityPersistence", "recommendedClass", "provenanceMarkers"],
+        "properties": {
+          "counterHypothesisId": {"type": "string"},
+          "targetId": {"type": "string"},
+          "primaryHypothesis": {"type": "string"},
+          "counterHypotheses": {"type": "array", "items": {"type": "string"}},
+          "differentiationTasks": {"type": "array", "items": {"type": "string"}},
+          "ambiguityPersistence": {"type": "number", "minimum": 0, "maximum": 1},
+          "recommendedClass": {"enum": ["verify", "watch", "hold"]},
+          "provenanceMarkers": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

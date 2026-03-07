@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "verification_dashboard_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "registry.verification.dashboard",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-04-01T00:00:00Z",
+  "items": [
+    {"targetId": "target:alpha", "verificationStatus": "monitor"}
+  ]
+}

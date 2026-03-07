@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "anomaly_domain_map_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "coherence.bridge.build_environment_integrity_state",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-03-07T22:03:53Z",
+  "caution": "Anomaly domains indicate differential-testing priorities and remain non-accusatory.",
+  "targets": [
+    {
+      "anomalyId": "anomaly:001",
+      "targetId": "record:ambiguous-003",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.329088,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:002",
+      "targetId": "record:humanreview-005",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.336512,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:003",
+      "targetId": "record:monitor-002",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.290838,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:004",
+      "targetId": "record:sound-001",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.21535,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:005",
+      "targetId": "record:verifyfirst-004",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.38455,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:006",
+      "targetId": "symbolic:caution-003",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.315363,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:007",
+      "targetId": "symbolic:escalate-004",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.318512,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:008",
+      "targetId": "symbolic:freeze-005",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.324025,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:009",
+      "targetId": "symbolic:human-review-006",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.32245,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:010",
+      "targetId": "symbolic:monitor-002",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.299613,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:011",
+      "targetId": "symbolic:stable-001",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.283863,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:012",
+      "targetId": "verify:defer-004",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.240638,
+      "watchStatus": "baseline",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:013",
+      "targetId": "verify:human-005",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.507175,
+      "watchStatus": "watch",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:014",
+      "targetId": "verify:monitor-003",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.4073,
+      "watchStatus": "watch",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:015",
+      "targetId": "verify:nearterm-002",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.4977,
+      "watchStatus": "watch",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    },
+    {
+      "anomalyId": "anomaly:016",
+      "targetId": "verify:urgent-001",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "anomalyScore": 0.530688,
+      "watchStatus": "watch",
+      "provenanceMarkers": [
+        "early_warning",
+        "verification",
+        "symbolic_field"
+      ]
+    }
+  ]
+}

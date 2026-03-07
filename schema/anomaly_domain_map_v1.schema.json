@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt", "caution", "targets"],
+  "properties": {
+    "schemaVersion": {"const": "anomaly_domain_map_v1"},
+    "producerRepo": {"type": "string"},
+    "producerModule": {"type": "string"},
+    "producerCommit": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "caution": {"type": "string"},
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["anomalyId", "targetId", "anomalyDomain", "attackSurfaceClass", "anomalyScore", "watchStatus", "provenanceMarkers"],
+        "properties": {
+          "anomalyId": {"type": "string"},
+          "targetId": {"type": "string"},
+          "anomalyDomain": {"enum": ["digital", "social_behavioral", "mixed"]},
+          "attackSurfaceClass": {"enum": ["platform", "social", "account", "device", "network"]},
+          "anomalyScore": {"type": "number", "minimum": 0, "maximum": 1},
+          "watchStatus": {"enum": ["baseline", "watch"]},
+          "provenanceMarkers": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

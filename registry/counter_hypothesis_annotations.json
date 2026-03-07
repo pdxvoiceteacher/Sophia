@@ -1,0 +1,202 @@
+{
+  "schemaVersion": "counter_hypothesis_annotations_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "scripts.build_environment_integrity_overlay",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-03-07T22:03:54Z",
+  "caution": "Publisher surfaces only Sophia-audited environment-integrity materials; no automatic accusation or intervention occurs from this layer.",
+  "entries": [
+    {
+      "targetId": "record:ambiguous-003",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "record:humanreview-005",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "record:monitor-002",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "record:sound-001",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "record:verifyfirst-004",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "symbolic:caution-003",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "symbolic:escalate-004",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "symbolic:freeze-005",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "symbolic:human-review-006",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "symbolic:monitor-002",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "symbolic:stable-001",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "verify:defer-004",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "verify:human-005",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "hold",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "verify:monitor-003",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "verify:nearterm-002",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "targetId": "verify:urgent-001",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypothesisCount": 2,
+      "recommendedClass": "verify",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    }
+  ]
+}

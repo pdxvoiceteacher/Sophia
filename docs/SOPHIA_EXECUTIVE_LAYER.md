@@ -377,3 +377,27 @@ Publisher requirements:
 Required sequence for this phase:
 
 `public-record / entity-graph / custody state -> CoherenceLattice public-record formalization -> Sophia public-record audit -> Publisher public-record overlays -> human/community evidence review`
+
+## Adversarial environment integrity and differential verification protocol (Phase W)
+
+Phase W formalizes environment-integrity, anomaly-domain, evidence-maturity, and counter-hypothesis signals in a bounded review layer.
+
+CoherenceLattice formalizes environment-integrity and differential-verification signals only; it does **not** conclude that manipulation occurred.
+
+Additional procedural principles:
+
+- this layer is a differential-testing chamber, not a reality-attack detector
+- anomaly and attack-surface labels remain provisional and falsifiable
+- evidence maturity should rise through repeatable verification before conclusions
+- counter-hypotheses must remain present to prevent totalizing narratives
+- suppressed items never enter actionable overlays
+
+Publisher requirements:
+
+- Publisher surfaces only Sophia-audited environment-integrity materials; no automatic accusation or intervention occurs from this layer
+- actionable sections accept only recommendations with `targetPublisherAction = docket`
+- watch items may appear in watchlists, while identity/claim/queue/canonical truth artifacts are never mutated automatically
+
+Required sequence for this phase:
+
+`verification/public-record/symbolic/early-warning inputs -> CoherenceLattice environment-integrity bridge state -> Sophia environment recommendations -> Publisher environment-integrity overlays -> human/community differential review`

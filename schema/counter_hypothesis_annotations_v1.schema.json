@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt", "caution", "entries"],
+  "properties": {
+    "schemaVersion": {"const": "counter_hypothesis_annotations_v1"},
+    "producerRepo": {"type": "string"},
+    "producerModule": {"type": "string"},
+    "producerCommit": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "caution": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["targetId", "primaryHypothesis", "counterHypothesisCount", "recommendedClass", "provenanceMarkers"],
+        "properties": {
+          "targetId": {"type": "string"},
+          "primaryHypothesis": {"type": "string"},
+          "counterHypothesisCount": {"type": "integer", "minimum": 0},
+          "recommendedClass": {"enum": ["verify", "watch", "hold"]},
+          "provenanceMarkers": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

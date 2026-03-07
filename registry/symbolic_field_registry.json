@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "symbolic_field_registry_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "registry.symbolic_field",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-04-01T00:00:00Z",
+  "items": []
+}

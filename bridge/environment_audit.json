@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "environment_audit_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "sophia.audit_environment_state",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-04-01T00:00:00Z",
+  "records": [
+    {"targetId": "target:alpha", "targetPublisherAction": "docket"},
+    {"targetId": "target:beta", "targetPublisherAction": "watch"}
+  ]
+}
