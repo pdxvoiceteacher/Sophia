@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "public_record_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.public_record.chain_of_custody_report",
+  "producerCommit": "fixture-v-0001",
+  "generatedAt": "2026-03-27T00:00:00Z",
+  "created_at": "2026-03-27T00:00:00Z",
+  "targets": [
+    {
+      "targetId": "record:sound-001",
+      "chainCompleteness": 0.89,
+      "tamperRisk": 0.11
+    },
+    {
+      "targetId": "record:monitor-002",
+      "chainCompleteness": 0.59,
+      "tamperRisk": 0.36
+    },
+    {
+      "targetId": "record:ambiguous-003",
+      "chainCompleteness": 0.52,
+      "tamperRisk": 0.55
+    },
+    {
+      "targetId": "record:verifyfirst-004",
+      "chainCompleteness": 0.29,
+      "tamperRisk": 0.78
+    },
+    {
+      "targetId": "record:humanreview-005",
+      "chainCompleteness": 0.48,
+      "tamperRisk": 0.57
+    }
+  ]
+}

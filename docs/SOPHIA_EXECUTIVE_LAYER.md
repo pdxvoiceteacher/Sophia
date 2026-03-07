@@ -353,3 +353,27 @@ Publisher requirements:
 Required sequence for this phase:
 
 `claim / entity / verification-task state -> CoherenceLattice claim typing and resolution formalization -> Sophia verification audit -> Publisher verification overlays -> human/community evidence review`
+
+## Public-record ingestion, entity-graph, and chain-of-custody protocol (Phase V)
+
+Phase V audits public-record graph integrity, relationship confidence, and chain-of-custody sufficiency conservatively.
+
+Public-record recommendations are bounded evidence guidance only and do **not** accuse, defame, or automatically publish conclusions.
+
+Additional procedural principles:
+
+- evidence chains and verification come before public conclusions
+- ambiguous relationship edges should escalate to review, not to assertion
+- chain-of-custody sufficiency is a prerequisite for high-confidence graph use
+- public-record overlays remain advisory and contestable
+- architecture-sensitive caution should be preserved under ambiguity
+
+Publisher requirements:
+
+- surface only Sophia-audited public-record overlays
+- keep ambiguous/watch overlays separate from action-oriented publication artifacts
+- do not mutate identity, queue state, memory, or canonical truth automatically
+
+Required sequence for this phase:
+
+`public-record / entity-graph / custody state -> CoherenceLattice public-record formalization -> Sophia public-record audit -> Publisher public-record overlays -> human/community evidence review`

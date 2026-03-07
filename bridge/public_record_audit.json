@@ -1,0 +1,116 @@
+{
+  "schema": "public_record_audit_v1",
+  "created_at": "2026-03-27T00:00:00Z",
+  "phaselock": "public-record / entity-graph / custody state -> CoherenceLattice public-record formalization -> Sophia public-record audit -> Publisher public-record overlays -> human/community evidence review",
+  "caution": "Public-record recommendations are bounded evidence guidance only and do not accuse, defame, or automatically publish conclusions.",
+  "metadata": {
+    "inputMode": "fixture",
+    "inputModeWarning": "Inputs are fixture public-record artifacts; recommendations are non-canonical simulation guidance.",
+    "systemRisk": 0.520833,
+    "inputArtifacts": [
+      {
+        "path": "bridge/public_record_intake_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "public_record_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.public_record.intake_map",
+        "producerCommit": "fixture-v-0001",
+        "generatedAt": "2026-03-27T00:00:00Z"
+      },
+      {
+        "path": "bridge/entity_graph_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "public_record_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.public_record.entity_graph_map",
+        "producerCommit": "fixture-v-0001",
+        "generatedAt": "2026-03-27T00:00:00Z"
+      },
+      {
+        "path": "bridge/relationship_edge_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "public_record_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.public_record.relationship_edge_map",
+        "producerCommit": "fixture-v-0001",
+        "generatedAt": "2026-03-27T00:00:00Z"
+      },
+      {
+        "path": "bridge/chain_of_custody_report.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "public_record_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.public_record.chain_of_custody_report",
+        "producerCommit": "fixture-v-0001",
+        "generatedAt": "2026-03-27T00:00:00Z"
+      }
+    ]
+  },
+  "records": [
+    {
+      "targetId": "record:ambiguous-003",
+      "targetType": "public-record",
+      "graphStatus": "ambiguous",
+      "coherenceScore": 0.5045,
+      "riskScore": 0.5817,
+      "claimContext": "recordQuality=0.550, claimReliability=0.490; evidence first, conclusions later.",
+      "entityContext": "entityAmbiguity=0.590, nodeConsistency=0.520, edgeAmbiguity=0.770; identity inference remains bounded.",
+      "custodyContext": "chainCompleteness=0.520, tamperRisk=0.550, edgeConfidence=0.490, systemRisk=0.521; chain-of-custody sufficiency is required before conclusion.",
+      "governingRule": "ambiguous-relationship-watch",
+      "explanation": "Public-record guidance is bounded evidence guidance only. targetId=record:ambiguous-003, graphStatus=ambiguous, coherence=0.505, risk=0.582.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "record:humanreview-005",
+      "targetType": "public-record",
+      "graphStatus": "require-human-review",
+      "coherenceScore": 0.4195,
+      "riskScore": 0.6689,
+      "claimContext": "recordQuality=0.440, claimReliability=0.470; evidence first, conclusions later.",
+      "entityContext": "entityAmbiguity=0.860, nodeConsistency=0.450, edgeAmbiguity=0.830; identity inference remains bounded.",
+      "custodyContext": "chainCompleteness=0.480, tamperRisk=0.570, edgeConfidence=0.410, systemRisk=0.521; chain-of-custody sufficiency is required before conclusion.",
+      "governingRule": "ambiguous-entity-human-review",
+      "explanation": "Public-record guidance is bounded evidence guidance only. targetId=record:humanreview-005, graphStatus=require-human-review, coherence=0.420, risk=0.669.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "record:monitor-002",
+      "targetType": "public-record",
+      "graphStatus": "monitor",
+      "coherenceScore": 0.6075,
+      "riskScore": 0.4161,
+      "claimContext": "recordQuality=0.620, claimReliability=0.580; evidence first, conclusions later.",
+      "entityContext": "entityAmbiguity=0.420, nodeConsistency=0.640, edgeAmbiguity=0.430; identity inference remains bounded.",
+      "custodyContext": "chainCompleteness=0.590, tamperRisk=0.360, edgeConfidence=0.620, systemRisk=0.521; chain-of-custody sufficiency is required before conclusion.",
+      "governingRule": "monitor-public-record-graph",
+      "explanation": "Public-record guidance is bounded evidence guidance only. targetId=record:monitor-002, graphStatus=monitor, coherence=0.608, risk=0.416.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "record:sound-001",
+      "targetType": "public-record",
+      "graphStatus": "sound",
+      "coherenceScore": 0.852,
+      "riskScore": 0.1937,
+      "claimContext": "recordQuality=0.870, claimReliability=0.810; evidence first, conclusions later.",
+      "entityContext": "entityAmbiguity=0.180, nodeConsistency=0.880, edgeAmbiguity=0.170; identity inference remains bounded.",
+      "custodyContext": "chainCompleteness=0.890, tamperRisk=0.110, edgeConfidence=0.830, systemRisk=0.521; chain-of-custody sufficiency is required before conclusion.",
+      "governingRule": "sound-evidence-graph",
+      "explanation": "Public-record guidance is bounded evidence guidance only. targetId=record:sound-001, graphStatus=sound, coherence=0.852, risk=0.194.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "record:verifyfirst-004",
+      "targetType": "public-record",
+      "graphStatus": "verify-first",
+      "coherenceScore": 0.4175,
+      "riskScore": 0.6173,
+      "claimContext": "recordQuality=0.460, claimReliability=0.410; evidence first, conclusions later.",
+      "entityContext": "entityAmbiguity=0.530, nodeConsistency=0.480, edgeAmbiguity=0.540; identity inference remains bounded.",
+      "custodyContext": "chainCompleteness=0.290, tamperRisk=0.780, edgeConfidence=0.380, systemRisk=0.521; chain-of-custody sufficiency is required before conclusion.",
+      "governingRule": "chain-of-custody-verify-first",
+      "explanation": "Public-record guidance is bounded evidence guidance only. targetId=record:verifyfirst-004, graphStatus=verify-first, coherence=0.417, risk=0.617.",
+      "targetPublisherAction": "suppress"
+    }
+  ]
+}
