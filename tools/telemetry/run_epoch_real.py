@@ -10,14 +10,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 if __name__ == "__main__" and __package__ is None:
-    repo_root_s = str(Path(__file__).resolve().parents[2])
-    if repo_root_s not in sys.path:
-        sys.path.insert(0, repo_root_s)
+    _repo_root_s = str(_REPO_ROOT)
+    if _repo_root_s not in sys.path:
+        sys.path.insert(0, _repo_root_s)
 
 from tools.telemetry.epoch_analyze import analyze_epoch
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = _REPO_ROOT
 
 
 def git_commit() -> str:

@@ -1,6 +1,6 @@
 # Windows Setup (Telemetry / Secure Swarm)
 
-This repo root is **not** a standalone installable package. Use the telemetry requirements + editable subpackages.
+This repo root is **not** a standalone installable package. Do **not** run `pip install -r requirements.txt` at repo root. Use `python/tools/requirements-telemetry.txt` plus editable monorepo subpackages.
 
 ## One-command bootstrap (PowerShell)
 
@@ -23,6 +23,8 @@ python -m venv .venv
 ```
 
 ## Invocation regression checks (both must work)
+
+Both invocation styles are supported. Script-path invocation is stabilized by an in-script `sys.path` bootstrap.
 
 ```powershell
 python tools\telemetry\run_wrapper.py -h
