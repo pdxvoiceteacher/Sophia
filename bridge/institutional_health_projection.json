@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "institutional_bridge_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.institutional.health_projection",
+  "producerCommit": "fixture-0001",
+  "generatedAt": "2026-03-07T00:00:00Z",
+  "created_at": "2026-03-07T00:00:00Z",
+  "institutions": [
+    {
+      "institutionId": "inst:alpha",
+      "healthScore": 0.93,
+      "decayRisk": 0.1
+    },
+    {
+      "institutionId": "inst:beta",
+      "healthScore": 0.69,
+      "decayRisk": 0.31
+    },
+    {
+      "institutionId": "inst:gamma",
+      "healthScore": 0.45,
+      "decayRisk": 0.59
+    },
+    {
+      "institutionId": "inst:delta",
+      "healthScore": 0.42,
+      "decayRisk": 0.74
+    },
+    {
+      "institutionId": "inst:epsilon",
+      "healthScore": 0.39,
+      "decayRisk": 0.67
+    },
+    {
+      "institutionId": "inst:zeta",
+      "healthScore": 0.21,
+      "decayRisk": 0.91
+    }
+  ]
+}

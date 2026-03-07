@@ -1,0 +1,48 @@
+{
+  "schema": "recovery_recommendations_v1",
+  "created_at": "2026-03-18T00:00:00Z",
+  "phaselock": "CoherenceLattice preservation and recovery formalization -> Sophia recovery audit -> Publisher recovery docket",
+  "caution": "Lawful human/community review remains the path for recovery actions; no self-executing recovery is authorized.",
+  "recommendations": [
+    {
+      "recoveryStatus": "hold",
+      "coherenceScore": 0.484,
+      "riskScore": 0.456272,
+      "tamperRisk": 0.4875,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "recoverabilityScore": 0.51
+      },
+      "antiCaptureContext": {
+        "antiCaptureRisk": 0.417212,
+        "proceduralTransparencyScore": 0.49,
+        "dependencyOpacityRisk": 0.57
+      },
+      "governingRule": "hold-for-integrity-clarification",
+      "explanation": "Recovery candidate is held until integrity and dependency transparency concerns are resolved. recoveryId=recovery:archive-replicate-002, coherence=0.484, risk=0.456, tamperRisk=0.487.",
+      "targetPublisherAction": "watch",
+      "recoveryId": "recovery:archive-replicate-002"
+    },
+    {
+      "recoveryStatus": "escrow-review",
+      "coherenceScore": 0.8025,
+      "riskScore": 0.316797,
+      "tamperRisk": 0.169,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "recoverabilityScore": 0.79
+      },
+      "antiCaptureContext": {
+        "antiCaptureRisk": 0.417212,
+        "proceduralTransparencyScore": 0.84,
+        "dependencyOpacityRisk": 0.22
+      },
+      "governingRule": "recovery-by-review-not-resurrection",
+      "explanation": "Recovery candidate is eligible for bounded escrow-review; restoration remains inspectable and human/community reviewed. recoveryId=recovery:ledger-rehydrate-001, coherence=0.802, risk=0.317, tamperRisk=0.169.",
+      "targetPublisherAction": "docket",
+      "recoveryId": "recovery:ledger-rehydrate-001"
+    }
+  ]
+}

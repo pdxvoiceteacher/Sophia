@@ -1,0 +1,135 @@
+{
+  "schema": "triage_audit_v1",
+  "created_at": "2026-03-23T00:00:00Z",
+  "phaselock": "institutional / queue / watchlist state -> CoherenceLattice priority formalization -> Sophia triage audit -> Publisher priority and triage overlays -> human/community ordered review",
+  "caution": "Triage recommendations are bounded ordering guidance only and do not automatically reconfigure queues or canonical truth.",
+  "metadata": {
+    "inputMode": "fixture",
+    "inputModeWarning": "Inputs are fixture priority artifacts; recommendations are non-canonical simulation guidance.",
+    "systemRisk": 0.451156,
+    "inputArtifacts": [
+      {
+        "path": "bridge/priority_state_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "priority_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.priority.state_map",
+        "producerCommit": "fixture-r-0001",
+        "generatedAt": "2026-03-23T00:00:00Z"
+      },
+      {
+        "path": "bridge/priority_state_summary.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "priority_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.priority.state_summary",
+        "producerCommit": "fixture-r-0001",
+        "generatedAt": "2026-03-23T00:00:00Z"
+      },
+      {
+        "path": "bridge/triage_candidate_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "priority_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.priority.triage_candidate_map",
+        "producerCommit": "fixture-r-0001",
+        "generatedAt": "2026-03-23T00:00:00Z"
+      },
+      {
+        "path": "bridge/triage_conflict_report.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "priority_state_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.priority.triage_conflict_report",
+        "producerCommit": "fixture-r-0001",
+        "generatedAt": "2026-03-23T00:00:00Z"
+      }
+    ]
+  },
+  "records": [
+    {
+      "targetId": "triage:core-capture-001",
+      "targetType": "governance-critical",
+      "triageStatus": "require-human-review",
+      "coherenceScore": 0.512,
+      "riskScore": 0.705673,
+      "urgencyContext": "urgencyScore=0.680; attention is a constitutional resource and priority must remain explicit.",
+      "queueContext": "queuePressureScore=0.640, baselinePriority=0.740; silent prioritization is hidden power.",
+      "captureContext": "captureRisk=0.820, dominanceRisk=0.830, systemRisk=0.451; capture risk increases triage priority.",
+      "reversibilityContext": "reversibilityScore=0.260, irreversibility=0.740; irreversible issues should be reviewed earlier.",
+      "governingRule": "capture-risk-priority-override",
+      "explanation": "Triage recommendation is bounded ordering guidance only. targetId=triage:core-capture-001, status=require-human-review, coherence=0.512, risk=0.706.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "triage:irreversible-recovery-002",
+      "targetType": "recovery-critical",
+      "triageStatus": "immediate-review",
+      "coherenceScore": 0.5265,
+      "riskScore": 0.581673,
+      "urgencyContext": "urgencyScore=0.590; attention is a constitutional resource and priority must remain explicit.",
+      "queueContext": "queuePressureScore=0.600, baselinePriority=0.610; silent prioritization is hidden power.",
+      "captureContext": "captureRisk=0.540, dominanceRisk=0.420, systemRisk=0.451; capture risk increases triage priority.",
+      "reversibilityContext": "reversibilityScore=0.140, irreversibility=0.860; irreversible issues should be reviewed earlier.",
+      "governingRule": "irreversibility-priority-inversion-override",
+      "explanation": "Triage recommendation is bounded ordering guidance only. targetId=triage:irreversible-recovery-002, status=immediate-review, coherence=0.526, risk=0.582.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "triage:queue-surge-006",
+      "targetType": "intake",
+      "triageStatus": "freeze-dependent-pathways",
+      "coherenceScore": 0.4305,
+      "riskScore": 0.680173,
+      "urgencyContext": "urgencyScore=0.660; attention is a constitutional resource and priority must remain explicit.",
+      "queueContext": "queuePressureScore=0.850, baselinePriority=0.510; silent prioritization is hidden power.",
+      "captureContext": "captureRisk=0.640, dominanceRisk=0.580, systemRisk=0.451; capture risk increases triage priority.",
+      "reversibilityContext": "reversibilityScore=0.220, irreversibility=0.780; irreversible issues should be reviewed earlier.",
+      "governingRule": "freeze-under-triage-overload",
+      "explanation": "Triage recommendation is bounded ordering guidance only. targetId=triage:queue-surge-006, status=freeze-dependent-pathways, coherence=0.430, risk=0.680.",
+      "targetPublisherAction": "suppress"
+    },
+    {
+      "targetId": "triage:reversible-backlog-005",
+      "targetType": "maintenance",
+      "triageStatus": "defer",
+      "coherenceScore": 0.5205,
+      "riskScore": 0.258673,
+      "urgencyContext": "urgencyScore=0.270; attention is a constitutional resource and priority must remain explicit.",
+      "queueContext": "queuePressureScore=0.300, baselinePriority=0.390; silent prioritization is hidden power.",
+      "captureContext": "captureRisk=0.240, dominanceRisk=0.190, systemRisk=0.451; capture risk increases triage priority.",
+      "reversibilityContext": "reversibilityScore=0.850, irreversibility=0.150; irreversible issues should be reviewed earlier.",
+      "governingRule": "defer-reversible-low-risk",
+      "explanation": "Triage recommendation is bounded ordering guidance only. targetId=triage:reversible-backlog-005, status=defer, coherence=0.520, risk=0.259.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "triage:scenario-warning-003",
+      "targetType": "scenario",
+      "triageStatus": "near-term-review",
+      "coherenceScore": 0.5285,
+      "riskScore": 0.574673,
+      "urgencyContext": "urgencyScore=0.750; attention is a constitutional resource and priority must remain explicit.",
+      "queueContext": "queuePressureScore=0.580, baselinePriority=0.570; silent prioritization is hidden power.",
+      "captureContext": "captureRisk=0.620, dominanceRisk=0.580, systemRisk=0.451; capture risk increases triage priority.",
+      "reversibilityContext": "reversibilityScore=0.390, irreversibility=0.610; irreversible issues should be reviewed earlier.",
+      "governingRule": "near-term-urgent-review",
+      "explanation": "Triage recommendation is bounded ordering guidance only. targetId=triage:scenario-warning-003, status=near-term-review, coherence=0.529, risk=0.575.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "triage:watchlist-low-004",
+      "targetType": "watchlist",
+      "triageStatus": "monitor",
+      "coherenceScore": 0.485,
+      "riskScore": 0.477673,
+      "urgencyContext": "urgencyScore=0.490; attention is a constitutional resource and priority must remain explicit.",
+      "queueContext": "queuePressureScore=0.520, baselinePriority=0.460; silent prioritization is hidden power.",
+      "captureContext": "captureRisk=0.480, dominanceRisk=0.440, systemRisk=0.451; capture risk increases triage priority.",
+      "reversibilityContext": "reversibilityScore=0.520, irreversibility=0.480; irreversible issues should be reviewed earlier.",
+      "governingRule": "monitor-priority-state",
+      "explanation": "Triage recommendation is bounded ordering guidance only. targetId=triage:watchlist-low-004, status=monitor, coherence=0.485, risk=0.478.",
+      "targetPublisherAction": "watch"
+    }
+  ]
+}

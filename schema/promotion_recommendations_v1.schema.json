@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/promotion_recommendations_v1.schema.json",
+  "title": "Promotion Recommendations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "created_at",
+    "phaselock",
+    "caution",
+    "recommendations"
+  ],
+  "properties": {
+    "schema": {
+      "const": "promotion_recommendations_v1"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "phaselock": {
+      "type": "string"
+    },
+    "caution": {
+      "type": "string"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/promotionItem"
+      }
+    }
+  },
+  "$defs": {
+    "promotionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidateId",
+        "candidateType",
+        "auditStatus",
+        "coherenceScore",
+        "riskScore",
+        "persistenceScore",
+        "cognitiveWatchSignals",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "candidateId": {
+          "type": "string"
+        },
+        "candidateType": {
+          "type": "string"
+        },
+        "auditStatus": {
+          "enum": [
+            "recommend-human-review",
+            "hold",
+            "watch",
+            "reject"
+          ]
+        },
+        "coherenceScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "riskScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "persistenceScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "multimodalContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "reasoningContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "cognitiveWatchSignals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "governingRule": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "targetPublisherAction": {
+          "enum": [
+            "docket",
+            "watch",
+            "suppress"
+          ]
+        }
+      }
+    }
+  }
+}

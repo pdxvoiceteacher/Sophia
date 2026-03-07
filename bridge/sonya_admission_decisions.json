@@ -1,0 +1,42 @@
+{
+  "schema": "sonya_admission_decisions_v1",
+  "created_at": "2026-03-07T00:00:00Z",
+  "decisions": [
+    {
+      "inputId": "sonya:text:atlas-note-001",
+      "auditStatus": "admit",
+      "coherenceScore": 0.61198,
+      "riskScore": 0.140625,
+      "driftContext": {
+        "globalDriftScore": 0.22,
+        "inputDriftScore": 0.18,
+        "projectionRegime": "stable-high",
+        "requiresReview": false
+      },
+      "governingRule": "admit-balanced",
+      "explanation": "Projection admitted: confidence and coherence satisfy balanced executive gate thresholds. inputId=sonya:text:atlas-note-001, confidence=0.790, coherence=0.612, risk=0.141, drift=0.180.",
+      "targetPublisherAction": "store",
+      "suggestedConceptTargets": [
+        "concept:coherence-lattice"
+      ]
+    },
+    {
+      "inputId": "sonya:text:atlas-note-002",
+      "auditStatus": "defer",
+      "coherenceScore": 0.47048,
+      "riskScore": 0.406125,
+      "driftContext": {
+        "globalDriftScore": 0.22,
+        "inputDriftScore": 0.31,
+        "projectionRegime": "watch",
+        "requiresReview": true
+      },
+      "governingRule": "review-defer",
+      "explanation": "Projection deferred because review/contradictions exceed admissibility thresholds. inputId=sonya:text:atlas-note-002, confidence=0.580, coherence=0.470, risk=0.406, drift=0.310.",
+      "targetPublisherAction": "hold",
+      "suggestedConceptTargets": [
+        "concept:memory-linking"
+      ]
+    }
+  ]
+}

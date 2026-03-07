@@ -1,0 +1,6 @@
+{
+  "schema": "publication_regime_map_v1",
+  "instability": 0.2,
+  "conflict": 0.15,
+  "safety": 0.9
+}
