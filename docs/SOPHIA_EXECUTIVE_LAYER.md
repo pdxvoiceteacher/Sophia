@@ -192,3 +192,23 @@ Additional procedural guardrails:
 Required sequence for this phase:
 
 `review / governance / continuity / attestation outcomes -> CoherenceLattice precedent formalization -> Sophia precedent audit -> Publisher precedent and case-memory overlays -> human/community use of precedent in deliberation`
+
+## Simulation, stress testing, and adversarial scenario protocol (Phase O)
+
+Phase O audits hypothetical stress scenarios to produce bounded preparedness guidance.
+
+Scenario recommendations are hypothetical preparedness outputs only and do not authorize live emergency power, automatic emergency activation, or self-triggered override authority.
+
+Preparedness is not authority: scenario findings inform review and rehearsal, but they do not grant sovereignty.
+
+Additional procedural guardrails:
+
+- rehearse before crisis
+- freeze before blind escalation under ambiguity
+- explicitly model hostile-governance and stacked-quorum scenarios
+- treat preparedness as non-executing advisory output
+- surface continuity/recovery/constitutional collisions early
+
+Required sequence for this phase:
+
+`current system state -> CoherenceLattice scenario formalization -> Sophia scenario audit -> Publisher scenario and stress-test overlays -> human/community preparedness review`
