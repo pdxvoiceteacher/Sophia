@@ -174,3 +174,21 @@ Additional procedural guardrails:
 Required sequence for this phase:
 
 `canonical / continuity / recovery state -> CoherenceLattice attestation formalization -> Sophia witness/attestation audit -> Publisher attestation overlays -> external human/community witnessing`
+
+## Normative memory & precedent protocol (Phase N)
+
+Phase N evaluates precedent relevance and divergence as a jurisprudential, advisory layer.
+
+Precedent recommendations are advisory only. Precedent is persuasive, not automatically binding, and no automatic doctrine hardening occurs.
+
+Divergence may be legitimate under constitutional or anti-capture pressure, but divergence should remain explicit and reviewable.
+
+Additional procedural guardrails:
+
+- weak/conflicted precedent should not silently harden into dogma
+- constitutional principles outrank precedent where conflicts arise
+- anti-capture pressure overrides convenience precedent reuse
+
+Required sequence for this phase:
+
+`review / governance / continuity / attestation outcomes -> CoherenceLattice precedent formalization -> Sophia precedent audit -> Publisher precedent and case-memory overlays -> human/community use of precedent in deliberation`
