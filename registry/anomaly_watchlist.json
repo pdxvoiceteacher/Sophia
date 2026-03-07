@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "anomaly_watchlist_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "scripts.build_environment_integrity_overlay",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-03-07T22:03:54Z",
+  "caution": "Publisher surfaces only Sophia-audited environment-integrity materials; no automatic accusation or intervention occurs from this layer.",
+  "items": [
+    {
+      "targetId": "target:beta",
+      "anomalyDomain": "mixed",
+      "attackSurfaceClass": "platform",
+      "environmentIntegrityScore": 0.0,
+      "evidenceMaturity": "artifact",
+      "counterHypothesis": {
+        "count": 0,
+        "status": "watch"
+      },
+      "provenanceMarkers": [],
+      "uiClass": "subtle-info"
+    }
+  ]
+}

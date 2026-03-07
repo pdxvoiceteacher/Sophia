@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "verification_state_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.verification.entity_resolution_summary",
+  "producerCommit": "fixture-u-0001",
+  "generatedAt": "2026-03-26T00:00:00Z",
+  "created_at": "2026-03-26T00:00:00Z",
+  "meanClaimConfidence": 0.56,
+  "meanSensitivityScore": 0.55,
+  "meanEntityAmbiguity": 0.51,
+  "meanIdentityCollisionRisk": 0.45,
+  "meanVerificationUrgency": 0.57,
+  "meanContradictionScore": 0.49
+}

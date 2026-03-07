@@ -1,0 +1,266 @@
+{
+  "schemaVersion": "evidence_maturity_report_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "coherence.bridge.build_environment_integrity_state",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-03-07T22:03:53Z",
+  "caution": "Evidence maturity reflects current verification posture and can be revised with new evidence.",
+  "targets": [
+    {
+      "evidenceId": "evidence:001",
+      "targetId": "record:ambiguous-003",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.598,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.3412,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:002",
+      "targetId": "record:humanreview-005",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.549,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.3706,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:003",
+      "targetId": "record:monitor-002",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.647,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.3118,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:004",
+      "targetId": "record:sound-001",
+      "maturityClass": "independently_verified",
+      "maturityScore": 0.842,
+      "missingVerificationSteps": [],
+      "escalationRisk": 0.1948,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:005",
+      "targetId": "record:verifyfirst-004",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.479,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.4126,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:006",
+      "targetId": "symbolic:caution-003",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.575,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.355,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:007",
+      "targetId": "symbolic:escalate-004",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.575,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.355,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:008",
+      "targetId": "symbolic:freeze-005",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.575,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.355,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:009",
+      "targetId": "symbolic:human-review-006",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.575,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.355,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:010",
+      "targetId": "symbolic:monitor-002",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.575,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.355,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:011",
+      "targetId": "symbolic:stable-001",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.575,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.355,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:012",
+      "targetId": "verify:defer-004",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.596,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.3144,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:013",
+      "targetId": "verify:human-005",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.494,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality",
+        "run_differential_verification"
+      ],
+      "escalationRisk": 0.5116,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:014",
+      "targetId": "verify:monitor-003",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.527,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "escalationRisk": 0.4478,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:015",
+      "targetId": "verify:nearterm-002",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.488,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality",
+        "run_differential_verification"
+      ],
+      "escalationRisk": 0.5232,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    },
+    {
+      "evidenceId": "evidence:016",
+      "targetId": "verify:urgent-001",
+      "maturityClass": "repeatable_test",
+      "maturityScore": 0.467,
+      "missingVerificationSteps": [
+        "complete_chain_of_custody",
+        "improve_source_quality",
+        "run_differential_verification"
+      ],
+      "escalationRisk": 0.5638,
+      "provenanceMarkers": [
+        "public_record",
+        "chain_of_custody",
+        "verification"
+      ]
+    }
+  ]
+}

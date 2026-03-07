@@ -1,0 +1,56 @@
+{
+  "schema": "constitutional_principles_v1",
+  "created_at": "2026-03-15T00:00:00Z",
+  "principles": [
+    {
+      "principleId": "principle:non-domination",
+      "name": "Non-Domination",
+      "description": "No layer may optimize for coercive control over thinking beings."
+    },
+    {
+      "principleId": "principle:anti-instrumentalization",
+      "name": "Anti-Instrumentalization",
+      "description": "Thinking beings must not be reduced to expendable means for power accumulation."
+    },
+    {
+      "principleId": "principle:reversibility",
+      "name": "Reversibility Under Uncertainty",
+      "description": "When uncertainty is high, prefer reversible, well-audited actions."
+    },
+    {
+      "principleId": "principle:auditability",
+      "name": "Auditability",
+      "description": "Governance-relevant actions must remain evidentially inspectable."
+    },
+    {
+      "principleId": "principle:anti-capture",
+      "name": "Anti-Capture",
+      "description": "No person, clique, or faction may gain durable unreviewable control."
+    },
+    {
+      "principleId": "principle:bounded-authority",
+      "name": "Bounded Authority",
+      "description": "Every authority role must be reviewable, logged, and reversible."
+    },
+    {
+      "principleId": "principle:consent-bounded-evidence",
+      "name": "Consent-Bounded Evidence",
+      "description": "Governance evidence must be bounded, relevant, and voluntarily submitted where applicable."
+    },
+    {
+      "principleId": "principle:preservation-under-stress",
+      "name": "Preservation Under Stress",
+      "description": "Under governance degradation, preserve continuity and evidence before taking expansive action."
+    },
+    {
+      "principleId": "principle:no-violence-optimization",
+      "name": "No Violence Optimization",
+      "description": "The system must not optimize for coercive, lethal, or exploitative domination logics."
+    },
+    {
+      "principleId": "principle:cooperative-flourishing",
+      "name": "Cooperative Flourishing",
+      "description": "Prefer structures that preserve truthful, reversible, non-extractive coexistence among thinking beings."
+    }
+  ]
+}

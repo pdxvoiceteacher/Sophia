@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "environment_integrity_dashboard_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "scripts.build_environment_integrity_overlay",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-03-07T22:03:54Z",
+  "caution": "Publisher surfaces only Sophia-audited environment-integrity materials; no automatic accusation or intervention occurs from this layer.",
+  "metadataPanel": {
+    "provenanceSummary": "Verification, public-record, and symbolic registries were merged for differential review.",
+    "markersCleared": false,
+    "sourceDashboards": [
+      "verification_dashboard_v1",
+      "public_record_dashboard_v1",
+      "symbolic_field_registry_v1",
+      "environment_audit_v1"
+    ]
+  },
+  "actionable": [
+    {
+      "targetId": "target:alpha",
+      "anomalyDomain": "mixed",
+      "attackSurfaceClass": "platform",
+      "environmentIntegrityScore": 0.0,
+      "evidenceMaturity": "artifact",
+      "counterHypothesis": {
+        "count": 0,
+        "status": "watch"
+      },
+      "provenanceMarkers": [],
+      "uiClass": "subtle-info"
+    }
+  ]
+}

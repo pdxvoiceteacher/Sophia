@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt", "caution", "entries"],
+  "properties": {
+    "schemaVersion": {"const": "evidence_maturity_registry_v1"},
+    "producerRepo": {"type": "string"},
+    "producerModule": {"type": "string"},
+    "producerCommit": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "caution": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["targetId", "maturityClass", "maturityScore", "missingVerificationSteps", "provenanceMarkers"],
+        "properties": {
+          "targetId": {"type": "string"},
+          "maturityClass": {"enum": ["artifact", "repeatable_test", "independently_verified", "conclusion_ready"]},
+          "maturityScore": {"type": "number", "minimum": 0, "maximum": 1},
+          "missingVerificationSteps": {"type": "array", "items": {"type": "string"}},
+          "provenanceMarkers": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

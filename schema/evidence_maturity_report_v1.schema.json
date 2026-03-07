@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt", "caution", "targets"],
+  "properties": {
+    "schemaVersion": {"const": "evidence_maturity_report_v1"},
+    "producerRepo": {"type": "string"},
+    "producerModule": {"type": "string"},
+    "producerCommit": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "caution": {"type": "string"},
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidenceId", "targetId", "maturityClass", "maturityScore", "missingVerificationSteps", "escalationRisk", "provenanceMarkers"],
+        "properties": {
+          "evidenceId": {"type": "string"},
+          "targetId": {"type": "string"},
+          "maturityClass": {"enum": ["artifact", "repeatable_test", "independently_verified", "conclusion_ready"]},
+          "maturityScore": {"type": "number", "minimum": 0, "maximum": 1},
+          "missingVerificationSteps": {"type": "array", "items": {"type": "string"}},
+          "escalationRisk": {"type": "number", "minimum": 0, "maximum": 1},
+          "provenanceMarkers": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

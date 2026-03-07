@@ -1,0 +1,282 @@
+{
+  "schemaVersion": "environment_integrity_map_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "coherence.bridge.build_environment_integrity_state",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-03-07T22:03:53Z",
+  "caution": "CoherenceLattice formalizes environment-integrity and differential-verification signals only; it does not conclude manipulation occurred.",
+  "targets": [
+    {
+      "environmentId": "environment:001",
+      "targetId": "record:ambiguous-003",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.57425,
+      "observationStabilityScore": 0.75,
+      "provenanceCoverage": 0.505,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:002",
+      "targetId": "record:humanreview-005",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.55775,
+      "observationStabilityScore": 0.75,
+      "provenanceCoverage": 0.475,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:003",
+      "targetId": "record:monitor-002",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.65925,
+      "observationStabilityScore": 0.75,
+      "provenanceCoverage": 0.585,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:004",
+      "targetId": "record:sound-001",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.827,
+      "observationStabilityScore": 0.75,
+      "provenanceCoverage": 0.85,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:005",
+      "targetId": "record:verifyfirst-004",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.451,
+      "observationStabilityScore": 0.75,
+      "provenanceCoverage": 0.35,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": true,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:006",
+      "targetId": "symbolic:caution-003",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.60475,
+      "observationStabilityScore": 0.585,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:007",
+      "targetId": "symbolic:escalate-004",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.59775,
+      "observationStabilityScore": 0.565,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:008",
+      "targetId": "symbolic:freeze-005",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.5855,
+      "observationStabilityScore": 0.53,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:009",
+      "targetId": "symbolic:human-review-006",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.589,
+      "observationStabilityScore": 0.54,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:010",
+      "targetId": "symbolic:monitor-002",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.63975,
+      "observationStabilityScore": 0.685,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:011",
+      "targetId": "symbolic:stable-001",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.67475,
+      "observationStabilityScore": 0.785,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.25,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:012",
+      "targetId": "verify:defer-004",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.68525,
+      "observationStabilityScore": 0.815,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.18,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:013",
+      "targetId": "verify:human-005",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.5085,
+      "observationStabilityScore": 0.31,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.52,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:014",
+      "targetId": "verify:monitor-003",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.596,
+      "observationStabilityScore": 0.56,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.41,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:015",
+      "targetId": "verify:nearterm-002",
+      "anomalyDomain": "social_behavioral",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.554,
+      "observationStabilityScore": 0.44,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.54,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    },
+    {
+      "environmentId": "environment:016",
+      "targetId": "verify:urgent-001",
+      "anomalyDomain": "digital",
+      "attackSurfaceClass": "device",
+      "environmentIntegrityScore": 0.56625,
+      "observationStabilityScore": 0.475,
+      "provenanceCoverage": 0.5,
+      "contradictionDensity": 0.61,
+      "requiresExecutiveReview": false,
+      "provenanceMarkers": [
+        "verification",
+        "public_record",
+        "chain_of_custody",
+        "symbolic_field"
+      ]
+    }
+  ]
+}

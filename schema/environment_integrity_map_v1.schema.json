@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt", "caution", "targets"],
+  "properties": {
+    "schemaVersion": {"const": "environment_integrity_map_v1"},
+    "producerRepo": {"type": "string"},
+    "producerModule": {"type": "string"},
+    "producerCommit": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "caution": {"type": "string"},
+    "targets": {"type": "array", "items": {"$ref": "#/$defs/t"}}
+  },
+  "$defs": {
+    "t": {"type": "object", "additionalProperties": false, "required": ["environmentId", "targetId", "anomalyDomain", "attackSurfaceClass", "environmentIntegrityScore", "observationStabilityScore", "provenanceCoverage", "contradictionDensity", "requiresExecutiveReview", "provenanceMarkers"], "properties": {
+      "environmentId": {"type": "string"}, "targetId": {"type": "string"},
+      "anomalyDomain": {"enum": ["digital", "social_behavioral", "mixed"]},
+      "attackSurfaceClass": {"enum": ["platform", "social", "account", "device", "network"]},
+      "environmentIntegrityScore": {"type": "number", "minimum": 0, "maximum": 1},
+      "observationStabilityScore": {"type": "number", "minimum": 0, "maximum": 1},
+      "provenanceCoverage": {"type": "number", "minimum": 0, "maximum": 1},
+      "contradictionDensity": {"type": "number", "minimum": 0, "maximum": 1},
+      "requiresExecutiveReview": {"type": "boolean"},
+      "provenanceMarkers": {"type": "array", "items": {"type": "string"}}
+    }}
+  }
+}

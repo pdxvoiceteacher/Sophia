@@ -1,0 +1,348 @@
+{
+  "schemaVersion": "counter_hypothesis_map_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "coherence.bridge.build_environment_integrity_state",
+  "producerCommit": "phase-w-fixture",
+  "generatedAt": "2026-03-07T22:03:53Z",
+  "caution": "Counter-hypotheses preserve falsifiability and avoid totalizing narratives.",
+  "targets": [
+    {
+      "counterHypothesisId": "counter:001",
+      "targetId": "record:ambiguous-003",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.319,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:002",
+      "targetId": "record:humanreview-005",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.331,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:003",
+      "targetId": "record:monitor-002",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.298,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:004",
+      "targetId": "record:sound-001",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "collect_additional_context"
+      ],
+      "ambiguityPersistence": 0.208,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:005",
+      "targetId": "record:verifyfirst-004",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.388,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:006",
+      "targetId": "symbolic:caution-003",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.556,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:007",
+      "targetId": "symbolic:escalate-004",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.584,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:008",
+      "targetId": "symbolic:freeze-005",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.633,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:009",
+      "targetId": "symbolic:human-review-006",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.619,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:010",
+      "targetId": "symbolic:monitor-002",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.416,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:011",
+      "targetId": "symbolic:stable-001",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.276,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:012",
+      "targetId": "verify:defer-004",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.283,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:013",
+      "targetId": "verify:human-005",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality",
+        "run_differential_verification"
+      ],
+      "ambiguityPersistence": 0.752,
+      "recommendedClass": "hold",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:014",
+      "targetId": "verify:monitor-003",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality"
+      ],
+      "ambiguityPersistence": 0.479,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:015",
+      "targetId": "verify:nearterm-002",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality",
+        "run_differential_verification"
+      ],
+      "ambiguityPersistence": 0.556,
+      "recommendedClass": "watch",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    },
+    {
+      "counterHypothesisId": "counter:016",
+      "targetId": "verify:urgent-001",
+      "primaryHypothesis": "observed anomaly may reflect benign variance",
+      "counterHypotheses": [
+        "measurement artifact produced signal distortion",
+        "normal operational drift explains observed pattern"
+      ],
+      "differentiationTasks": [
+        "complete_chain_of_custody",
+        "improve_source_quality",
+        "run_differential_verification"
+      ],
+      "ambiguityPersistence": 0.458,
+      "recommendedClass": "verify",
+      "provenanceMarkers": [
+        "claim_type",
+        "entity_resolution",
+        "verification",
+        "chain_of_custody"
+      ]
+    }
+  ]
+}
