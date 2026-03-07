@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "attention_updates_v1.schema.json",
+  "title": "Attention Updates v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "created_at",
+    "pipeline",
+    "artifactSemantics",
+    "inputs",
+    "policy",
+    "updates"
+  ],
+  "properties": {
+    "schema": {"type": "string", "const": "attention_updates_v1"},
+    "created_at": {"type": "string"},
+    "pipeline": {"type": "string"},
+    "artifactSemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formal_drift", "attention_update", "overlay_rendering"],
+      "properties": {
+        "formal_drift": {"type": "string"},
+        "attention_update": {"type": "string"},
+        "overlay_rendering": {"type": "string"}
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "concept_lattice_map",
+        "constellation_lattice_map",
+        "publication_regime_map",
+        "coherence_assessment",
+        "sophia_recommendations",
+        "coherence_drift_map"
+      ],
+      "properties": {
+        "concept_lattice_map": {"type": "string"},
+        "constellation_lattice_map": {"type": "string"},
+        "publication_regime_map": {"type": "string"},
+        "coherence_assessment": {"type": "string"},
+        "sophia_recommendations": {"type": "string"},
+        "coherence_drift_map": {"type": "string"}
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["type", "coherenceScore", "riskScore", "recommendedAction", "formalDriftSignal"],
+      "properties": {
+        "type": {"type": "string"},
+        "coherenceScore": {"type": "number"},
+        "riskScore": {"type": "number"},
+        "recommendedAction": {"type": "string"},
+        "formalDriftSignal": {"type": "number"}
+      }
+    },
+    "updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "targetId",
+          "previous_weight",
+          "updated_weight",
+          "delta",
+          "coherenceScore",
+          "riskScore",
+          "driftScore",
+          "governing_rule",
+          "explanation"
+        ],
+        "properties": {
+          "targetId": {"type": "string"},
+          "previous_weight": {"type": "number"},
+          "updated_weight": {"type": "number"},
+          "delta": {"type": "number"},
+          "coherenceScore": {"type": "number"},
+          "riskScore": {"type": "number"},
+          "driftScore": {"type": "number"},
+          "governing_rule": {"type": "string"},
+          "explanation": {"type": "string"}
+        }
+      }
+    }
+  }
+}

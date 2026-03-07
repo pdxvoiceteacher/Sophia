@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/scenario_audit_v1.schema.json",
+  "title": "Scenario Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "records"],
+  "properties": {
+    "schema": {"const": "scenario_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenarioId",
+        "scenarioStatus",
+        "preparednessRecommendation",
+        "coherenceScore",
+        "riskScore",
+        "captureRisk",
+        "continuityRisk",
+        "explanation",
+        "governingRule",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "scenarioId": {"type": "string"},
+        "scenarioStatus": {"enum": ["stable", "strained", "degraded", "capture-risk", "freeze-recommended"]},
+        "preparednessRecommendation": {
+          "enum": [
+            "continue",
+            "harden-watch",
+            "rehearse-recovery",
+            "freeze-pathway",
+            "prioritize-redundancy",
+            "require-broader-human-review"
+          ]
+        },
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "captureRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "continuityRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "explanation": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}

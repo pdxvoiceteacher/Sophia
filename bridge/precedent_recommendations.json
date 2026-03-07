@@ -1,0 +1,30 @@
+{
+  "schema": "precedent_recommendations_v1",
+  "created_at": "2026-03-20T00:00:00Z",
+  "phaselock": "CoherenceLattice precedent formalization -> Sophia precedent audit -> Publisher case-memory overlays",
+  "caution": "Divergence may be legitimate under constitutional or anti-capture pressure; no automatic doctrine hardening occurs.",
+  "recommendations": [
+    {
+      "caseId": "case:attestation-divergence-review-002",
+      "precedentStatus": "distinguish-case",
+      "coherenceScore": 0.5945,
+      "riskScore": 0.424734,
+      "divergenceLevel": 0.52,
+      "antiCaptureRisk": 0.417212,
+      "governingRule": "constitutional-or-anti-capture-distinguish",
+      "explanation": "Case should be distinguished with explicit reasoning; divergence may be legitimate under constitutional or anti-capture pressure. caseId=case:attestation-divergence-review-002, coherence=0.595, risk=0.425, divergence=0.520, antiCaptureRisk=0.417.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "caseId": "case:governance-intake-threshold-001",
+      "precedentStatus": "follow-precedent",
+      "coherenceScore": 0.79,
+      "riskScore": 0.313734,
+      "divergenceLevel": 0.24,
+      "antiCaptureRisk": 0.417212,
+      "governingRule": "follow-persuasive-precedent",
+      "explanation": "Case can follow persuasive precedent under low-risk, constitutionally aligned conditions. caseId=case:governance-intake-threshold-001, coherence=0.790, risk=0.314, divergence=0.240, antiCaptureRisk=0.417.",
+      "targetPublisherAction": "docket"
+    }
+  ]
+}

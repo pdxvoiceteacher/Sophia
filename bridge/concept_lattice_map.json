@@ -1,0 +1,8 @@
+{
+  "schema": "concept_lattice_map_v1",
+  "concepts": [
+    {"id": "c1", "label": "coherence"},
+    {"id": "c2", "label": "stability"},
+    {"id": "c3", "label": "alignment"}
+  ]
+}

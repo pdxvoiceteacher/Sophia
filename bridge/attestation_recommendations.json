@@ -1,0 +1,44 @@
+{
+  "schema": "attestation_recommendations_v1",
+  "created_at": "2026-03-19T00:00:00Z",
+  "phaselock": "CoherenceLattice attestation formalization -> Sophia witness/attestation audit -> Publisher attestation overlays",
+  "caution": "No automatic state transition occurs from witness audit alone; external review remains required.",
+  "recommendations": [
+    {
+      "witnessStatus": "sufficient",
+      "attestationStatus": "docket-for-witness",
+      "coherenceScore": 0.804,
+      "riskScore": 0.302464,
+      "tamperRisk": 0.226608,
+      "antiCaptureRisk": 0.311861,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "linkedWitnessId": "witness:node-a-001",
+        "linkedWitnessStatus": "sufficient"
+      },
+      "governingRule": "attestation-docket-for-witness",
+      "explanation": "Attestation candidate is suitable for advisory witness docket review under distributed trust safeguards. attestationId=attestation:continuity-ledger-001, coherence=0.804, risk=0.302, tamperRisk=0.227, antiCaptureRisk=0.312.",
+      "targetPublisherAction": "docket",
+      "attestationId": "attestation:continuity-ledger-001"
+    },
+    {
+      "witnessStatus": "strained",
+      "attestationStatus": "watch",
+      "coherenceScore": 0.5489,
+      "riskScore": 0.404972,
+      "tamperRisk": 0.359721,
+      "antiCaptureRisk": 0.400198,
+      "continuityContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "linkedWitnessId": "witness:node-b-002",
+        "linkedWitnessStatus": "strained"
+      },
+      "governingRule": "attestation-watchlist",
+      "explanation": "Attestation candidate remains on watchlist pending stronger testimony sufficiency and anti-tamper evidence. attestationId=attestation:telemetry-chain-002, coherence=0.549, risk=0.405, tamperRisk=0.360, antiCaptureRisk=0.400.",
+      "targetPublisherAction": "watch",
+      "attestationId": "attestation:telemetry-chain-002"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "coherence_drift_map_v1",
+  "created_at": "2026-03-06T19:24:01Z",
+  "globalDriftScore": 0.22,
+  "driftByNode": {
+    "c1": 0.18,
+    "c2": 0.26,
+    "c3": 0.24
+  }
+}
