@@ -1,0 +1,63 @@
+{
+  "schema": "reasoning_audit_v1",
+  "created_at": "2026-03-10T00:00:00Z",
+  "phaselock": "CoherenceLattice formalization -> Sophia recursive audit -> Publisher presentation",
+  "governanceMode": "observational",
+  "inputs": {
+    "reasoning_thread_map": "bridge/reasoning_thread_map.json",
+    "reasoning_thread_summary": "bridge/reasoning_thread_summary.json",
+    "coherence_drift_map": "bridge/coherence_drift_map.json",
+    "coherence_assessment": "bridge/coherence_assessment.json",
+    "sophia_recommendations": "sophia_recommendations_v1",
+    "attention_updates": "bridge/attention_updates.json"
+  },
+  "threads": [
+    {
+      "threadId": "thread:coherence-lattice-001",
+      "auditStatus": "watch",
+      "coherenceScore": 0.678082,
+      "riskScore": 0.223625,
+      "driftContext": {
+        "globalDriftScore": 0.22,
+        "threadDriftScore": 0.22,
+        "contradictionCount": 0
+      },
+      "attentionContext": {
+        "meanAttentionWeight": 0.770417,
+        "linkedAttentionTargets": 2
+      },
+      "governingRule": "recursive-watch-observational",
+      "recursivePotentialScore": 0.74,
+      "cognitiveWatchSignals": [
+        "multi-step coherence persistence",
+        "low contradiction",
+        "stable concept reuse",
+        "low drift retention"
+      ],
+      "explanation": "Thread placed on recursive watchlist; candidate signal remains observational and governance-bound. threadId=thread:coherence-lattice-001, coherence=0.678, risk=0.224, drift=0.220, recursivePotential=0.740.",
+      "targetPublisherAction": "annotate"
+    },
+    {
+      "threadId": "thread:memory-linking-002",
+      "auditStatus": "observe",
+      "coherenceScore": 0.435972,
+      "riskScore": 0.569625,
+      "driftContext": {
+        "globalDriftScore": 0.22,
+        "threadDriftScore": 0.24,
+        "contradictionCount": 2
+      },
+      "attentionContext": {
+        "meanAttentionWeight": 0.644316,
+        "linkedAttentionTargets": 1
+      },
+      "governingRule": "baseline-observe",
+      "recursivePotentialScore": 0.31,
+      "cognitiveWatchSignals": [
+        "low drift retention"
+      ],
+      "explanation": "Thread remains in observational audit state pending stronger coherence persistence evidence. threadId=thread:memory-linking-002, coherence=0.436, risk=0.570, drift=0.240, recursivePotential=0.310.",
+      "targetPublisherAction": "annotate"
+    }
+  ]
+}

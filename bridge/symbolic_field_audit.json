@@ -1,0 +1,135 @@
+{
+  "schema": "symbolic_field_audit_v1",
+  "created_at": "2026-03-25T00:00:00Z",
+  "phaselock": "symbolic / regime / warning state -> CoherenceLattice symbolic field and early-warning formalization -> Sophia symbolic field audit -> Publisher symbolic overlays -> human/community review",
+  "caution": "Symbolic field recommendations are bounded interpretive guidance only and do not automatically mutate memory, close cases, or reconfigure triadic governance.",
+  "metadata": {
+    "inputMode": "fixture",
+    "inputModeWarning": "Inputs are fixture symbolic-field artifacts; recommendations are non-canonical simulation guidance.",
+    "systemRisk": 0.496678,
+    "inputArtifacts": [
+      {
+        "path": "bridge/symbolic_field_state.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "symbolic_field_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.symbolic.field_state",
+        "producerCommit": "fixture-t-0001",
+        "generatedAt": "2026-03-25T00:00:00Z"
+      },
+      {
+        "path": "bridge/symbolic_field_summary.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "symbolic_field_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.symbolic.field_summary",
+        "producerCommit": "fixture-t-0001",
+        "generatedAt": "2026-03-25T00:00:00Z"
+      },
+      {
+        "path": "bridge/regime_transition_report.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "symbolic_field_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.symbolic.regime_transition_report",
+        "producerCommit": "fixture-t-0001",
+        "generatedAt": "2026-03-25T00:00:00Z"
+      },
+      {
+        "path": "bridge/early_warning_signal_map.json",
+        "sourceMode": "canonical",
+        "schemaVersion": "symbolic_field_v1",
+        "producerRepo": "Sophia-Fixtures",
+        "producerModule": "coherencelattice.symbolic.early_warning_signal_map",
+        "producerCommit": "fixture-t-0001",
+        "generatedAt": "2026-03-25T00:00:00Z"
+      }
+    ]
+  },
+  "records": [
+    {
+      "targetId": "symbolic:caution-003",
+      "targetType": "normative-cluster",
+      "fieldStatus": "caution",
+      "coherenceScore": 0.5065,
+      "riskScore": 0.551502,
+      "regimeContext": "transitionRisk=0.580, volatilityScore=0.560, earlyWarningScore=0.520; early-warning signals are evidence-bound.",
+      "closureContext": "Closure linkage is interpretive only; processed outcomes are not assumed resolved without durability evidence.",
+      "priorityContext": "Priority linkage is advisory only; architecture-sensitive reasoning should remain auditable and contestable.",
+      "institutionalContext": "symbolicCoherence=0.560, ambiguityScore=0.580, systemRisk=0.497; field interpretation must remain cautious.",
+      "governingRule": "caution-under-symbolic-ambiguity",
+      "explanation": "Symbolic field recommendation is bounded interpretive guidance only. targetId=symbolic:caution-003, fieldStatus=caution, coherence=0.507, risk=0.552.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "symbolic:escalate-004",
+      "targetType": "regime-signal",
+      "fieldStatus": "escalate",
+      "coherenceScore": 0.486,
+      "riskScore": 0.646002,
+      "regimeContext": "transitionRisk=0.630, volatilityScore=0.740, earlyWarningScore=0.710; early-warning signals are evidence-bound.",
+      "closureContext": "Closure linkage is interpretive only; processed outcomes are not assumed resolved without durability evidence.",
+      "priorityContext": "Priority linkage is advisory only; architecture-sensitive reasoning should remain auditable and contestable.",
+      "institutionalContext": "symbolicCoherence=0.510, ambiguityScore=0.620, systemRisk=0.497; field interpretation must remain cautious.",
+      "governingRule": "escalate-early-warning-regime-shift",
+      "explanation": "Symbolic field recommendation is bounded interpretive guidance only. targetId=symbolic:escalate-004, fieldStatus=escalate, coherence=0.486, risk=0.646.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "symbolic:freeze-005",
+      "targetType": "governance-pathway",
+      "fieldStatus": "freeze-dependent-pathways",
+      "coherenceScore": 0.391,
+      "riskScore": 0.702502,
+      "regimeContext": "transitionRisk=0.840, volatilityScore=0.710, earlyWarningScore=0.690; early-warning signals are evidence-bound.",
+      "closureContext": "Closure linkage is interpretive only; processed outcomes are not assumed resolved without durability evidence.",
+      "priorityContext": "Priority linkage is advisory only; architecture-sensitive reasoning should remain auditable and contestable.",
+      "institutionalContext": "symbolicCoherence=0.420, ambiguityScore=0.690, systemRisk=0.497; field interpretation must remain cautious.",
+      "governingRule": "freeze-under-regime-instability",
+      "explanation": "Symbolic field recommendation is bounded interpretive guidance only. targetId=symbolic:freeze-005, fieldStatus=freeze-dependent-pathways, coherence=0.391, risk=0.703.",
+      "targetPublisherAction": "suppress"
+    },
+    {
+      "targetId": "symbolic:human-review-006",
+      "targetType": "early-warning-critical",
+      "fieldStatus": "require-human-review",
+      "coherenceScore": 0.469,
+      "riskScore": 0.720502,
+      "regimeContext": "transitionRisk=0.720, volatilityScore=0.790, earlyWarningScore=0.870; early-warning signals are evidence-bound.",
+      "closureContext": "Closure linkage is interpretive only; processed outcomes are not assumed resolved without durability evidence.",
+      "priorityContext": "Priority linkage is advisory only; architecture-sensitive reasoning should remain auditable and contestable.",
+      "institutionalContext": "symbolicCoherence=0.470, ambiguityScore=0.670, systemRisk=0.497; field interpretation must remain cautious.",
+      "governingRule": "evidence-bound-early-warning-override",
+      "explanation": "Symbolic field recommendation is bounded interpretive guidance only. targetId=symbolic:human-review-006, fieldStatus=require-human-review, coherence=0.469, risk=0.721.",
+      "targetPublisherAction": "docket"
+    },
+    {
+      "targetId": "symbolic:monitor-002",
+      "targetType": "watchlist",
+      "fieldStatus": "monitor",
+      "coherenceScore": 0.6155,
+      "riskScore": 0.406002,
+      "regimeContext": "transitionRisk=0.390, volatilityScore=0.440, earlyWarningScore=0.350; early-warning signals are evidence-bound.",
+      "closureContext": "Closure linkage is interpretive only; processed outcomes are not assumed resolved without durability evidence.",
+      "priorityContext": "Priority linkage is advisory only; architecture-sensitive reasoning should remain auditable and contestable.",
+      "institutionalContext": "symbolicCoherence=0.620, ambiguityScore=0.380, systemRisk=0.497; field interpretation must remain cautious.",
+      "governingRule": "monitor-symbolic-field",
+      "explanation": "Symbolic field recommendation is bounded interpretive guidance only. targetId=symbolic:monitor-002, fieldStatus=monitor, coherence=0.615, risk=0.406.",
+      "targetPublisherAction": "watch"
+    },
+    {
+      "targetId": "symbolic:stable-001",
+      "targetType": "memory-stratum",
+      "fieldStatus": "stable",
+      "coherenceScore": 0.818,
+      "riskScore": 0.237002,
+      "regimeContext": "transitionRisk=0.210, volatilityScore=0.180, earlyWarningScore=0.190; early-warning signals are evidence-bound.",
+      "closureContext": "Closure linkage is interpretive only; processed outcomes are not assumed resolved without durability evidence.",
+      "priorityContext": "Priority linkage is advisory only; architecture-sensitive reasoning should remain auditable and contestable.",
+      "institutionalContext": "symbolicCoherence=0.860, ambiguityScore=0.180, systemRisk=0.497; field interpretation must remain cautious.",
+      "governingRule": "stable-symbolic-field",
+      "explanation": "Symbolic field recommendation is bounded interpretive guidance only. targetId=symbolic:stable-001, fieldStatus=stable, coherence=0.818, risk=0.237.",
+      "targetPublisherAction": "docket"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "verification_state_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.verification.entity_resolution_map",
+  "producerCommit": "fixture-u-0001",
+  "generatedAt": "2026-03-26T00:00:00Z",
+  "created_at": "2026-03-26T00:00:00Z",
+  "targets": [
+    {"targetId": "verify:urgent-001", "entityAmbiguity": 0.44, "identityCollisionRisk": 0.41},
+    {"targetId": "verify:nearterm-002", "entityAmbiguity": 0.58, "identityCollisionRisk": 0.55},
+    {"targetId": "verify:monitor-003", "entityAmbiguity": 0.47, "identityCollisionRisk": 0.32},
+    {"targetId": "verify:defer-004", "entityAmbiguity": 0.19, "identityCollisionRisk": 0.16},
+    {"targetId": "verify:human-005", "entityAmbiguity": 0.86, "identityCollisionRisk": 0.82}
+  ]
+}

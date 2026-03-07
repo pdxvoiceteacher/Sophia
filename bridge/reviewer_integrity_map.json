@@ -1,0 +1,45 @@
+{
+  "schema": "reviewer_integrity_map_v1",
+  "created_at": "2026-03-14T00:00:00Z",
+  "caution": "Bounded governance evidence only; no total-life inference.",
+  "candidates": [
+    {
+      "reviewerId": "reviewer:example-001",
+      "consentStatus": "voluntary",
+      "evidenceScope": [
+        "in-system contributions",
+        "prior review rationales",
+        "conflict disclosures"
+      ],
+      "declaredConflicts": [
+        "affiliated with project X"
+      ],
+      "portfolioRefs": [
+        "review:123",
+        "contribution:456"
+      ],
+      "integrityScore": 0.83,
+      "conflictRisk": 0.23,
+      "contradictionFlags": []
+    },
+    {
+      "reviewerId": "reviewer:example-002",
+      "consentStatus": "voluntary",
+      "evidenceScope": [
+        "in-system contributions",
+        "conflict disclosures"
+      ],
+      "declaredConflicts": [
+        "vendor relationship under disclosure"
+      ],
+      "portfolioRefs": [
+        "review:789"
+      ],
+      "integrityScore": 0.59,
+      "conflictRisk": 0.41,
+      "contradictionFlags": [
+        "inconsistent rationale under similar cases"
+      ]
+    }
+  ]
+}

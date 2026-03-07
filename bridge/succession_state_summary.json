@@ -1,0 +1,8 @@
+{
+  "schema": "succession_state_summary_v1",
+  "created_at": "2026-03-17T00:00:00Z",
+  "targetCount": 2,
+  "meanSuccessionReadinessScore": 0.615,
+  "meanGovernanceFragilityScore": 0.47,
+  "caution": "Succession state formalization is advisory and anti-capture constrained."
+}
