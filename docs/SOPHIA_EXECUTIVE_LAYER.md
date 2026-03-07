@@ -233,3 +233,27 @@ Publisher must surface institutional state from Sophia outputs as read-only over
 Required sequence for this phase:
 
 `CoherenceLattice institutional synthesis -> Sophia institutional audit -> Publisher institutional state surfacing without canonical mutation`
+
+## Queue pressure, anti-Goodhart, and load-shedding protocol (Phase Q)
+
+Phase Q audits queue pressure, review fatigue, dominance risk, and metric-gaming exposure as operational-governance signals.
+
+Load-shedding recommendations are bounded operational guidance only and do **not** automatically delete, suppress, or canonically mutate queued material.
+
+Additional procedural principles:
+
+- queue overload is a governance signal
+- delay can be a form of capture when high-integrity review is persistently slowed
+- metric performance is not equivalent to integrity
+- review fatigue can reduce practical legitimacy even if quorum appears nominally satisfied
+- load shedding must remain explicit, auditable, and reversible
+
+Publisher requirements:
+
+- surface only Sophia-audited queue-health and anti-Goodhart overlays
+- keep watch items separate from action-oriented dashboards
+- do not mutate queues or canonical truth automatically
+
+Required sequence for this phase:
+
+`queue / review / watchlist state -> CoherenceLattice operational pressure formalization -> Sophia load-shedding and anti-Goodhart audit -> Publisher queue-health and backlog overlays -> human/community operational review`

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "queue_pressure_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.queue.review_load_distribution",
+  "producerCommit": "fixture-q-0001",
+  "generatedAt": "2026-03-22T00:00:00Z",
+  "created_at": "2026-03-22T00:00:00Z",
+  "targets": [
+    {"targetId": "queue:governance-review", "reviewFatigueScore": 0.31, "dominanceScore": 0.25},
+    {"targetId": "queue:precedent-watch", "reviewFatigueScore": 0.57, "dominanceScore": 0.42},
+    {"targetId": "queue:scenario-intake", "reviewFatigueScore": 0.78, "dominanceScore": 0.49},
+    {"targetId": "queue:escalation-docket", "reviewFatigueScore": 0.66, "dominanceScore": 0.54},
+    {"targetId": "queue:promotion-fastlane", "reviewFatigueScore": 0.58, "dominanceScore": 0.82},
+    {"targetId": "queue:attestation-intake", "reviewFatigueScore": 0.51, "dominanceScore": 0.73}
+  ]
+}
