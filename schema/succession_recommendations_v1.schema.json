@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/succession_recommendations_v1.schema.json",
+  "title": "Succession Recommendations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "recommendations"],
+  "properties": {
+    "schema": {"const": "succession_recommendations_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "recommendations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/record"}
+    }
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewerId",
+        "resilienceStatus",
+        "auditStatus",
+        "coherenceScore",
+        "riskScore",
+        "quorumDepthContext",
+        "antiCaptureRisk",
+        "governanceFragilityContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "reviewerId": {"type": "string"},
+        "resilienceStatus": {"enum": ["stable", "thinning", "fragile", "capture-risk", "degraded"]},
+        "auditStatus": {
+          "enum": [
+            "continue",
+            "queue-continuity-review",
+            "increase-watch",
+            "freeze-governance-expansion",
+            "degraded-mode",
+            "require-human-emergency-review"
+          ]
+        },
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "quorumDepthContext": {"type": "object", "additionalProperties": true},
+        "antiCaptureRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "governanceFragilityContext": {"type": "object", "additionalProperties": true},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}
