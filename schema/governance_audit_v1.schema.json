@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/governance_audit_v1.schema.json",
+  "title": "Governance Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "governanceMode", "caution", "audits"],
+  "properties": {
+    "schema": {"const": "governance_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "governanceMode": {"const": "bounded-consent-evidence"},
+    "caution": {"type": "string"},
+    "audits": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/item"}
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewerId",
+        "governanceStatus",
+        "coherenceScore",
+        "riskScore",
+        "conflictRisk",
+        "volatilityContext",
+        "contradictionContext",
+        "integritySignals",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "reviewerId": {"type": "string"},
+        "governanceStatus": {"enum": ["eligible", "watch", "hold", "recommend-human-review", "ineligible"]},
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "conflictRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "volatilityContext": {"type": "object", "additionalProperties": true},
+        "contradictionContext": {"type": "object", "additionalProperties": true},
+        "integritySignals": {"type": "array", "items": {"type": "string"}},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}

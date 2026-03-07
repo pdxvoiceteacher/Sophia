@@ -1,0 +1,20 @@
+{
+  "schema": "amendment_candidate_map_v1",
+  "created_at": "2026-03-16T00:00:00Z",
+  "amendments": [
+    {
+      "amendmentId": "amendment:slow-amendment-clause-001",
+      "deliberationId": "deliberation:charter-procedural-001",
+      "formalAmendmentScore": 0.74,
+      "contradictionScore": 0.14,
+      "scopeRisk": 0.28
+    },
+    {
+      "amendmentId": "amendment:emergency-authority-expansion-002",
+      "deliberationId": "deliberation:emergency-interpretation-002",
+      "formalAmendmentScore": 0.52,
+      "contradictionScore": 0.33,
+      "scopeRisk": 0.58
+    }
+  ]
+}

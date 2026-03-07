@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sonya_admission_decisions_v1.schema.json",
+  "title": "Sonya Admission Decisions v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "decisions"],
+  "properties": {
+    "schema": {"type": "string", "const": "sonya_admission_decisions_v1"},
+    "created_at": {"type": "string"},
+    "decisions": {
+      "type": "array",
+      "items": {"$ref": "#/definitions/decision"}
+    }
+  },
+  "definitions": {
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputId",
+        "auditStatus",
+        "coherenceScore",
+        "riskScore",
+        "driftContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction",
+        "suggestedConceptTargets"
+      ],
+      "properties": {
+        "inputId": {"type": "string"},
+        "auditStatus": {"type": "string", "enum": ["admit", "observe", "defer", "reject", "promote"]},
+        "coherenceScore": {"type": "number"},
+        "riskScore": {"type": "number"},
+        "driftContext": {"type": "object"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"type": "string", "enum": ["store", "annotate", "hold", "discard"]},
+        "suggestedConceptTargets": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

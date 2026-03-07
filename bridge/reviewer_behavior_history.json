@@ -1,0 +1,22 @@
+{
+  "schema": "reviewer_behavior_history_v1",
+  "created_at": "2026-03-14T00:00:00Z",
+  "reviewers": [
+    {
+      "reviewerId": "reviewer:example-001",
+      "behaviorTrend": "stable",
+      "overrideRisk": 0.18,
+      "coherenceAlignment": 0.81,
+      "behaviorVolatility": 0.16,
+      "notes": "Rationales are consistent and conflict disclosures are up to date."
+    },
+    {
+      "reviewerId": "reviewer:example-002",
+      "behaviorTrend": "degrading",
+      "overrideRisk": 0.44,
+      "coherenceAlignment": 0.52,
+      "behaviorVolatility": 0.48,
+      "notes": "Recent rationale drift suggests re-review should remain available."
+    }
+  ]
+}
