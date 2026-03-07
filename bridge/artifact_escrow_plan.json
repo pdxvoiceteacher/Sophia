@@ -1,0 +1,19 @@
+{
+  "schema": "artifact_escrow_plan_v1",
+  "created_at": "2026-03-18T00:00:00Z",
+  "escrowEntries": [
+    {
+      "preservationId": "preservation:core-audit-ledger-001",
+      "distributedCustodyScore": 0.82,
+      "integrityEvidenceScore": 0.86,
+      "custodianCount": 3
+    },
+    {
+      "preservationId": "preservation:telemetry-archive-002",
+      "distributedCustodyScore": 0.55,
+      "integrityEvidenceScore": 0.62,
+      "custodianCount": 2
+    }
+  ],
+  "caution": "Escrow index supports reviewable preservation and does not authorize hidden persistence."
+}

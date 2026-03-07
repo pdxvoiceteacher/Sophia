@@ -1,0 +1,88 @@
+{
+  "schema": "resilience_audit_v1",
+  "created_at": "2026-03-17T00:00:00Z",
+  "phaselock": "governance body state -> CoherenceLattice succession/resilience formalization -> Sophia resilience audit -> Publisher continuity/succession overlays -> human/community continuity decision",
+  "caution": "Continuity recommendations support lawful resilience and reviewer redundancy only; no automatic authority transfer occurs.",
+  "records": [
+    {
+      "resilienceStatus": "stable",
+      "auditStatus": "continue",
+      "coherenceScore": 0.654,
+      "riskScore": 0.362212,
+      "quorumDepthContext": {
+        "quorumDepthScore": 0.61,
+        "participationDepthScore": 0.58
+      },
+      "antiCaptureRisk": 0.385707,
+      "governanceFragilityContext": {
+        "successionReadinessScore": 0.74,
+        "governanceFragilityScore": 0.36,
+        "concentrationRisk": 0.31
+      },
+      "governingRule": "stable-bounded-continuity",
+      "explanation": "Resilience remains stable under bounded anti-capture and quorum depth conditions. resilienceId=resilience:governance-core-001, coherence=0.654, risk=0.362, antiCaptureRisk=0.386.",
+      "targetPublisherAction": "watch",
+      "resilienceId": "resilience:governance-core-001"
+    },
+    {
+      "resilienceStatus": "thinning",
+      "auditStatus": "increase-watch",
+      "coherenceScore": 0.5335,
+      "riskScore": 0.474162,
+      "quorumDepthContext": {
+        "quorumDepthScore": 0.61,
+        "participationDepthScore": 0.58
+      },
+      "antiCaptureRisk": 0.487207,
+      "governanceFragilityContext": {
+        "successionReadinessScore": 0.49,
+        "governanceFragilityScore": 0.58,
+        "concentrationRisk": 0.54
+      },
+      "governingRule": "thinning-watchlist",
+      "explanation": "Resilience layer is thinning; increase watch and maintain redundancy-focused review pathways. resilienceId=resilience:review-body-002, coherence=0.533, risk=0.474, antiCaptureRisk=0.487.",
+      "targetPublisherAction": "watch",
+      "resilienceId": "resilience:review-body-002"
+    },
+    {
+      "resilienceStatus": "stable",
+      "auditStatus": "queue-continuity-review",
+      "coherenceScore": 0.737,
+      "riskScore": 0.317287,
+      "quorumDepthContext": {
+        "quorumDepthScore": 0.61,
+        "continuityStressScore": 0.46
+      },
+      "antiCaptureRisk": 0.328218,
+      "governanceFragilityContext": {
+        "successionReadinessScore": 0.76,
+        "conflictRisk": 0.24,
+        "reliabilityScore": 0.78
+      },
+      "governingRule": "roster-bounded-readiness",
+      "explanation": "Continuity roster candidate appears stable enough for advisory queueing; no automatic authority transfer occurs. reviewerId=reviewer:example-001, coherence=0.737, risk=0.317, antiCaptureRisk=0.328.",
+      "targetPublisherAction": "docket",
+      "reviewerId": "reviewer:example-001"
+    },
+    {
+      "resilienceStatus": "thinning",
+      "auditStatus": "increase-watch",
+      "coherenceScore": 0.551,
+      "riskScore": 0.460087,
+      "quorumDepthContext": {
+        "quorumDepthScore": 0.61,
+        "continuityStressScore": 0.46
+      },
+      "antiCaptureRisk": 0.467718,
+      "governanceFragilityContext": {
+        "successionReadinessScore": 0.51,
+        "conflictRisk": 0.46,
+        "reliabilityScore": 0.57
+      },
+      "governingRule": "roster-watch",
+      "explanation": "Continuity roster candidate remains on watch pending stronger redundancy and anti-capture margin. reviewerId=reviewer:example-002, coherence=0.551, risk=0.460, antiCaptureRisk=0.468.",
+      "targetPublisherAction": "watch",
+      "reviewerId": "reviewer:example-002"
+    }
+  ]
+}
