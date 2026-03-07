@@ -122,3 +122,17 @@ Anti-capture review remains central: if stacked-risk conditions are detected, am
 Required sequence for this phase:
 
 `constitutional state -> CoherenceLattice deliberation/amendment formalization -> Sophia quorum/amendment audit -> Publisher deliberation docket + amendment queue -> human/community constitutional review`
+
+## Succession, redundancy, and anti-capture resilience (Phase K)
+
+Phase K audits governance survivability and reviewer redundancy as **lawful continuity guidance**.
+
+Continuity recommendations are about resilience under disruption and anti-capture safeguards. They do not authorize automatic authority transfer or self-installation of governors.
+
+When degraded mode appears, it means constrained continuity safeguards and preservation of reviewability, **not sovereignty**.
+
+Succession candidates remain human/community reviewed through continuity dockets.
+
+Required sequence for this phase:
+
+`governance body state -> CoherenceLattice succession/resilience formalization -> Sophia resilience audit -> Publisher continuity/succession overlays -> human/community continuity decision`
