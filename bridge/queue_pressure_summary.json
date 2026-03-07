@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "queue_pressure_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.queue.pressure_summary",
+  "producerCommit": "fixture-q-0001",
+  "generatedAt": "2026-03-22T00:00:00Z",
+  "created_at": "2026-03-22T00:00:00Z",
+  "meanBacklogScore": 0.52,
+  "meanStalenessScore": 0.55,
+  "meanReviewFatigueScore": 0.51,
+  "meanDominanceScore": 0.44,
+  "meanGamingRiskScore": 0.48,
+  "meanHollowPerformanceScore": 0.43
+}

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "queue_pressure_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.queue.goodhart_risk_report",
+  "producerCommit": "fixture-q-0001",
+  "generatedAt": "2026-03-22T00:00:00Z",
+  "created_at": "2026-03-22T00:00:00Z",
+  "targets": [
+    {"targetId": "queue:governance-review", "gamingRiskScore": 0.24, "hollowPerformanceScore": 0.21},
+    {"targetId": "queue:precedent-watch", "gamingRiskScore": 0.43, "hollowPerformanceScore": 0.44},
+    {"targetId": "queue:scenario-intake", "gamingRiskScore": 0.51, "hollowPerformanceScore": 0.48},
+    {"targetId": "queue:escalation-docket", "gamingRiskScore": 0.47, "hollowPerformanceScore": 0.39},
+    {"targetId": "queue:promotion-fastlane", "gamingRiskScore": 0.73, "hollowPerformanceScore": 0.72},
+    {"targetId": "queue:attestation-intake", "gamingRiskScore": 0.65, "hollowPerformanceScore": 0.56}
+  ]
+}

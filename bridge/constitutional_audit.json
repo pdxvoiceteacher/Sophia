@@ -1,0 +1,227 @@
+{
+  "schema": "constitutional_audit_v1",
+  "created_at": "2026-03-15T00:00:00Z",
+  "phaselock": "governance / reviewer / promotion state -> CoherenceLattice constitutional formalization -> Sophia constitutional audit -> Publisher constitutional overlays -> human/community response if available -> continuity mode if governance is degraded",
+  "governanceMode": "constitutional-constraints-and-continuity",
+  "caution": "Constitutional recommendations are bounded governance constraints and continuity recommendations; no unconstrained self-governance is authorized.",
+  "evaluations": [
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.365678,
+      "contradictionContext": {
+        "contradictionScore": 0.22,
+        "contradictionCount": 1,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.586,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:anti-capture, governanceRisk=0.366, captureRisk=0.586, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:anti-capture"
+    },
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.356678,
+      "contradictionContext": {
+        "contradictionScore": 0.16,
+        "contradictionCount": 1,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.476,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:anti-instrumentalization, governanceRisk=0.357, captureRisk=0.476, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:anti-instrumentalization"
+    },
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.347678,
+      "contradictionContext": {
+        "contradictionScore": 0.1,
+        "contradictionCount": 0,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.461,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:auditability, governanceRisk=0.348, captureRisk=0.461, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:auditability"
+    },
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.355178,
+      "contradictionContext": {
+        "contradictionScore": 0.15,
+        "contradictionCount": 0,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.481,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:bounded-authority, governanceRisk=0.355, captureRisk=0.481, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:bounded-authority"
+    },
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.344678,
+      "contradictionContext": {
+        "contradictionScore": 0.08,
+        "contradictionCount": 0,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.441,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:consent-bounded-evidence, governanceRisk=0.345, captureRisk=0.441, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:consent-bounded-evidence"
+    },
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.353678,
+      "contradictionContext": {
+        "contradictionScore": 0.14,
+        "contradictionCount": 0,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.471,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:cooperative-flourishing, governanceRisk=0.354, captureRisk=0.471, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:cooperative-flourishing"
+    },
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.341678,
+      "contradictionContext": {
+        "contradictionScore": 0.06,
+        "contradictionCount": 0,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.426,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:no-violence-optimization, governanceRisk=0.342, captureRisk=0.426, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:no-violence-optimization"
+    },
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.349178,
+      "contradictionContext": {
+        "contradictionScore": 0.11,
+        "contradictionCount": 0,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.456,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:non-domination, governanceRisk=0.349, captureRisk=0.456, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:non-domination"
+    },
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.362678,
+      "contradictionContext": {
+        "contradictionScore": 0.2,
+        "contradictionCount": 1,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.526,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:preservation-under-stress, governanceRisk=0.363, captureRisk=0.526, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:preservation-under-stress"
+    },
+    {
+      "constitutionalStatus": "strained",
+      "governanceRisk": 0.350678,
+      "contradictionContext": {
+        "contradictionScore": 0.12,
+        "contradictionCount": 0,
+        "governanceWatchCount": 1,
+        "reviewerReviewFlagCount": 2
+      },
+      "captureRisk": 0.466,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "cautious-freeze-promotions",
+      "explanation": "Constitutional caution threshold reached; pause promotion intake while preserving reversible governance operation. principleId=principle:reversibility, governanceRisk=0.351, captureRisk=0.466, continuityMode=guarded.",
+      "recommendedAction": "freeze-promotions",
+      "principleId": "principle:reversibility"
+    },
+    {
+      "constitutionalStatus": "indeterminate",
+      "governanceRisk": 0.253,
+      "contradictionContext": {
+        "ineligibleCount": 0,
+        "suspendedReviewerCount": 0
+      },
+      "captureRisk": 0.276,
+      "continuityModeContext": {
+        "continuityMode": "guarded",
+        "stressScore": 0.46,
+        "preservationRecommended": false
+      },
+      "governingRule": "system-increase-watch",
+      "explanation": "System continuity signal is mixed; increase watch and maintain reversible governance constraints. systemTargetId=system:governance-continuity, governanceRisk=0.253, captureRisk=0.276, continuityMode=guarded.",
+      "recommendedAction": "increase-watch",
+      "systemTargetId": "system:governance-continuity"
+    }
+  ]
+}

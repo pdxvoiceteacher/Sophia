@@ -1,0 +1,16 @@
+{
+  "schema": "precedent_divergence_report_v1",
+  "created_at": "2026-03-20T00:00:00Z",
+  "cases": [
+    {
+      "caseId": "case:governance-intake-threshold-001",
+      "divergenceLevel": 0.24,
+      "divergenceExplained": true
+    },
+    {
+      "caseId": "case:attestation-divergence-review-002",
+      "divergenceLevel": 0.52,
+      "divergenceExplained": true
+    }
+  ]
+}

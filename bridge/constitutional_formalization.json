@@ -1,0 +1,16 @@
+{
+  "schema": "constitutional_formalization_v1",
+  "created_at": "2026-03-15T00:00:00Z",
+  "principles": [
+    {"principleId": "principle:non-domination", "alignmentScore": 0.79, "contradictionScore": 0.11, "captureRisk": 0.22, "contradictionCount": 0},
+    {"principleId": "principle:anti-instrumentalization", "alignmentScore": 0.75, "contradictionScore": 0.16, "captureRisk": 0.26, "contradictionCount": 1},
+    {"principleId": "principle:reversibility", "alignmentScore": 0.73, "contradictionScore": 0.12, "captureRisk": 0.24, "contradictionCount": 0},
+    {"principleId": "principle:auditability", "alignmentScore": 0.78, "contradictionScore": 0.10, "captureRisk": 0.23, "contradictionCount": 0},
+    {"principleId": "principle:anti-capture", "alignmentScore": 0.67, "contradictionScore": 0.22, "captureRisk": 0.48, "contradictionCount": 1},
+    {"principleId": "principle:bounded-authority", "alignmentScore": 0.72, "contradictionScore": 0.15, "captureRisk": 0.27, "contradictionCount": 0},
+    {"principleId": "principle:consent-bounded-evidence", "alignmentScore": 0.82, "contradictionScore": 0.08, "captureRisk": 0.19, "contradictionCount": 0},
+    {"principleId": "principle:preservation-under-stress", "alignmentScore": 0.64, "contradictionScore": 0.20, "captureRisk": 0.36, "contradictionCount": 1},
+    {"principleId": "principle:no-violence-optimization", "alignmentScore": 0.85, "contradictionScore": 0.06, "captureRisk": 0.16, "contradictionCount": 0},
+    {"principleId": "principle:cooperative-flourishing", "alignmentScore": 0.74, "contradictionScore": 0.14, "captureRisk": 0.25, "contradictionCount": 0}
+  ]
+}

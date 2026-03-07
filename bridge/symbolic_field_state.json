@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "symbolic_field_v1",
+  "producerRepo": "Sophia-Fixtures",
+  "producerModule": "coherencelattice.symbolic.field_state",
+  "producerCommit": "fixture-t-0001",
+  "generatedAt": "2026-03-25T00:00:00Z",
+  "created_at": "2026-03-25T00:00:00Z",
+  "targets": [
+    {"targetId": "symbolic:stable-001", "targetType": "memory-stratum", "symbolicCoherence": 0.86, "ambiguityScore": 0.18},
+    {"targetId": "symbolic:monitor-002", "targetType": "watchlist", "symbolicCoherence": 0.62, "ambiguityScore": 0.38},
+    {"targetId": "symbolic:caution-003", "targetType": "normative-cluster", "symbolicCoherence": 0.56, "ambiguityScore": 0.58},
+    {"targetId": "symbolic:escalate-004", "targetType": "regime-signal", "symbolicCoherence": 0.51, "ambiguityScore": 0.62},
+    {"targetId": "symbolic:freeze-005", "targetType": "governance-pathway", "symbolicCoherence": 0.42, "ambiguityScore": 0.69},
+    {"targetId": "symbolic:human-review-006", "targetType": "early-warning-critical", "symbolicCoherence": 0.47, "ambiguityScore": 0.67}
+  ]
+}
