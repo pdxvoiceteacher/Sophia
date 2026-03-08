@@ -470,3 +470,7 @@ Sophia theory-transfer recommendations are bounded scientific-governance guidanc
 ## System-forecast guidance boundary
 
 Sophia system-forecast recommendations are bounded governance guidance only. Forecasts may guide attention (investigation priority, replication focus, support preparation, governance awareness) but never justify pre-emptive coercion or intervention solely on predicted outcomes.
+
+## Curiosity guidance boundary
+
+Sophia curiosity recommendations are bounded governance guidance only. Information-seeking may prioritize attention, verification, and experiment design, but never justify surveillance expansion without explicit human authorization. Curiosity must guide investigation, not intrusion.
