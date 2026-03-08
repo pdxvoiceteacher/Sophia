@@ -209,7 +209,7 @@ def test_bounded_non_grandiose_language() -> None:
         ]
     ).lower()
     assert "bounded" in text
-    assert "does not certify final" in text
+    assert "do not certify final" in text
     assert "humility" in text
     assert "inevitable" not in text
 
@@ -231,7 +231,9 @@ def test_legibility_risk_and_overclaim_suppression() -> None:
     )
 
     assert leg.domain_status == "legibility-risk"
+    assert leg.target_publisher_action == "docket"
     assert overclaim.domain_status == "require-human-review"
+    assert overclaim.target_publisher_action == "suppress"
 
 
 def test_fail_closed_provenance_enforcement(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -240,6 +242,19 @@ def test_fail_closed_provenance_enforcement(monkeypatch: pytest.MonkeyPatch, tmp
 
     bad_map = _artifact({"producerCommit": "", "targets": [{"targetId": "target:a", "targetType": "domain"}]})
     _write_json(tmp_path / "bridge/emergent_domain_map.json", bad_map)
+
+    with pytest.raises(module.EmergentDomainInputError):
+        module.build_outputs()
+
+
+def test_supporting_audits_must_have_records(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _configure_paths(monkeypatch, tmp_path)
+    _write_common_inputs(tmp_path)
+
+    _write_json(
+        tmp_path / "bridge/theory_transfer_audit.json",
+        {"schema": "theory_transfer_audit_v1", "created_at": "2026-04-08T00:00:00Z", "records": "invalid"},
+    )
 
     with pytest.raises(module.EmergentDomainInputError):
         module.build_outputs()

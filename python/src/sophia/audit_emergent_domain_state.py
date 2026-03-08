@@ -80,6 +80,9 @@ def _clamp01(value: float) -> float:
     return max(0.0, min(1.0, float(value)))
 
 
+def _display_path(path: Path) -> str:
+    return str(path.relative_to(REPO_ROOT)) if path.is_relative_to(REPO_ROOT) else str(path)
+
 def _resolve_created_at(*docs: dict[str, Any]) -> str:
     for doc in docs:
         for key in ("generatedAt", "created_at"):
@@ -95,7 +98,7 @@ def _status_to_action(status: str) -> str:
         "convergence-rising": "watch",
         "field-birth-threshold": "docket",
         "legibility-risk": "docket",
-        "require-human-review": "docket",
+        "require-human-review": "suppress",
     }[status]
 
 
@@ -131,6 +134,18 @@ def _load_required_artifact(path: Path, *, compatibility_paths: tuple[Path, ...]
     payload = _load_json(found[0])
     _validate_provenance(payload, path=found[0])
     return LoadedArtifact(path=found[0], payload=payload, source_mode="compatibility")
+
+
+def _load_supporting_audit(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        raise EmergentDomainInputError(f"Missing required supporting audit: {path}")
+    payload = _load_json(path)
+    if not isinstance(payload.get("schema"), str) or not payload.get("schema"):
+        raise EmergentDomainInputError(f"Supporting audit missing non-empty schema in {path}")
+    records = payload.get("records")
+    if not isinstance(records, list):
+        raise EmergentDomainInputError(f"Supporting audit missing records array in {path}")
+    return payload
 
 
 def _classify_mode(arts: list[LoadedArtifact]) -> tuple[str, str]:
@@ -227,7 +242,7 @@ def evaluate_target(
     )
     commons_context = (
         f"overclaimPressure={overclaim_pressure:.3f}, canonizationSignal={canonization_signal:.3f}; "
-        "recommendations are bounded scientific-governance guidance and does not certify final or socially ratified truth claims without ratification pathways."
+        "recommendations are bounded scientific-governance guidance and do not certify final or socially ratified truth claims without ratification pathways."
     )
     explanation = (
         f"Emergent-domain guidance is bounded scientific-governance guidance only. targetId={target_id}, "
@@ -289,11 +304,11 @@ def build_outputs(*, allow_compatibility_names: bool = False) -> tuple[dict[str,
         allow_compatibility_names=allow_compatibility_names,
     )
 
-    theory_transfer = _load_json(THEORY_TRANSFER_AUDIT_PATH)
-    value = _load_json(VALUE_ALIGNMENT_AUDIT_PATH)
-    curiosity = _load_json(CURIOSITY_AUDIT_PATH)
-    social = _load_json(SOCIAL_ENTROPY_AUDIT_PATH)
-    commons = _load_json(COMMONS_PARTICIPATION_AUDIT_PATH)
+    theory_transfer = _load_supporting_audit(THEORY_TRANSFER_AUDIT_PATH)
+    value = _load_supporting_audit(VALUE_ALIGNMENT_AUDIT_PATH)
+    curiosity = _load_supporting_audit(CURIOSITY_AUDIT_PATH)
+    social = _load_supporting_audit(SOCIAL_ENTROPY_AUDIT_PATH)
+    commons = _load_supporting_audit(COMMONS_PARTICIPATION_AUDIT_PATH)
 
     transfer_risk = _safe_mean([float(r.get("riskScore")) for r in _parse_rows(theory_transfer, "records") if isinstance(r.get("riskScore"), (int, float))], 0.45)
     value_risk = _safe_mean([float(r.get("riskScore")) for r in _parse_rows(value, "records") if isinstance(r.get("riskScore"), (int, float))], 0.45)
@@ -328,7 +343,7 @@ def build_outputs(*, allow_compatibility_names: bool = False) -> tuple[dict[str,
         "systemRisk": round(system_risk, 6),
         "inputArtifacts": [
             {
-                "path": str(a.path.relative_to(REPO_ROOT)) if a.path.is_relative_to(REPO_ROOT) else str(a.path),
+                "path": _display_path(a.path),
                 "sourceMode": a.source_mode,
                 "schemaVersion": str(a.payload.get("schemaVersion")),
                 "producerRepo": str(a.payload.get("producerRepo")),
@@ -337,6 +352,13 @@ def build_outputs(*, allow_compatibility_names: bool = False) -> tuple[dict[str,
                 "generatedAt": str(a.payload.get("generatedAt")),
             }
             for a in loaded
+        ],
+        "supportingAudits": [
+            _display_path(THEORY_TRANSFER_AUDIT_PATH),
+            _display_path(VALUE_ALIGNMENT_AUDIT_PATH),
+            _display_path(CURIOSITY_AUDIT_PATH),
+            _display_path(SOCIAL_ENTROPY_AUDIT_PATH),
+            _display_path(COMMONS_PARTICIPATION_AUDIT_PATH),
         ],
     }
 

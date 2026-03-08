@@ -4,39 +4,118 @@
   "title": "Emergent Domain Audit v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "records"],
+  "required": [
+    "schema",
+    "created_at",
+    "phaselock",
+    "caution",
+    "metadata",
+    "records"
+  ],
   "properties": {
-    "schema": {"const": "emergent_domain_audit_v1"},
-    "created_at": {"type": "string"},
-    "phaselock": {"type": "string"},
-    "caution": {"type": "string"},
-    "metadata": {"$ref": "#/$defs/metadata"},
-    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+    "schema": {
+      "const": "emergent_domain_audit_v1"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "phaselock": {
+      "type": "string"
+    },
+    "caution": {
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    }
   },
   "$defs": {
     "metadata": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["inputMode", "inputModeWarning", "systemRisk", "inputArtifacts"],
+      "required": [
+        "inputMode",
+        "inputModeWarning",
+        "systemRisk",
+        "inputArtifacts",
+        "supportingAudits"
+      ],
       "properties": {
-        "inputMode": {"enum": ["live", "fixture", "mixed"]},
-        "inputModeWarning": {"type": "string"},
-        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
-        "inputArtifacts": {"type": "array", "minItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}}
+        "inputMode": {
+          "enum": [
+            "live",
+            "fixture",
+            "mixed"
+          ]
+        },
+        "inputModeWarning": {
+          "type": "string"
+        },
+        "systemRisk": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "inputArtifacts": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "$ref": "#/$defs/inputArtifact"
+          }
+        },
+        "supportingAudits": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "inputArtifact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "sourceMode", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "required": [
+        "path",
+        "sourceMode",
+        "schemaVersion",
+        "producerRepo",
+        "producerModule",
+        "producerCommit",
+        "generatedAt"
+      ],
       "properties": {
-        "path": {"type": "string"},
-        "sourceMode": {"enum": ["canonical", "compatibility"]},
-        "schemaVersion": {"type": "string"},
-        "producerRepo": {"type": "string"},
-        "producerModule": {"type": "string"},
-        "producerCommit": {"type": "string"},
-        "generatedAt": {"type": "string"}
+        "path": {
+          "type": "string"
+        },
+        "sourceMode": {
+          "enum": [
+            "canonical",
+            "compatibility"
+          ]
+        },
+        "schemaVersion": {
+          "type": "string"
+        },
+        "producerRepo": {
+          "type": "string"
+        },
+        "producerModule": {
+          "type": "string"
+        },
+        "producerCommit": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": "string"
+        }
       }
     },
     "record": {
@@ -57,8 +136,12 @@
         "targetPublisherAction"
       ],
       "properties": {
-        "targetId": {"type": "string"},
-        "targetType": {"type": "string"},
+        "targetId": {
+          "type": "string"
+        },
+        "targetType": {
+          "type": "string"
+        },
         "domainStatus": {
           "enum": [
             "emergent-watch",
@@ -68,15 +151,41 @@
             "require-human-review"
           ]
         },
-        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
-        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
-        "convergenceContext": {"type": "string"},
-        "transferContext": {"type": "string"},
-        "curiosityContext": {"type": "string"},
-        "commonsContext": {"type": "string"},
-        "governingRule": {"type": "string"},
-        "explanation": {"type": "string"},
-        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+        "coherenceScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "riskScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "convergenceContext": {
+          "type": "string"
+        },
+        "transferContext": {
+          "type": "string"
+        },
+        "curiosityContext": {
+          "type": "string"
+        },
+        "commonsContext": {
+          "type": "string"
+        },
+        "governingRule": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "targetPublisherAction": {
+          "enum": [
+            "docket",
+            "watch",
+            "suppress"
+          ]
+        }
       }
     }
   }
