@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/meta_cognition_recommendations_v1.schema.json",
+  "title": "Meta Cognition Recommendations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "recommendations"],
+  "properties": {
+    "schema": {"const": "meta_cognition_recommendations_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "recommendations": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputMode", "inputModeWarning", "systemRisk", "inputArtifacts"],
+      "properties": {
+        "inputMode": {"enum": ["live", "fixture", "mixed"]},
+        "inputModeWarning": {"type": "string"},
+        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {"type": "array", "minItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}}
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sourceMode", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "sourceMode": {"enum": ["canonical", "compatibility"]},
+        "schemaVersion": {"type": "string"},
+        "producerRepo": {"type": "string"},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "targetType",
+        "metaStatus",
+        "coherenceScore",
+        "riskScore",
+        "architectureContext",
+        "efficiencyContext",
+        "safetyContext",
+        "governanceContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"type": "string"},
+        "metaStatus": {
+          "enum": [
+            "meta-watch",
+            "meta-efficiency-opportunity",
+            "meta-governance-review",
+            "meta-require-human-review"
+          ]
+        },
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "architectureContext": {"type": "string"},
+        "efficiencyContext": {"type": "string"},
+        "safetyContext": {"type": "string"},
+        "governanceContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}
