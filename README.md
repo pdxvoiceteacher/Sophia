@@ -446,3 +446,7 @@ Sophia collaborative review recommendations are bounded process guidance only an
 ## Telemetry-field guidance boundary
 
 Sophia telemetry-field recommendations are bounded probabilistic guidance only and do **not** autonomously authorize new operational branches. Branch emergence remains under maturity, authority, and human-review control.
+
+## Experimental guidance boundary
+
+Sophia experimental recommendations are bounded scientific-governance guidance only and do **not** autonomously certify theory truth. Theory promotion requires falsification design, replication pathways, and human/community review.
