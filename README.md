@@ -490,3 +490,7 @@ Sophia architecture-review recommendations are bounded governance guidance only.
 ## Social-entropy guidance boundary
 
 Sophia social-entropy recommendations are bounded civic-repair guidance only and do **not** authorize suppression, censorship, or coercive unity measures. Stewardship responses should favor repair, transparency, redundancy, and participation support over normalization pressure.
+
+## Federated-governance guidance boundary
+
+Sophia federated governance recommendations are bounded commons-governance guidance only and do **not** authorize sovereignty transfer, suppression, or centralized epistemic rule. Governance should favor redundancy, dissent portability, and distributed legitimacy over elegance of central coordination.
