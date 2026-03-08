@@ -466,3 +466,7 @@ Sophia responsibility recommendations are bounded governance guidance only and d
 ## Theory-transfer guidance boundary
 
 Sophia theory-transfer recommendations are bounded scientific-governance guidance only and do **not** certify cross-domain truth without replication. Cross-domain transfer remains humility-bound: analogical elegance is not policy truth, and donor-target translation must remain replication-gated and human/community reviewable.
+
+## System-forecast guidance boundary
+
+Sophia system-forecast recommendations are bounded governance guidance only. Forecasts may guide attention (investigation priority, replication focus, support preparation, governance awareness) but never justify pre-emptive coercion or intervention solely on predicted outcomes.
