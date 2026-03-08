@@ -1,4 +1,4 @@
-﻿**https://www.linkedin.com/pulse/coherence-lattice-framework-cross-domain-evidence-oelyc**
+**https://www.linkedin.com/pulse/coherence-lattice-framework-cross-domain-evidence-oelyc**
 ---
 
 ## Build status
@@ -58,6 +58,10 @@ python tools/telemetry/sophia_audit.py \
 ```
 
 Audit history used for noise suppression is stored under `runs/history/`.
+
+## Evidence-authority guidance boundary
+
+Sophia evidence-authority recommendations are bounded institutional guidance only and do **not** automatically rewrite graph edges, identities, precedents, or closures. Authority-gating overlays are advisory outputs that remain auditable and reviewable by human/community governance.
 
 Lean: Core Coherence Lattice (formal)
 Coherence state + invariants
@@ -426,3 +430,67 @@ For telemetry tooling on Windows/PowerShell, use `docs/WINDOWS_SETUP.md`.
 
 - Root `pip install -e .` is **not** supported.
 - Use `pip install -r requirements.txt` (or `./scripts/bootstrap.ps1`) and editable installs for subpackages.
+
+## Review-packet guidance boundary
+
+Sophia review-packet recommendations are bounded human-review guidance only and do **not** convert packets into verdicts, accusations, or public allegations. Packet overlays remain auditable, uncertainty-disclosing inputs for human/community review.
+
+## Causal guidance boundary
+
+Sophia causal recommendations are bounded mechanism guidance only and do **not** conclude corruption, targeting, conspiracy, or coordinated guilt. Causal overlays preserve competing explanations when explanatory maturity is low.
+
+## Collaborative-review guidance boundary
+
+Sophia collaborative review recommendations are bounded process guidance only and do **not** erase dissent or automatically ratify consensus. Minority caution remains preserved when evidence maturity is low.
+
+## Telemetry-field guidance boundary
+
+Sophia telemetry-field recommendations are bounded probabilistic guidance only and do **not** autonomously authorize new operational branches. Branch emergence remains under maturity, authority, and human-review control.
+
+## Experimental guidance boundary
+
+Sophia experimental recommendations are bounded scientific-governance guidance only and do **not** autonomously certify theory truth. Theory promotion requires falsification design, replication pathways, and human/community review.
+
+## Theory-corpus guidance boundary
+
+Sophia theory-corpus recommendations are bounded scientific-governance guidance only and do **not** certify final truth, erase failed lines, or suppress competing theories. Failure memory and theory competition remain preserved for review.
+
+## Agency-mode guidance boundary
+
+Sophia agency-mode recommendations are bounded modeling guidance only and do **not** certify metaphysical truth about human agency. Governance switching remains fairness-constrained and human-review bounded.
+
+## Responsibility guidance boundary
+
+Sophia responsibility recommendations are bounded governance guidance only and do **not** autonomously authorize sanctions, coercion, or moral condemnation. Intervention boundaries favor support-first and consent-first pathways when fit is uncertain or structurally constrained, with accountability escalation held for explicit human/community review.
+
+## Theory-transfer guidance boundary
+
+Sophia theory-transfer recommendations are bounded scientific-governance guidance only and do **not** certify cross-domain truth without replication. Cross-domain transfer remains humility-bound: analogical elegance is not policy truth, and donor-target translation must remain replication-gated and human/community reviewable.
+
+## System-forecast guidance boundary
+
+Sophia system-forecast recommendations are bounded governance guidance only. Forecasts may guide attention (investigation priority, replication focus, support preparation, governance awareness) but never justify pre-emptive coercion or intervention solely on predicted outcomes.
+
+## Curiosity guidance boundary
+
+Sophia curiosity recommendations are bounded governance guidance only. Information-seeking may prioritize attention, verification, and experiment design, but never justify surveillance expansion without explicit human authorization. Curiosity must guide investigation, not intrusion.
+
+## Value-alignment guidance boundary
+
+Sophia value-alignment recommendations are bounded governance guidance only. The system may recommend knowledge priorities, but human communities retain authority over final value judgments. The triad illuminates moral consequences; it does not replace human ethics.
+
+## Meta-cognition guidance boundary
+
+Sophia meta-cognition recommendations are bounded governance guidance only. The system may evaluate architecture and propose improvements, but cannot autonomously modify core safety constraints. Evidence maturity gating, provenance requirements, sanction suppression, agency humility, non-coercion forecasting, and human authority over value judgments remain immutable without explicit human approval.
+
+## Architecture-review guidance boundary
+
+Sophia architecture-review recommendations are bounded governance guidance only. The system may identify architecture watchpoints, efficiency opportunities, and governance risks, but structural changes require explicit human approval and cannot be autonomously enacted.
+
+## Social-entropy guidance boundary
+
+Sophia social-entropy recommendations are bounded civic-repair guidance only and do **not** authorize suppression, censorship, or coercive unity measures. Stewardship responses should favor repair, transparency, redundancy, and participation support over normalization pressure.
+
+## Federated-governance guidance boundary
+
+Sophia federated governance recommendations are bounded commons-governance guidance only and do **not** authorize sovereignty transfer, suppression, or centralized epistemic rule. Governance should favor redundancy, dissent portability, and distributed legitimacy over elegance of central coordination.

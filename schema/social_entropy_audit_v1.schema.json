@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/social_entropy_audit_v1.schema.json",
+  "title": "Social Entropy Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "records"],
+  "properties": {
+    "schema": {"const": "social_entropy_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputMode", "inputModeWarning", "systemRisk", "inputArtifacts"],
+      "properties": {
+        "inputMode": {"enum": ["live", "fixture", "mixed"]},
+        "inputModeWarning": {"type": "string"},
+        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {"type": "array", "minItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}}
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sourceMode", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "sourceMode": {"enum": ["canonical", "compatibility"]},
+        "schemaVersion": {"type": "string"},
+        "producerRepo": {"type": "string"},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "targetType",
+        "socialStatus",
+        "coherenceScore",
+        "riskScore",
+        "participationContext",
+        "dissentContext",
+        "legitimacyContext",
+        "fairnessContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"type": "string"},
+        "socialStatus": {
+          "enum": [
+            "cohesion-healthy",
+            "repair-priority",
+            "legitimacy-risk",
+            "participation-brittle",
+            "require-human-review"
+          ]
+        },
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "participationContext": {"type": "string"},
+        "dissentContext": {"type": "string"},
+        "legitimacyContext": {"type": "string"},
+        "fairnessContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}
