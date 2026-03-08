@@ -1,4 +1,4 @@
-﻿**https://www.linkedin.com/pulse/coherence-lattice-framework-cross-domain-evidence-oelyc**
+**https://www.linkedin.com/pulse/coherence-lattice-framework-cross-domain-evidence-oelyc**
 ---
 
 ## Build status
@@ -58,6 +58,10 @@ python tools/telemetry/sophia_audit.py \
 ```
 
 Audit history used for noise suppression is stored under `runs/history/`.
+
+## Evidence-authority guidance boundary
+
+Sophia evidence-authority recommendations are bounded institutional guidance only and do **not** automatically rewrite graph edges, identities, precedents, or closures. Authority-gating overlays are advisory outputs that remain auditable and reviewable by human/community governance.
 
 Lean: Core Coherence Lattice (formal)
 Coherence state + invariants
@@ -426,3 +430,7 @@ For telemetry tooling on Windows/PowerShell, use `docs/WINDOWS_SETUP.md`.
 
 - Root `pip install -e .` is **not** supported.
 - Use `pip install -r requirements.txt` (or `./scripts/bootstrap.ps1`) and editable installs for subpackages.
+
+## Review-packet guidance boundary
+
+Sophia review-packet recommendations are bounded human-review guidance only and do **not** convert packets into verdicts, accusations, or public allegations. Packet overlays remain auditable, uncertainty-disclosing inputs for human/community review.
