@@ -494,3 +494,7 @@ Sophia social-entropy recommendations are bounded civic-repair guidance only and
 ## Federated-governance guidance boundary
 
 Sophia federated governance recommendations are bounded commons-governance guidance only and do **not** authorize sovereignty transfer, suppression, or centralized epistemic rule. Governance should favor redundancy, dissent portability, and distributed legitimacy over elegance of central coordination.
+
+## Commons-participation guidance boundary
+
+Sophia commons-participation recommendations are bounded civic-legibility guidance only and do **not** authorize exclusion, ranking of persons, or closure of participation rights. Commons stewardship should favor translation, simplification, visibility, and participation support over gatekeeping.
