@@ -434,3 +434,7 @@ For telemetry tooling on Windows/PowerShell, use `docs/WINDOWS_SETUP.md`.
 ## Review-packet guidance boundary
 
 Sophia review-packet recommendations are bounded human-review guidance only and do **not** convert packets into verdicts, accusations, or public allegations. Packet overlays remain auditable, uncertainty-disclosing inputs for human/community review.
+
+## Causal guidance boundary
+
+Sophia causal recommendations are bounded mechanism guidance only and do **not** conclude corruption, targeting, conspiracy, or coordinated guilt. Causal overlays preserve competing explanations when explanatory maturity is low.
