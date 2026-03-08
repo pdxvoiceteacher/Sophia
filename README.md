@@ -458,3 +458,7 @@ Sophia theory-corpus recommendations are bounded scientific-governance guidance 
 ## Agency-mode guidance boundary
 
 Sophia agency-mode recommendations are bounded modeling guidance only and do **not** certify metaphysical truth about human agency. Governance switching remains fairness-constrained and human-review bounded.
+
+## Responsibility guidance boundary
+
+Sophia responsibility recommendations are bounded governance guidance only and do **not** autonomously authorize sanctions, coercion, or moral condemnation. Intervention boundaries favor support-first and consent-first pathways when fit is uncertain or structurally constrained, with accountability escalation held for explicit human/community review.
