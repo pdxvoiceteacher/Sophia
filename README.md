@@ -450,3 +450,7 @@ Sophia telemetry-field recommendations are bounded probabilistic guidance only a
 ## Experimental guidance boundary
 
 Sophia experimental recommendations are bounded scientific-governance guidance only and do **not** autonomously certify theory truth. Theory promotion requires falsification design, replication pathways, and human/community review.
+
+## Theory-corpus guidance boundary
+
+Sophia theory-corpus recommendations are bounded scientific-governance guidance only and do **not** certify final truth, erase failed lines, or suppress competing theories. Failure memory and theory competition remain preserved for review.
