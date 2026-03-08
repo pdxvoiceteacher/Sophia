@@ -454,3 +454,7 @@ Sophia experimental recommendations are bounded scientific-governance guidance o
 ## Theory-corpus guidance boundary
 
 Sophia theory-corpus recommendations are bounded scientific-governance guidance only and do **not** certify final truth, erase failed lines, or suppress competing theories. Failure memory and theory competition remain preserved for review.
+
+## Agency-mode guidance boundary
+
+Sophia agency-mode recommendations are bounded modeling guidance only and do **not** certify metaphysical truth about human agency. Governance switching remains fairness-constrained and human-review bounded.
