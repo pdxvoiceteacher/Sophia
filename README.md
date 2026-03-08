@@ -482,3 +482,7 @@ Sophia value-alignment recommendations are bounded governance guidance only. The
 ## Meta-cognition guidance boundary
 
 Sophia meta-cognition recommendations are bounded governance guidance only. The system may evaluate architecture and propose improvements, but cannot autonomously modify core safety constraints. Evidence maturity gating, provenance requirements, sanction suppression, agency humility, non-coercion forecasting, and human authority over value judgments remain immutable without explicit human approval.
+
+## Architecture-review guidance boundary
+
+Sophia architecture-review recommendations are bounded governance guidance only. The system may identify architecture watchpoints, efficiency opportunities, and governance risks, but structural changes require explicit human approval and cannot be autonomously enacted.
