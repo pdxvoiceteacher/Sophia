@@ -474,3 +474,7 @@ Sophia system-forecast recommendations are bounded governance guidance only. For
 ## Curiosity guidance boundary
 
 Sophia curiosity recommendations are bounded governance guidance only. Information-seeking may prioritize attention, verification, and experiment design, but never justify surveillance expansion without explicit human authorization. Curiosity must guide investigation, not intrusion.
+
+## Value-alignment guidance boundary
+
+Sophia value-alignment recommendations are bounded governance guidance only. The system may recommend knowledge priorities, but human communities retain authority over final value judgments. The triad illuminates moral consequences; it does not replace human ethics.
