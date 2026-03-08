@@ -503,6 +503,11 @@ Sophia commons-participation recommendations are bounded civic-legibility guidan
 
 Sophia commons-sovereignty recommendations are bounded commons governance guidance only and do **not** authorize centralized epistemic control. Commons safeguarding should preserve distributed legitimacy, redundancy, and public trust repair over coordination efficiency or sovereignty transfer.
 
+
+## Civilizational-memory guidance boundary
+
+Sophia civilizational-memory recommendations are bounded stewardship guidance only and do **not** authorize erasure, canon closure, or centralized historical authority. Memory stewardship should preserve uncertainty, dissent, and failed branches alongside successful theories.
+
 ## Emergent-domain guidance boundary
 
 Sophia emergent-domain recommendations are bounded scientific-governance guidance only and do **not** certify a new field as final or socially ratified truth. Emergence detection should support legibility, humility, and ratification pathways rather than premature canon formation. Derivatives that remove provenance or alter immutable safety boundaries without explicit disclosure lose canonical trust status and must be marked as divergent.

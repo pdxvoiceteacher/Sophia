@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/civilizational_memory_recommendations_v1.schema.json",
+  "title": "Civilizational Memory Recommendations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "caution", "metadata", "recommendations"],
+  "properties": {
+    "schema": {"const": "civilizational_memory_recommendations_v1"},
+    "created_at": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "recommendations": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputMode", "inputModeWarning", "systemRisk", "inputArtifacts", "canonicalIntegrity", "supportingAudits"],
+      "properties": {
+        "inputMode": {"enum": ["live", "fixture", "mixed"]},
+        "inputModeWarning": {"type": "string"},
+        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {"type": "array", "minItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}},
+        "canonicalIntegrity": {"$ref": "#/$defs/canonicalIntegrity"},
+        "supportingAudits": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"type": "string"}}
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sourceMode", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "sourceMode": {"enum": ["canonical", "compatibility"]},
+        "schemaVersion": {"type": "string"},
+        "producerRepo": {"type": "string"},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "targetType",
+        "memoryStatus",
+        "coherenceScore",
+        "riskScore",
+        "continuityContext",
+        "legibilityContext",
+        "fragilityContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"type": "string"},
+        "memoryStatus": {"enum": ["memory-stable", "legibility-repair", "fragility-watch", "capture-risk", "require-human-review"]},
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "continuityContext": {"type": "string"},
+        "legibilityContext": {"type": "string"},
+        "fragilityContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    },
+    "canonicalIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "warning", "divergenceReasons", "manifests"],
+      "properties": {
+        "status": {"enum": ["absent", "canonical", "divergent"]},
+        "warning": {"type": "string"},
+        "divergenceReasons": {"type": "array", "items": {"type": "string"}},
+        "manifests": {"type": "array", "items": {"$ref": "#/$defs/canonicalIntegrityManifest"}}
+      }
+    },
+    "canonicalIntegrityManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "originProject",
+        "canonicalPhaselock",
+        "modificationDisclosureRequired",
+        "ethicalBoundaryNotice",
+        "commonsIntegrityNotice",
+        "constraintSignatureVersion",
+        "constraintSignatureSha256"
+      ],
+      "properties": {
+        "path": {"type": "string"},
+        "originProject": {"type": "string"},
+        "canonicalPhaselock": {"type": "string"},
+        "modificationDisclosureRequired": {"type": "boolean"},
+        "ethicalBoundaryNotice": {"type": "string"},
+        "commonsIntegrityNotice": {"type": "string"},
+        "constraintSignatureVersion": {"type": "string"},
+        "constraintSignatureSha256": {"type": "string"}
+      }
+    }
+  }
+}
