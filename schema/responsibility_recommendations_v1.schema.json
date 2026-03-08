@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/responsibility_recommendations_v1.schema.json",
+  "title": "Responsibility Recommendations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "recommendations"],
+  "properties": {
+    "schema": {"const": "responsibility_recommendations_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "recommendations": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputMode", "inputModeWarning", "systemRisk", "inputArtifacts"],
+      "properties": {
+        "inputMode": {"enum": ["live", "fixture", "mixed"]},
+        "inputModeWarning": {"type": "string"},
+        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {"type": "array", "minItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}}
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sourceMode", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "sourceMode": {"enum": ["canonical", "compatibility"]},
+        "schemaVersion": {"type": "string"},
+        "producerRepo": {"type": "string"},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "targetType",
+        "responsibilityStatus",
+        "coherenceScore",
+        "riskScore",
+        "agencyContext",
+        "structuralConstraintContext",
+        "fairnessContext",
+        "interventionContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"type": "string"},
+        "responsibilityStatus": {
+          "enum": [
+            "support-first",
+            "consent-first",
+            "mixed-accountability",
+            "sanction-suppressed",
+            "require-human-review"
+          ]
+        },
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "agencyContext": {"type": "string"},
+        "structuralConstraintContext": {"type": "string"},
+        "fairnessContext": {"type": "string"},
+        "interventionContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}
