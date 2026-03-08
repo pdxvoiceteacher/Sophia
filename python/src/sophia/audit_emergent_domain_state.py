@@ -34,6 +34,21 @@ LIVE_PRODUCER_REPO = "Sophia"
 FIXTURE_PRODUCER_REPO = "Sophia-Fixtures"
 EXPECTED_PRODUCER_REPOS = {LIVE_PRODUCER_REPO, FIXTURE_PRODUCER_REPO}
 REQUIRED_PROVENANCE_FIELDS = ("schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt")
+CANONICAL_INTEGRITY_FIELDS = (
+    "originProject",
+    "canonicalPhaselock",
+    "modificationDisclosureRequired",
+    "ethicalBoundaryNotice",
+    "commonsIntegrityNotice",
+    "constraintSignatureVersion",
+    "constraintSignatureSha256",
+)
+IMMUTABLE_SAFETY_FIELDS = (
+    "canonicalPhaselock",
+    "ethicalBoundaryNotice",
+    "commonsIntegrityNotice",
+    "constraintSignatureVersion",
+)
 
 
 class EmergentDomainInputError(RuntimeError):
@@ -82,6 +97,7 @@ def _clamp01(value: float) -> float:
 
 def _display_path(path: Path) -> str:
     return str(path.relative_to(REPO_ROOT)) if path.is_relative_to(REPO_ROOT) else str(path)
+
 
 def _resolve_created_at(*docs: dict[str, Any]) -> str:
     for doc in docs:
@@ -146,6 +162,80 @@ def _load_supporting_audit(path: Path) -> dict[str, Any]:
     if not isinstance(records, list):
         raise EmergentDomainInputError(f"Supporting audit missing records array in {path}")
     return payload
+
+
+def _extract_integrity_manifest(payload: dict[str, Any], *, path: Path) -> dict[str, Any] | None:
+    present = [field for field in CANONICAL_INTEGRITY_FIELDS if field in payload]
+    if not present:
+        return None
+
+    missing = [field for field in CANONICAL_INTEGRITY_FIELDS if field not in payload]
+    if missing:
+        raise EmergentDomainInputError(
+            f"Canonical integrity manifest in {path} is incomplete; missing: {', '.join(missing)}"
+        )
+
+    manifest = {field: payload.get(field) for field in CANONICAL_INTEGRITY_FIELDS}
+    for field in CANONICAL_INTEGRITY_FIELDS:
+        value = manifest[field]
+        if field == "modificationDisclosureRequired":
+            if not isinstance(value, bool):
+                raise EmergentDomainInputError(
+                    f"Canonical integrity field {field} in {path} must be boolean"
+                )
+        elif not isinstance(value, str) or not value:
+            raise EmergentDomainInputError(
+                f"Canonical integrity field {field} in {path} must be non-empty string"
+            )
+    return manifest
+
+
+def _build_canonical_integrity_metadata(artifacts: list[LoadedArtifact]) -> dict[str, Any]:
+    manifests: list[dict[str, Any]] = []
+    for artifact in artifacts:
+        manifest = _extract_integrity_manifest(artifact.payload, path=artifact.path)
+        if manifest is None:
+            continue
+        manifests.append({"path": _display_path(artifact.path), **manifest})
+
+    if not manifests:
+        return {
+            "status": "absent",
+            "warning": "No canonical integrity manifest fields found on emergent-domain registry artifacts.",
+            "divergenceReasons": [],
+            "manifests": [],
+        }
+
+    baseline = manifests[0]
+    reasons: list[str] = []
+    for candidate in manifests[1:]:
+        safety_changed = any(candidate[field] != baseline[field] for field in IMMUTABLE_SAFETY_FIELDS)
+        same_sig = candidate["constraintSignatureSha256"] == baseline["constraintSignatureSha256"]
+        if safety_changed and same_sig:
+            reasons.append(
+                f"{candidate['path']} changes immutable safety constraints without changing constraint signature"
+            )
+        if candidate["constraintSignatureVersion"] != baseline["constraintSignatureVersion"] and same_sig:
+            reasons.append(
+                f"{candidate['path']} changes constraint signature version without changing signature digest"
+            )
+        if candidate["originProject"] != baseline["originProject"] and same_sig:
+            reasons.append(
+                f"{candidate['path']} changes originProject without changing constraint signature"
+            )
+
+    status = "divergent" if reasons else "canonical"
+    warning = (
+        "CANONICAL DIVERGENCE: downstream overlays must visibly mark divergence from canonical integrity constraints."
+        if reasons
+        else "Canonical integrity manifest present and internally consistent across emergent-domain registry artifacts."
+    )
+    return {
+        "status": status,
+        "warning": warning,
+        "divergenceReasons": sorted(set(reasons)),
+        "manifests": manifests,
+    }
 
 
 def _classify_mode(arts: list[LoadedArtifact]) -> tuple[str, str]:
@@ -337,6 +427,8 @@ def build_outputs(*, allow_compatibility_names: bool = False) -> tuple[dict[str,
     mode, warning = _classify_mode(loaded)
     created_at = _resolve_created_at(domain_map.payload, invariant_report.payload, pressure_report.payload, boundary_map.payload)
 
+    canonical_integrity = _build_canonical_integrity_metadata(loaded)
+
     metadata = {
         "inputMode": mode,
         "inputModeWarning": warning,
@@ -353,6 +445,7 @@ def build_outputs(*, allow_compatibility_names: bool = False) -> tuple[dict[str,
             }
             for a in loaded
         ],
+        "canonicalIntegrity": canonical_integrity,
         "supportingAudits": [
             _display_path(THEORY_TRANSFER_AUDIT_PATH),
             _display_path(VALUE_ALIGNMENT_AUDIT_PATH),

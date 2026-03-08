@@ -35,6 +35,23 @@ def _audit_rows(values: list[float]) -> dict:
     }
 
 
+
+
+def _manifest(overrides: dict | None = None) -> dict:
+    base = {
+        "originProject": "CoherenceLattice",
+        "canonicalPhaselock": "transfer->formalization->audit->overlay->ratification",
+        "modificationDisclosureRequired": True,
+        "ethicalBoundaryNotice": "Do not remove provenance or relax safety boundaries without disclosure.",
+        "commonsIntegrityNotice": "Commons stewardship and legibility obligations remain active.",
+        "constraintSignatureVersion": "at-1",
+        "constraintSignatureSha256": "sha256:1111222233334444",
+    }
+    if overrides:
+        base.update(overrides)
+    return base
+
+
 def _configure_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(module, "EMERGENT_DOMAIN_MAP_PATH", tmp_path / "bridge/emergent_domain_map.json")
     monkeypatch.setattr(module, "CROSS_DOMAIN_INVARIANT_REPORT_PATH", tmp_path / "bridge/cross_domain_invariant_report.json")
@@ -254,6 +271,46 @@ def test_supporting_audits_must_have_records(monkeypatch: pytest.MonkeyPatch, tm
     _write_json(
         tmp_path / "bridge/theory_transfer_audit.json",
         {"schema": "theory_transfer_audit_v1", "created_at": "2026-04-08T00:00:00Z", "records": "invalid"},
+    )
+
+    with pytest.raises(module.EmergentDomainInputError):
+        module.build_outputs()
+
+
+def test_manifest_divergence_handling(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _configure_paths(monkeypatch, tmp_path)
+    _write_common_inputs(tmp_path)
+
+    bridge = tmp_path / "bridge"
+    _write_json(
+        bridge / "emergent_domain_map.json",
+        _artifact({**_manifest(), "targets": [{"targetId": "target:a", "targetType": "domain"}]}),
+    )
+    _write_json(
+        bridge / "cross_domain_invariant_report.json",
+        _artifact(
+            {
+                **_manifest({"ethicalBoundaryNotice": "Changed boundary text without signature rotation."}),
+                "targets": [{"targetId": "target:a", "invariantStrength": 0.6, "crossDomainReplicability": 0.6}],
+            }
+        ),
+    )
+
+    audit_payload, _ = module.build_outputs()
+
+    integrity = audit_payload["metadata"]["canonicalIntegrity"]
+    assert integrity["status"] == "divergent"
+    assert "CANONICAL DIVERGENCE" in integrity["warning"]
+    assert integrity["divergenceReasons"]
+
+
+def test_manifest_requires_all_fields_if_present(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _configure_paths(monkeypatch, tmp_path)
+    _write_common_inputs(tmp_path)
+
+    _write_json(
+        tmp_path / "bridge/emergent_domain_map.json",
+        _artifact({"originProject": "CoherenceLattice", "targets": [{"targetId": "target:a", "targetType": "domain"}]}),
     )
 
     with pytest.raises(module.EmergentDomainInputError):

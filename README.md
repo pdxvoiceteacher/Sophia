@@ -501,4 +501,4 @@ Sophia commons-participation recommendations are bounded civic-legibility guidan
 
 ## Emergent-domain guidance boundary
 
-Sophia emergent-domain recommendations are bounded scientific-governance guidance only and do **not** certify a new field as final or socially ratified truth. Emergence detection should support legibility, humility, and ratification pathways rather than premature canon formation.
+Sophia emergent-domain recommendations are bounded scientific-governance guidance only and do **not** certify a new field as final or socially ratified truth. Emergence detection should support legibility, humility, and ratification pathways rather than premature canon formation. Derivatives that remove provenance or alter immutable safety boundaries without explicit disclosure lose canonical trust status and must be marked as divergent.

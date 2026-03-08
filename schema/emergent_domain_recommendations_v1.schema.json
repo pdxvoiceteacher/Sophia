@@ -44,6 +44,7 @@
         "inputModeWarning",
         "systemRisk",
         "inputArtifacts",
+        "canonicalIntegrity",
         "supportingAudits"
       ],
       "properties": {
@@ -76,6 +77,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "canonicalIntegrity": {
+          "$ref": "#/$defs/canonicalIntegrity"
         }
       }
     },
@@ -185,6 +189,80 @@
             "watch",
             "suppress"
           ]
+        }
+      }
+    },
+    "canonicalIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "warning",
+        "divergenceReasons",
+        "manifests"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "absent",
+            "canonical",
+            "divergent"
+          ]
+        },
+        "warning": {
+          "type": "string"
+        },
+        "divergenceReasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "manifests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/canonicalIntegrityManifest"
+          }
+        }
+      }
+    },
+    "canonicalIntegrityManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "originProject",
+        "canonicalPhaselock",
+        "modificationDisclosureRequired",
+        "ethicalBoundaryNotice",
+        "commonsIntegrityNotice",
+        "constraintSignatureVersion",
+        "constraintSignatureSha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "originProject": {
+          "type": "string"
+        },
+        "canonicalPhaselock": {
+          "type": "string"
+        },
+        "modificationDisclosureRequired": {
+          "type": "boolean"
+        },
+        "ethicalBoundaryNotice": {
+          "type": "string"
+        },
+        "commonsIntegrityNotice": {
+          "type": "string"
+        },
+        "constraintSignatureVersion": {
+          "type": "string"
+        },
+        "constraintSignatureSha256": {
+          "type": "string"
         }
       }
     }
