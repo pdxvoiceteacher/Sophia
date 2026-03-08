@@ -438,3 +438,7 @@ Sophia review-packet recommendations are bounded human-review guidance only and 
 ## Causal guidance boundary
 
 Sophia causal recommendations are bounded mechanism guidance only and do **not** conclude corruption, targeting, conspiracy, or coordinated guilt. Causal overlays preserve competing explanations when explanatory maturity is low.
+
+## Collaborative-review guidance boundary
+
+Sophia collaborative review recommendations are bounded process guidance only and do **not** erase dissent or automatically ratify consensus. Minority caution remains preserved when evidence maturity is low.
