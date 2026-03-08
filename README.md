@@ -462,3 +462,7 @@ Sophia agency-mode recommendations are bounded modeling guidance only and do **n
 ## Responsibility guidance boundary
 
 Sophia responsibility recommendations are bounded governance guidance only and do **not** autonomously authorize sanctions, coercion, or moral condemnation. Intervention boundaries favor support-first and consent-first pathways when fit is uncertain or structurally constrained, with accountability escalation held for explicit human/community review.
+
+## Theory-transfer guidance boundary
+
+Sophia theory-transfer recommendations are bounded scientific-governance guidance only and do **not** certify cross-domain truth without replication. Cross-domain transfer remains humility-bound: analogical elegance is not policy truth, and donor-target translation must remain replication-gated and human/community reviewable.
