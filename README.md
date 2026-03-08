@@ -478,3 +478,7 @@ Sophia curiosity recommendations are bounded governance guidance only. Informati
 ## Value-alignment guidance boundary
 
 Sophia value-alignment recommendations are bounded governance guidance only. The system may recommend knowledge priorities, but human communities retain authority over final value judgments. The triad illuminates moral consequences; it does not replace human ethics.
+
+## Meta-cognition guidance boundary
+
+Sophia meta-cognition recommendations are bounded governance guidance only. The system may evaluate architecture and propose improvements, but cannot autonomously modify core safety constraints. Evidence maturity gating, provenance requirements, sanction suppression, agency humility, non-coercion forecasting, and human authority over value judgments remain immutable without explicit human approval.
