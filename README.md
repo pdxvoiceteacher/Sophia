@@ -486,3 +486,7 @@ Sophia meta-cognition recommendations are bounded governance guidance only. The 
 ## Architecture-review guidance boundary
 
 Sophia architecture-review recommendations are bounded governance guidance only. The system may identify architecture watchpoints, efficiency opportunities, and governance risks, but structural changes require explicit human approval and cannot be autonomously enacted.
+
+## Social-entropy guidance boundary
+
+Sophia social-entropy recommendations are bounded civic-repair guidance only and do **not** authorize suppression, censorship, or coercive unity measures. Stewardship responses should favor repair, transparency, redundancy, and participation support over normalization pressure.
