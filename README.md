@@ -442,3 +442,7 @@ Sophia causal recommendations are bounded mechanism guidance only and do **not**
 ## Collaborative-review guidance boundary
 
 Sophia collaborative review recommendations are bounded process guidance only and do **not** erase dissent or automatically ratify consensus. Minority caution remains preserved when evidence maturity is low.
+
+## Telemetry-field guidance boundary
+
+Sophia telemetry-field recommendations are bounded probabilistic guidance only and do **not** autonomously authorize new operational branches. Branch emergence remains under maturity, authority, and human-review control.
