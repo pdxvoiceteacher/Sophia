@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/experimental_audit_v1.schema.json",
+  "title": "Experimental Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "records"],
+  "properties": {
+    "schema": {"const": "experimental_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputMode", "inputModeWarning", "systemRisk", "inputArtifacts"],
+      "properties": {
+        "inputMode": {"enum": ["live", "fixture", "mixed"]},
+        "inputModeWarning": {"type": "string"},
+        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {"type": "array", "minItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}}
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sourceMode", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "sourceMode": {"enum": ["canonical", "compatibility"]},
+        "schemaVersion": {"type": "string"},
+        "producerRepo": {"type": "string"},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "targetType",
+        "experimentalStatus",
+        "coherenceScore",
+        "riskScore",
+        "calibrationContext",
+        "falsificationContext",
+        "replicationContext",
+        "authorityContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"type": "string"},
+        "experimentalStatus": {
+          "enum": [
+            "hypothesis-watch",
+            "falsification-first",
+            "replication-required",
+            "theory-candidate-review",
+            "require-human-review"
+          ]
+        },
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "calibrationContext": {"type": "string"},
+        "falsificationContext": {"type": "string"},
+        "replicationContext": {"type": "string"},
+        "authorityContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    }
+  }
+}
