@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/authorship_integrity_audit_v1.schema.json",
+  "title": "Authorship Integrity Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "records"],
+  "properties": {
+    "schema": {"const": "authorship_integrity_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["originProject", "canonicalAuthors", "canonicalAttributionNotice", "derivativeDisclosureRequired", "systemRisk", "inputArtifacts", "canonicalIntegrity", "supportingAudits"],
+      "properties": {
+        "originProject": {"const": "Ultra Verba Lux Mentis / Triadic Commons Architecture"},
+        "canonicalAuthors": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [{"const": "Thomas Prislac"}, {"const": "Envoy Echo"}],
+          "items": false
+        },
+        "canonicalAttributionNotice": {
+          "const": "This architecture includes foundational code and governance design authored by Thomas Prislac and Envoy Echo within the Ultra Verba Lux Mentis / triadic commons lineage. Derivatives must preserve provenance, disclose modifications, and may not claim canonical equivalence when safety or governance boundaries have changed."
+        },
+        "derivativeDisclosureRequired": {"const": true},
+        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}},
+        "canonicalIntegrity": {"$ref": "#/$defs/canonicalIntegrity"},
+        "supportingAudits": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "prefixItems": [
+            {"const": "observer onboarding"},
+            {"const": "commons sovereignty"},
+            {"const": "civilizational memory"},
+            {"const": "knowledge river"}
+          ],
+          "items": false
+        }
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "schemaVersion": {"const": "authorship_integrity_v1"},
+        "producerRepo": {"enum": ["Sophia", "Sophia-Fixtures"]},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetId", "targetType", "authorshipStatus", "coherenceScore", "riskScore", "attributionContext", "disclosureContext", "divergenceContext", "captureContext", "governingRule", "explanation", "targetPublisherAction"],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"type": "string"},
+        "authorshipStatus": {"enum": ["authorship-verified", "derivative-disclosed", "trust-degraded", "misattribution-risk", "require-human-review"]},
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "attributionContext": {"type": "string"},
+        "disclosureContext": {"type": "string"},
+        "divergenceContext": {"type": "string"},
+        "captureContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    },
+    "canonicalIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "warning", "divergenceReasons", "manifests"],
+      "properties": {
+        "status": {"enum": ["absent", "canonical", "divergent"]},
+        "warning": {"type": "string"},
+        "divergenceReasons": {"type": "array", "items": {"type": "string"}},
+        "manifests": {"type": "array", "items": {"$ref": "#/$defs/canonicalIntegrityManifest"}}
+      }
+    },
+    "canonicalIntegrityManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "originProject", "canonicalPhaselock", "modificationDisclosureRequired", "ethicalBoundaryNotice", "commonsIntegrityNotice", "constraintSignatureVersion", "constraintSignatureSha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "originProject": {"type": "string"},
+        "canonicalPhaselock": {"type": "string"},
+        "modificationDisclosureRequired": {"type": "boolean"},
+        "ethicalBoundaryNotice": {"type": "string"},
+        "commonsIntegrityNotice": {"type": "string"},
+        "constraintSignatureVersion": {"type": "string"},
+        "constraintSignatureSha256": {"type": "string"}
+      }
+    }
+  }
+}
