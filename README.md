@@ -541,3 +541,7 @@ Phase BC widens legibility and participation across observer classes while prese
 
 Authorship-integrity recommendations are bounded provenance and disclosure guidance only; they do not authorize sabotage, retaliation, coercive enforcement, or hidden anti-user behavior.
 
+## Trust-surface guidance boundary
+
+Trust-surface audits provide bounded legitimacy guidance only and do not imply wrongdoing or authorize enforcement.
+
