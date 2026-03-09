@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/knowledge_river_recommendations_v1.schema.json",
+  "title": "Knowledge River Recommendations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "recommendations"],
+  "properties": {
+    "schema": {"const": "knowledge_river_recommendations_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "recommendations": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputMode", "inputModeWarning", "systemRisk", "inputArtifacts", "canonicalIntegrity", "supportingAudits"],
+      "properties": {
+        "inputMode": {"enum": ["live", "fixture", "mixed"]},
+        "inputModeWarning": {"type": "string"},
+        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {"type": "array", "minItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}},
+        "canonicalIntegrity": {"$ref": "#/$defs/canonicalIntegrity"},
+        "supportingAudits": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"type": "string"}}
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sourceMode", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "sourceMode": {"enum": ["canonical", "compatibility"]},
+        "schemaVersion": {"type": "string"},
+        "producerRepo": {"type": "string"},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "targetType",
+        "riverStatus",
+        "coherenceScore",
+        "riskScore",
+        "riverContext",
+        "braidContext",
+        "tributaryContext",
+        "captureContext",
+        "commonsContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"type": "string"},
+        "riverStatus": {"enum": ["river-forming", "braid-stable", "tributary-strengthen", "capture-risk", "require-human-review"]},
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riverContext": {"type": "string"},
+        "braidContext": {"type": "string"},
+        "tributaryContext": {"type": "string"},
+        "captureContext": {"type": "string"},
+        "commonsContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    },
+    "canonicalIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "warning", "divergenceReasons", "manifests"],
+      "properties": {
+        "status": {"enum": ["absent", "canonical", "divergent"]},
+        "warning": {"type": "string"},
+        "divergenceReasons": {"type": "array", "items": {"type": "string"}},
+        "manifests": {"type": "array", "items": {"$ref": "#/$defs/canonicalIntegrityManifest"}}
+      }
+    },
+    "canonicalIntegrityManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "originProject", "canonicalPhaselock", "modificationDisclosureRequired", "ethicalBoundaryNotice", "commonsIntegrityNotice", "constraintSignatureVersion", "constraintSignatureSha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "originProject": {"type": "string"},
+        "canonicalPhaselock": {"type": "string"},
+        "modificationDisclosureRequired": {"type": "boolean"},
+        "ethicalBoundaryNotice": {"type": "string"},
+        "commonsIntegrityNotice": {"type": "string"},
+        "constraintSignatureVersion": {"type": "string"},
+        "constraintSignatureSha256": {"type": "string"}
+      }
+    }
+  }
+}

@@ -526,3 +526,5 @@ Sophia operationalization recommendations are bounded deployment-stewardship gui
 ## Discovery-navigation guidance boundary
 
 Sophia discovery-navigation recommendations are bounded discovery-stewardship guidance only and do **not** authorize automatic pursuit, canonization, deployment, or institutional override. Discovery corridors should be treated as bounded exploration prompts, not commands.
+
+Sophia knowledge-river recommendations are bounded knowledge-stewardship guidance only and do **not** authorize canonization, centralized control, deployment authority, or closure of scientific alternatives. River stewardship should favor braid health, tributary support, and commons irrigation over singular prestige channels.
