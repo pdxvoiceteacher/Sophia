@@ -511,3 +511,8 @@ Sophia civilizational-memory recommendations are bounded stewardship guidance on
 ## Emergent-domain guidance boundary
 
 Sophia emergent-domain recommendations are bounded scientific-governance guidance only and do **not** certify a new field as final or socially ratified truth. Emergence detection should support legibility, humility, and ratification pathways rather than premature canon formation. Derivatives that remove provenance or alter immutable safety boundaries without explicit disclosure lose canonical trust status and must be marked as divergent.
+
+
+## Epistemic-attractor guidance boundary
+
+Sophia epistemic-attractor recommendations are bounded epistemic-stewardship guidance only and do **not** certify final truth, erase contested theories, or canonize emergent domains. Stable attractors remain auditable, and dead zones must remain visible for human/scientific/community stewardship.
