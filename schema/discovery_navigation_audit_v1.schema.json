@@ -1,0 +1,294 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/discovery_navigation_audit_v1.schema.json",
+  "title": "Discovery Navigation Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "created_at",
+    "phaselock",
+    "caution",
+    "metadata",
+    "records"
+  ],
+  "properties": {
+    "schema": {
+      "const": "discovery_navigation_audit_v1"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "phaselock": {
+      "type": "string"
+    },
+    "caution": {
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    }
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputMode",
+        "inputModeWarning",
+        "systemRisk",
+        "inputArtifacts",
+        "canonicalIntegrity",
+        "supportingAudits"
+      ],
+      "properties": {
+        "inputMode": {
+          "enum": [
+            "live",
+            "fixture",
+            "mixed"
+          ]
+        },
+        "inputModeWarning": {
+          "type": "string"
+        },
+        "systemRisk": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "inputArtifacts": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "$ref": "#/$defs/inputArtifact"
+          }
+        },
+        "canonicalIntegrity": {
+          "$ref": "#/$defs/canonicalIntegrity"
+        },
+        "supportingAudits": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sourceMode",
+        "schemaVersion",
+        "producerRepo",
+        "producerModule",
+        "producerCommit",
+        "generatedAt"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sourceMode": {
+          "enum": [
+            "canonical",
+            "compatibility"
+          ]
+        },
+        "schemaVersion": {
+          "type": "string"
+        },
+        "producerRepo": {
+          "type": "string"
+        },
+        "producerModule": {
+          "type": "string"
+        },
+        "producerCommit": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": "string"
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "targetType",
+        "discoveryStatus",
+        "coherenceScore",
+        "riskScore",
+        "vectorContext",
+        "bridgeContext",
+        "corridorContext",
+        "commonsContext",
+        "altruisticContext",
+        "consentFrictionContext",
+        "multiscaleContext",
+        "adaptiveCoherenceContext",
+        "repairContext",
+        "distortionContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "targetId": {
+          "type": "string"
+        },
+        "targetType": {
+          "type": "string"
+        },
+        "discoveryStatus": {
+          "enum": [
+            "observe",
+            "explore-bounded",
+            "bridge-first",
+            "dead-zone-risk",
+            "require-human-review"
+          ]
+        },
+        "coherenceScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "riskScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "vectorContext": {
+          "type": "string"
+        },
+        "bridgeContext": {
+          "type": "string"
+        },
+        "corridorContext": {
+          "type": "string"
+        },
+        "commonsContext": {
+          "type": "string"
+        },
+        "governingRule": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "targetPublisherAction": {
+          "enum": [
+            "docket",
+            "watch",
+            "suppress"
+          ]
+        },
+        "altruisticContext": {
+          "type": "string"
+        },
+        "consentFrictionContext": {
+          "type": "string"
+        },
+        "multiscaleContext": {
+          "type": "string"
+        },
+        "adaptiveCoherenceContext": {
+          "type": "string"
+        },
+        "repairContext": {
+          "type": "string"
+        },
+        "distortionContext": {
+          "type": "string"
+        }
+      }
+    },
+    "canonicalIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "warning",
+        "divergenceReasons",
+        "manifests"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "absent",
+            "canonical",
+            "divergent"
+          ]
+        },
+        "warning": {
+          "type": "string"
+        },
+        "divergenceReasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "manifests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/canonicalIntegrityManifest"
+          }
+        }
+      }
+    },
+    "canonicalIntegrityManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "originProject",
+        "canonicalPhaselock",
+        "modificationDisclosureRequired",
+        "ethicalBoundaryNotice",
+        "commonsIntegrityNotice",
+        "constraintSignatureVersion",
+        "constraintSignatureSha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "originProject": {
+          "type": "string"
+        },
+        "canonicalPhaselock": {
+          "type": "string"
+        },
+        "modificationDisclosureRequired": {
+          "type": "boolean"
+        },
+        "ethicalBoundaryNotice": {
+          "type": "string"
+        },
+        "commonsIntegrityNotice": {
+          "type": "string"
+        },
+        "constraintSignatureVersion": {
+          "type": "string"
+        },
+        "constraintSignatureSha256": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
