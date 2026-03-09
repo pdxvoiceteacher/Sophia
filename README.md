@@ -521,3 +521,8 @@ Sophia epistemic-attractor recommendations are bounded epistemic-stewardship gui
 ## Operationalization guidance boundary
 
 Sophia operationalization recommendations are bounded deployment-stewardship guidance only and do **not** authorize automatic implementation, governance override, or coercive operationalization. Deployment maturity should prioritize bounded pilots, explicit safeguards, and review over deployment enthusiasm.
+
+
+## Discovery-navigation guidance boundary
+
+Sophia discovery-navigation recommendations are bounded discovery-stewardship guidance only and do **not** authorize automatic pursuit, canonization, deployment, or institutional override. Discovery corridors should be treated as bounded exploration prompts, not commands.
