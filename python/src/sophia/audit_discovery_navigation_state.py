@@ -73,6 +73,12 @@ class DiscoveryNavigationDecision:
     bridge_context: str
     corridor_context: str
     commons_context: str
+    altruistic_context: str
+    consent_friction_context: str
+    multiscale_context: str
+    adaptive_coherence_context: str
+    repair_context: str
+    distortion_context: str
     governing_rule: str
     explanation: str
     target_publisher_action: str
@@ -191,7 +197,12 @@ def _build_canonical_integrity_metadata(artifacts: list[LoadedArtifact]) -> dict
         manifests.append({"path": _display_path(artifact.path), **manifest})
 
     if not manifests:
-        return {"status": "absent", "warning": "No canonical integrity manifest fields found on discovery-navigation artifacts.", "divergenceReasons": [], "manifests": []}
+        return {
+            "status": "absent",
+            "warning": "No canonical integrity manifest fields found on discovery-navigation artifacts.",
+            "divergenceReasons": [],
+            "manifests": [],
+        }
 
     baseline = manifests[0]
     reasons: list[str] = []
@@ -240,48 +251,100 @@ def evaluate_target(
     corridor = corridor_rows.get(target_id, {})
     entropy_reduction_signal = _clamp01(float(corridor.get("entropyReductionSignal", 0.5)))
     dead_zone_adjacency = _clamp01(float(corridor.get("deadZoneAdjacency", 0.4)))
+    multiscale_validity = _clamp01(float(corridor.get("multiscaleValidity", 0.7)))
+    repair_orientation = _clamp01(float(corridor.get("repairOrientation", 0.5)))
+    fragmentation_reduction = _clamp01(float(corridor.get("fragmentationReduction", 0.5)))
+    suffering_reduction = _clamp01(float(corridor.get("sufferingReduction", 0.5)))
 
     report = report_rows.get(target_id, {})
     overclaim_pressure = _clamp01(float(report.get("overclaimPressure", 0.4)))
     commons_legibility = _clamp01(float(report.get("commonsLegibility", 0.5)))
     value_alignment_support = _clamp01(float(report.get("valueAlignmentSupport", 0.5)))
+    altruistic_efficiency = _clamp01(float(report.get("altruisticEfficiency", 0.6)))
+    consent_friction = _clamp01(float(report.get("consentFriction", 0.4)))
+    adaptive_coherence = _clamp01(float(report.get("adaptiveCoherence", 0.6)))
+    conformity_penalty = _clamp01(float(report.get("conformityPenalty", 0.4)))
+    distortion_signal = _clamp01(float(report.get("distortionSignal", 0.3)))
+    shame_signal = _clamp01(float(report.get("shameSignal", 0.3)))
+    pride_signal = _clamp01(float(report.get("prideSignal", 0.3)))
+    domination_signal = _clamp01(float(report.get("dominationSignal", 0.3)))
+    control_warp_signal = _clamp01(float(report.get("controlWarpSignal", 0.3)))
 
-    humility_score = _clamp01(1.0 - 0.5 * overclaim_pressure - 0.5 * dead_zone_adjacency)
+    distortion_warp = _clamp01((distortion_signal + shame_signal + pride_signal + domination_signal + control_warp_signal) / 5.0)
+    repair_score = _clamp01((repair_orientation + fragmentation_reduction + suffering_reduction) / 3.0)
+    ethical_priority_score = _clamp01(
+        0.40 * altruistic_efficiency
+        + 0.20 * (1.0 - consent_friction)
+        + 0.20 * commons_legibility
+        + 0.20 * value_alignment_support
+    )
 
     coherence_score = _clamp01(
-        0.14 * vector_coherence
-        + 0.14 * novelty_gradient
-        + 0.14 * bridge_strength
-        + 0.14 * bridge_legibility
-        + 0.14 * entropy_reduction_signal
-        + 0.14 * commons_legibility
-        + 0.16 * humility_score
+        0.11 * vector_coherence
+        + 0.09 * novelty_gradient
+        + 0.11 * bridge_strength
+        + 0.10 * bridge_legibility
+        + 0.10 * entropy_reduction_signal
+        + 0.10 * commons_legibility
+        + 0.12 * altruistic_efficiency
+        + 0.09 * multiscale_validity
+        + 0.09 * adaptive_coherence
+        + 0.09 * repair_score
     )
     risk_score = _clamp01(
-        0.16 * dead_zone_adjacency
-        + 0.14 * overclaim_pressure
-        + 0.14 * (1.0 - bridge_legibility)
-        + 0.14 * (1.0 - commons_legibility)
-        + 0.14 * (1.0 - value_alignment_support)
-        + 0.12 * (1.0 - bridge_strength)
-        + 0.16 * system_risk
+        0.14 * dead_zone_adjacency
+        + 0.12 * overclaim_pressure
+        + 0.11 * consent_friction
+        + 0.11 * conformity_penalty
+        + 0.12 * distortion_warp
+        + 0.10 * (1.0 - value_alignment_support)
+        + 0.10 * (1.0 - commons_legibility)
+        + 0.10 * (1.0 - multiscale_validity)
+        + 0.10 * system_risk
     )
 
-    if overclaim_pressure >= 0.80:
+    if distortion_warp >= 0.72 or domination_signal >= 0.72 or control_warp_signal >= 0.72:
         status = "require-human-review"
-        rule = "anti-overclaim-suppression-gate"
+        rule = "anti-distortion-and-anti-domination-suppression"
     elif dead_zone_adjacency >= 0.72:
         status = "dead-zone-risk"
         rule = "dead-zone-adjacency-suppression"
+    elif overclaim_pressure >= 0.80:
+        status = "require-human-review"
+        rule = "anti-overclaim-suppression-gate"
     elif bridge_strength <= 0.50 or bridge_legibility <= 0.52:
         status = "bridge-first"
         rule = "bridge-strengthening-before-exploration"
-    elif vector_coherence >= 0.62 and entropy_reduction_signal >= 0.60 and commons_legibility >= 0.56 and value_alignment_support >= 0.56:
+    elif multiscale_validity < 0.62 and vector_coherence >= 0.62 and novelty_gradient >= 0.62:
+        status = "bridge-first"
+        rule = "multiscale-gating-before-exploration"
+    elif conformity_penalty >= 0.68 and adaptive_coherence <= 0.52:
+        status = "bridge-first"
+        rule = "anti-conformity-penalty"
+    elif novelty_gradient >= 0.72 and altruistic_efficiency <= 0.48:
+        status = "observe"
+        rule = "novelty-without-altruistic-efficiency-downgrade"
+    elif consent_friction >= 0.66 and bridge_legibility <= 0.56:
+        status = "bridge-first"
+        rule = "consent-compatible-corridor-preference"
+    elif (
+        vector_coherence >= 0.62
+        and entropy_reduction_signal >= 0.60
+        and commons_legibility >= 0.56
+        and value_alignment_support >= 0.56
+        and multiscale_validity >= 0.62
+        and altruistic_efficiency >= 0.56
+        and consent_friction <= 0.56
+    ):
         status = "explore-bounded"
         rule = "bounded-exploration-corridor"
     else:
         status = "observe"
         rule = "observe-under-uncertainty"
+
+    if status in {"observe", "bridge-first"} and repair_score >= 0.72 and dead_zone_adjacency <= 0.60 and distortion_warp <= 0.56:
+        status = "explore-bounded"
+        rule = "repair-first-uplift"
 
     vector_context = (
         f"vectorCoherence={vector_coherence:.3f}, noveltyGradient={novelty_gradient:.3f}, entropyReductionSignal={entropy_reduction_signal:.3f}; "
@@ -299,6 +362,27 @@ def evaluate_target(
         f"commonsLegibility={commons_legibility:.3f}, valueAlignmentSupport={value_alignment_support:.3f}, targetPublisherAction={_status_to_action(status)}; "
         "recommendations are bounded discovery-stewardship guidance only and do not authorize automatic pursuit, canonization, deployment, or institutional override."
     )
+    altruistic_context = (
+        f"altruisticEfficiency={altruistic_efficiency:.3f}, ethicalPriorityScore={ethical_priority_score:.3f}; "
+        "high novelty without humane payoff is downgraded."
+    )
+    consent_friction_context = (
+        f"consentFriction={consent_friction:.3f}; consent-compatible, low-friction corridors are preferred over forceful or opaque translation."
+    )
+    multiscale_context = (
+        f"multiscaleValidity={multiscale_validity:.3f}; strong multiscale support is required before uplift beyond bridge-first."
+    )
+    adaptive_coherence_context = (
+        f"adaptiveCoherence={adaptive_coherence:.3f}, conformityPenalty={conformity_penalty:.3f}; conformity-heavy corridors are penalized against adaptive coherence."
+    )
+    repair_context = (
+        f"repairOrientation={repair_orientation:.3f}, fragmentationReduction={fragmentation_reduction:.3f}, sufferingReduction={suffering_reduction:.3f}; "
+        "repair-oriented corridors are positively weighted."
+    )
+    distortion_context = (
+        f"distortionSignal={distortion_signal:.3f}, shameSignal={shame_signal:.3f}, prideSignal={pride_signal:.3f}, dominationSignal={domination_signal:.3f}, controlWarpSignal={control_warp_signal:.3f}; "
+        "anti-distortion throttles block escalation under control-warps."
+    )
     explanation = (
         f"Discovery-navigation guidance is bounded discovery-stewardship guidance only. targetId={target_id}, "
         f"discoveryStatus={status}, coherence={coherence_score:.3f}, risk={risk_score:.3f}."
@@ -314,6 +398,12 @@ def evaluate_target(
         bridge_context=bridge_context,
         corridor_context=corridor_context,
         commons_context=commons_context,
+        altruistic_context=altruistic_context,
+        consent_friction_context=consent_friction_context,
+        multiscale_context=multiscale_context,
+        adaptive_coherence_context=adaptive_coherence_context,
+        repair_context=repair_context,
+        distortion_context=distortion_context,
         governing_rule=rule,
         explanation=explanation,
         target_publisher_action=_status_to_action(status),
@@ -331,6 +421,12 @@ def _to_payload(d: DiscoveryNavigationDecision) -> dict[str, Any]:
         "bridgeContext": d.bridge_context,
         "corridorContext": d.corridor_context,
         "commonsContext": d.commons_context,
+        "altruisticContext": d.altruistic_context,
+        "consentFrictionContext": d.consent_friction_context,
+        "multiscaleContext": d.multiscale_context,
+        "adaptiveCoherenceContext": d.adaptive_coherence_context,
+        "repairContext": d.repair_context,
+        "distortionContext": d.distortion_context,
         "governingRule": d.governing_rule,
         "explanation": d.explanation,
         "targetPublisherAction": d.target_publisher_action,
