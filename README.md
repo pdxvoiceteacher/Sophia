@@ -549,3 +549,7 @@ Trust-surface audits provide bounded legitimacy guidance only and do not imply w
 
 Recommendations are bounded civilizational-stewardship guidance only and do not declare epoch transition, canonize paradigms, or authorize centralized authority.
 
+## Epochal-terrace guidance boundary
+
+Recommendations are bounded terrace-stewardship guidance only and do not declare permanent epochs, authorize canon closure, or centralize institutional authority.
+
