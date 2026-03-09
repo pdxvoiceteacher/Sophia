@@ -516,3 +516,8 @@ Sophia emergent-domain recommendations are bounded scientific-governance guidanc
 ## Epistemic-attractor guidance boundary
 
 Sophia epistemic-attractor recommendations are bounded epistemic-stewardship guidance only and do **not** certify final truth, erase contested theories, or canonize emergent domains. Stable attractors remain auditable, and dead zones must remain visible for human/scientific/community stewardship.
+
+
+## Operationalization guidance boundary
+
+Sophia operationalization recommendations are bounded deployment-stewardship guidance only and do **not** authorize automatic implementation, governance override, or coercive operationalization. Deployment maturity should prioritize bounded pilots, explicit safeguards, and review over deployment enthusiasm.
