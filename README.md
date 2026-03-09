@@ -553,3 +553,7 @@ Recommendations are bounded civilizational-stewardship guidance only and do not 
 
 Recommendations are bounded terrace-stewardship guidance only and do not declare permanent epochs, authorize canon closure, or centralize institutional authority.
 
+## Terrace-erosion guidance boundary
+
+Recommendations are bounded renewal-stewardship guidance only and do not declare epoch collapse, authorize regime change, or canonize successor systems.
+
