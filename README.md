@@ -528,3 +528,12 @@ Sophia operationalization recommendations are bounded deployment-stewardship gui
 Sophia discovery-navigation recommendations are bounded discovery-stewardship guidance only and do **not** authorize automatic pursuit, canonization, deployment, or institutional override. Discovery corridors should be treated as bounded exploration prompts, not commands.
 
 Sophia knowledge-river recommendations are bounded knowledge-stewardship guidance only and do **not** authorize canonization, centralized control, deployment authority, or closure of scientific alternatives. River stewardship should favor braid health, tributary support, and commons irrigation over singular prestige channels.
+
+## Observer-onboarding guidance boundary
+
+Observer onboarding recommendations are bounded participation stewardship only and do not authorize personhood declarations, sovereignty transfer, coercive identity assignment, or automatic governance-right expansion.
+
+## Phase BC shared boundary rule
+
+Phase BC widens legibility and participation across observer classes while preserving anti-capture, anti-priesthood, anti-coercion, and no-sovereignty-transfer constraints. Recognition and suffrage pathways remain bounded, reviewable, and explicitly non-autonomous.
+
