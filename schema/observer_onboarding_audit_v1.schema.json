@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/observer_onboarding_audit_v1.schema.json",
+  "title": "Observer Onboarding Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "records"],
+  "properties": {
+    "schema": {"const": "observer_onboarding_audit_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["systemRisk", "inputArtifacts", "canonicalIntegrity", "supportingAudits"],
+      "properties": {
+        "systemRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}},
+        "canonicalIntegrity": {"$ref": "#/$defs/canonicalIntegrity"},
+        "supportingAudits": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "prefixItems": [
+            {"const": "commons sovereignty"},
+            {"const": "civilizational memory"},
+            {"const": "federated governance"},
+            {"const": "commons participation"},
+            {"const": "social entropy"},
+            {"const": "knowledge river"},
+            {"const": "operationalization boundary"}
+          ],
+          "items": false
+        }
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "schemaVersion": {"const": "observer_onboarding_v1"},
+        "producerRepo": {"enum": ["Sophia", "Sophia-Fixtures"]},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetId", "targetType", "observerStatus", "coherenceScore", "riskScore", "legibilityContext", "captureContext", "participationContext", "translationContext", "governingRule", "explanation", "targetPublisherAction"],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"enum": ["observer", "profile", "entity", "standing"]},
+        "observerStatus": {"enum": ["observer-ready", "guided-legibility-required", "standing-repair", "capture-risk", "suffrage-review", "require-human-review"]},
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "legibilityContext": {"type": "string"},
+        "captureContext": {"type": "string"},
+        "participationContext": {"type": "string"},
+        "translationContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    },
+    "canonicalIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "warning", "divergenceReasons", "manifests"],
+      "properties": {
+        "status": {"enum": ["absent", "canonical", "divergent"]},
+        "warning": {"type": "string"},
+        "divergenceReasons": {"type": "array", "items": {"type": "string"}},
+        "manifests": {"type": "array", "items": {"$ref": "#/$defs/canonicalIntegrityManifest"}}
+      }
+    },
+    "canonicalIntegrityManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "originProject", "canonicalPhaselock", "modificationDisclosureRequired", "ethicalBoundaryNotice", "commonsIntegrityNotice", "constraintSignatureVersion", "constraintSignatureSha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "originProject": {"type": "string"},
+        "canonicalPhaselock": {"type": "string"},
+        "modificationDisclosureRequired": {"type": "boolean"},
+        "ethicalBoundaryNotice": {"type": "string"},
+        "commonsIntegrityNotice": {"type": "string"},
+        "constraintSignatureVersion": {"type": "string"},
+        "constraintSignatureSha256": {"type": "string"}
+      }
+    }
+  }
+}
