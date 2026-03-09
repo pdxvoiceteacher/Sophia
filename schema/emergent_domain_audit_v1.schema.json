@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/emergent_domain_audit_v1.schema.json",
+  "title": "Emergent Domain Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "created_at",
+    "phaselock",
+    "caution",
+    "metadata",
+    "records"
+  ],
+  "properties": {
+    "schema": {
+      "const": "emergent_domain_audit_v1"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "phaselock": {
+      "type": "string"
+    },
+    "caution": {
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    }
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputMode",
+        "inputModeWarning",
+        "systemRisk",
+        "inputArtifacts",
+        "canonicalIntegrity",
+        "supportingAudits"
+      ],
+      "properties": {
+        "inputMode": {
+          "enum": [
+            "live",
+            "fixture",
+            "mixed"
+          ]
+        },
+        "inputModeWarning": {
+          "type": "string"
+        },
+        "systemRisk": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "inputArtifacts": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "$ref": "#/$defs/inputArtifact"
+          }
+        },
+        "supportingAudits": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "string"
+          }
+        },
+        "canonicalIntegrity": {
+          "$ref": "#/$defs/canonicalIntegrity"
+        }
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sourceMode",
+        "schemaVersion",
+        "producerRepo",
+        "producerModule",
+        "producerCommit",
+        "generatedAt"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sourceMode": {
+          "enum": [
+            "canonical",
+            "compatibility"
+          ]
+        },
+        "schemaVersion": {
+          "type": "string"
+        },
+        "producerRepo": {
+          "type": "string"
+        },
+        "producerModule": {
+          "type": "string"
+        },
+        "producerCommit": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": "string"
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetId",
+        "targetType",
+        "domainStatus",
+        "coherenceScore",
+        "riskScore",
+        "convergenceContext",
+        "transferContext",
+        "curiosityContext",
+        "commonsContext",
+        "governingRule",
+        "explanation",
+        "targetPublisherAction"
+      ],
+      "properties": {
+        "targetId": {
+          "type": "string"
+        },
+        "targetType": {
+          "type": "string"
+        },
+        "domainStatus": {
+          "enum": [
+            "emergent-watch",
+            "convergence-rising",
+            "field-birth-threshold",
+            "legibility-risk",
+            "require-human-review"
+          ]
+        },
+        "coherenceScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "riskScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "convergenceContext": {
+          "type": "string"
+        },
+        "transferContext": {
+          "type": "string"
+        },
+        "curiosityContext": {
+          "type": "string"
+        },
+        "commonsContext": {
+          "type": "string"
+        },
+        "governingRule": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "targetPublisherAction": {
+          "enum": [
+            "docket",
+            "watch",
+            "suppress"
+          ]
+        }
+      }
+    },
+    "canonicalIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "warning",
+        "divergenceReasons",
+        "manifests"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "absent",
+            "canonical",
+            "divergent"
+          ]
+        },
+        "warning": {
+          "type": "string"
+        },
+        "divergenceReasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "manifests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/canonicalIntegrityManifest"
+          }
+        }
+      }
+    },
+    "canonicalIntegrityManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "originProject",
+        "canonicalPhaselock",
+        "modificationDisclosureRequired",
+        "ethicalBoundaryNotice",
+        "commonsIntegrityNotice",
+        "constraintSignatureVersion",
+        "constraintSignatureSha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "originProject": {
+          "type": "string"
+        },
+        "canonicalPhaselock": {
+          "type": "string"
+        },
+        "modificationDisclosureRequired": {
+          "type": "boolean"
+        },
+        "ethicalBoundaryNotice": {
+          "type": "string"
+        },
+        "commonsIntegrityNotice": {
+          "type": "string"
+        },
+        "constraintSignatureVersion": {
+          "type": "string"
+        },
+        "constraintSignatureSha256": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
