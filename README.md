@@ -545,3 +545,7 @@ Authorship-integrity recommendations are bounded provenance and disclosure guida
 
 Trust-surface audits provide bounded legitimacy guidance only and do not imply wrongdoing or authorize enforcement.
 
+## Civilizational-delta guidance boundary
+
+Recommendations are bounded civilizational-stewardship guidance only and do not declare epoch transition, canonize paradigms, or authorize centralized authority.
+
