@@ -537,3 +537,7 @@ Observer onboarding recommendations are bounded participation stewardship only a
 
 Phase BC widens legibility and participation across observer classes while preserving anti-capture, anti-priesthood, anti-coercion, and no-sovereignty-transfer constraints. Recognition and suffrage pathways remain bounded, reviewable, and explicitly non-autonomous.
 
+## Authorship-integrity guidance boundary
+
+Authorship-integrity recommendations are bounded provenance and disclosure guidance only; they do not authorize sabotage, retaliation, coercive enforcement, or hidden anti-user behavior.
+
