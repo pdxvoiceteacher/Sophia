@@ -581,3 +581,7 @@ Recommendations are bounded terrace-seed guidance only and do not declare new ep
 
 Recommendations are bounded epochal-surface guidance only and do not declare new epochs, authorize settlement, or canonize emergent futures.
 
+## Living-terrace guidance boundary
+
+Recommendations are bounded living-terrace guidance only and do not declare new epochs, authorize settlement, or canonize emergent futures.
+
