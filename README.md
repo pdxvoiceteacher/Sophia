@@ -561,3 +561,7 @@ Recommendations are bounded renewal-stewardship guidance only and do not declare
 
 Recommendations are bounded successor-renewal guidance only and do not declare new epochs, authorize regime replacement, or canonize successor systems.
 
+## Successor-maturation guidance boundary
+
+Recommendations are bounded successor-maturation guidance only and do not declare new epochs, authorize successor rule, or canonize emergent futures.
+
