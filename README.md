@@ -565,3 +565,7 @@ Recommendations are bounded successor-renewal guidance only and do not declare n
 
 Recommendations are bounded successor-maturation guidance only and do not declare new epochs, authorize successor rule, or canonize emergent futures.
 
+## Successor-crossing guidance boundary
+
+Recommendations are bounded successor-crossing guidance only and do not declare new epochs, authorize successor rule, or canonize emergent futures.
+
