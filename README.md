@@ -528,3 +528,48 @@ Sophia operationalization recommendations are bounded deployment-stewardship gui
 Sophia discovery-navigation recommendations are bounded discovery-stewardship guidance only and do **not** authorize automatic pursuit, canonization, deployment, or institutional override. Discovery corridors should be treated as bounded exploration prompts, not commands.
 
 Sophia knowledge-river recommendations are bounded knowledge-stewardship guidance only and do **not** authorize canonization, centralized control, deployment authority, or closure of scientific alternatives. River stewardship should favor braid health, tributary support, and commons irrigation over singular prestige channels.
+
+## Observer-onboarding guidance boundary
+
+Observer onboarding recommendations are bounded participation stewardship only and do not authorize personhood declarations, sovereignty transfer, coercive identity assignment, or automatic governance-right expansion.
+
+## Phase BC shared boundary rule
+
+Phase BC widens legibility and participation across observer classes while preserving anti-capture, anti-priesthood, anti-coercion, and no-sovereignty-transfer constraints. Recognition and suffrage pathways remain bounded, reviewable, and explicitly non-autonomous.
+
+## Authorship-integrity guidance boundary
+
+Authorship-integrity recommendations are bounded provenance and disclosure guidance only; they do not authorize sabotage, retaliation, coercive enforcement, or hidden anti-user behavior.
+
+## Trust-surface guidance boundary
+
+Trust-surface audits provide bounded legitimacy guidance only and do not imply wrongdoing or authorize enforcement.
+
+## Civilizational-delta guidance boundary
+
+Recommendations are bounded civilizational-stewardship guidance only and do not declare epoch transition, canonize paradigms, or authorize centralized authority.
+
+## Epochal-terrace guidance boundary
+
+Recommendations are bounded terrace-stewardship guidance only and do not declare permanent epochs, authorize canon closure, or centralize institutional authority.
+
+## Terrace-erosion guidance boundary
+
+Recommendations are bounded renewal-stewardship guidance only and do not declare epoch collapse, authorize regime change, or canonize successor systems.
+
+## Successor-delta guidance boundary
+
+Recommendations are bounded successor-renewal guidance only and do not declare new epochs, authorize regime replacement, or canonize successor systems.
+
+## Successor-maturation guidance boundary
+
+Recommendations are bounded successor-maturation guidance only and do not declare new epochs, authorize successor rule, or canonize emergent futures.
+
+## Successor-crossing guidance boundary
+
+Recommendations are bounded successor-crossing guidance only and do not declare new epochs, authorize successor rule, or canonize emergent futures.
+
+## Post-crossing stabilization guidance boundary
+
+Recommendations are bounded post-crossing stabilization guidance only and do not declare new epochs, authorize successor rule, or canonize emergent futures.
+
