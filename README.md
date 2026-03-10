@@ -577,3 +577,7 @@ Recommendations are bounded post-crossing stabilization guidance only and do not
 
 Recommendations are bounded terrace-seed guidance only and do not declare new epochs, authorize successor settlement, or canonize emergent futures.
 
+## Epochal-surface guidance boundary
+
+Recommendations are bounded epochal-surface guidance only and do not declare new epochs, authorize settlement, or canonize emergent futures.
+
