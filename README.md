@@ -557,3 +557,7 @@ Recommendations are bounded terrace-stewardship guidance only and do not declare
 
 Recommendations are bounded renewal-stewardship guidance only and do not declare epoch collapse, authorize regime change, or canonize successor systems.
 
+## Successor-delta guidance boundary
+
+Recommendations are bounded successor-renewal guidance only and do not declare new epochs, authorize regime replacement, or canonize successor systems.
+
