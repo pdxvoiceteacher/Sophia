@@ -585,3 +585,7 @@ Recommendations are bounded epochal-surface guidance only and do not declare new
 
 Recommendations are bounded living-terrace guidance only and do not declare new epochs, authorize settlement, or canonize emergent futures.
 
+## Background-coherence guidance boundary
+
+Recommendations are bounded background-coherence guidance only and do not declare final epochs, authorize settlement, or canonize emergent civilizational assumptions.
+
