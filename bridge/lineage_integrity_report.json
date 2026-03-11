@@ -1,0 +1,25 @@
+{
+  "lineageComplete": false,
+  "missingLinks": [
+    "bridge/authorship_integrity_map.json",
+    "bridge/background_coherence_map.json",
+    "bridge/civilizational_delta_map.json",
+    "bridge/epochal_surface_map.json",
+    "bridge/living_terrace_map.json",
+    "bridge/new_delta_stabilization_map.json",
+    "bridge/observer_onboarding_map.json",
+    "bridge/renewal_braid_map.json",
+    "bridge/successor_crossing_map.json",
+    "bridge/successor_maturation_map.json",
+    "bridge/terrace_erosion_map.json",
+    "bridge/terrace_seed_map.json",
+    "bridge/trust_surface_map.json"
+  ],
+  "issuesDetected": [
+    "missing-upstream-artifacts"
+  ],
+  "recommendations": [
+    "Keep-open: unresolved lineage links require human follow-up before downstream compression decisions.",
+    "No governance transfer, settlement authorization, or centralized authority claim is implied."
+  ]
+}
