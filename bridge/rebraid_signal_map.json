@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "rebraid_signal_map_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "targets": [
+    {
+      "targetId": "branch:alpha-beta",
+      "rebraidPotential": 0.79,
+      "rebraidAlert": true
+    },
+    {
+      "targetId": "branch:gamma-delta",
+      "rebraidPotential": 0.34,
+      "rebraidAlert": false
+    }
+  ]
+}

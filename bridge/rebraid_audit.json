@@ -1,0 +1,16 @@
+{
+  "schema": "rebraid_audit_v1",
+  "created_at": "1970-01-01T00:00:00Z",
+  "caution": "Bounded advisory only; findings are watch/docket guidance and do not authorize merger, suppression, closure, or authority transfer.",
+  "decision": "warn",
+  "findings": [
+    {
+      "id": "REBRAID_MISSING",
+      "severity": "warn",
+      "type": "rebraid",
+      "advisory": "docket",
+      "message": "Missing rebraid signal map input; requires executive review (rebraid_signal_map.json).",
+      "data": {}
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "orthodoxy_map_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "targets": [
+    {"targetId": "target:alpha", "orthodoxyScore": 0.82, "orthodoxyAlert": true},
+    {"targetId": "target:beta", "orthodoxyScore": 0.48, "orthodoxyAlert": false}
+  ]
+}

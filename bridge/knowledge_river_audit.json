@@ -1,0 +1,18 @@
+{
+  "schema": "knowledge_river_audit_v1",
+  "created_at": "1970-01-01T00:00:00Z",
+  "caution": "Bounded advisory only; use watch/docket follow-up and avoid authority-transfer or closure claims.",
+  "decision": "warn",
+  "findings": [
+    {
+      "id": "river:map",
+      "severity": "warn",
+      "type": "docket-review",
+      "advisory": "docket",
+      "message": "Missing or invalid river inputs; fail-closed docket review required (knowledge_river_map.json or river_capture_risk_report.json).",
+      "data": {
+        "missing": "knowledge_river_map.json or river_capture_risk_report.json"
+      }
+    }
+  ]
+}
