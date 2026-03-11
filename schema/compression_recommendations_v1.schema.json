@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/compression_recommendations_v1.schema.json",
+  "title": "Compression Recommendations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["actionItems"],
+  "properties": {
+    "actionItems": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["memoryId", "recommendedTier", "reason"],
+        "properties": {
+          "memoryId": {"type": "string"},
+          "recommendedTier": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}
