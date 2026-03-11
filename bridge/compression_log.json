@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "compression_log_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "entries": [
+    {
+      "patternId": "pat:bf-dup-01",
+      "memoryId": "BF",
+      "action": "skip",
+      "reason": "duplicate semantic content retained in adjacent phase entry"
+    },
+    {
+      "patternId": "pat:bo-donation-01",
+      "memoryId": "BO",
+      "action": "donate",
+      "reason": "cross-phase linkage preserved in warm-tier summary"
+    }
+  ]
+}

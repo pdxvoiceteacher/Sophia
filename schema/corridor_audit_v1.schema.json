@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/corridor_audit_v1.schema.json",
+  "title": "Corridor Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "caution", "decision", "findings"],
+  "properties": {
+    "schema": {"const": "corridor_audit_v1"},
+    "created_at": {"type": "string"},
+    "caution": {"type": "string"},
+    "decision": {"enum": ["pass", "warn"]},
+    "findings": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/finding"}}
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetId", "severity", "type", "message", "advisory", "notes"],
+      "properties": {
+        "targetId": {"type": "string"},
+        "severity": {"type": "string", "enum": ["warn", "info"]},
+        "type": {"type": "string", "enum": ["corridor-emerging", "corridor-stable", "missing-fields"]},
+        "message": {"type": "string"},
+        "advisory": {"type": "string", "enum": ["watch", "docket"]},
+        "notes": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    }
+  }
+}
