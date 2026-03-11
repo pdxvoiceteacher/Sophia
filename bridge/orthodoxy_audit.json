@@ -1,0 +1,29 @@
+{
+  "schema": "orthodoxy_audit_v1",
+  "created_at": "2027-01-01T00:00:00Z",
+  "caution": "Bounded advisory only; no path closure, no governance transfer, no canonical settlement.",
+  "decision": "warn",
+  "findings": [
+    {
+      "targetId": "target:alpha",
+      "severity": "warn",
+      "type": "orthodoxy-risk",
+      "message": "High capture/plurality collapse detected (false-orthodoxy signature). Watch for coerced coherence.",
+      "advisory": "docket",
+      "notes": [
+        "review narrative bias",
+        "investigate suppressed alternatives"
+      ]
+    },
+    {
+      "targetId": "target:beta",
+      "severity": "info",
+      "type": "within-bounds",
+      "message": "Orthodoxy pressure is within bounded plurality-watch ranges.",
+      "advisory": "watch",
+      "notes": [
+        "monitor dissent visibility"
+      ]
+    }
+  ]
+}

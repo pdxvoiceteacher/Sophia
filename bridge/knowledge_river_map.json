@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "knowledge_river_map_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "invariantHash": "sha256:river",
+  "rivers": [
+    {"id": "river:alpha", "riverStrength": 4.2},
+    {"id": "river:beta", "riverStrength": 6.4}
+  ]
+}
