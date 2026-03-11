@@ -1,0 +1,11 @@
+{
+  "hotMemoryUsage": 4,
+  "warmMemoryUsage": 5,
+  "coldMemoryUsage": 4,
+  "totalMemoryEntries": 13,
+  "invariantHashChecks": [],
+  "recommendations": [
+    "Background coherence is legible; retain current tiers with periodic bounded review.",
+    "No automatic promotion, automatic deletion, governance transfer, or canon closure is authorized by this report."
+  ]
+}

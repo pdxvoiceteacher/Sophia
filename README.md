@@ -617,6 +617,8 @@ python -m coherence.tools.query_bridge_artifact bridge/background_coherence_reco
 python -m coherence.tools.query_bridge_artifact bridge/phase_lineage_registry.json --phase-id BO --compact
 python -m coherence.tools.summarize_phase_status bridge/living_terrace_recommendations.json bridge/background_coherence_recommendations.json --format markdown
 python -m coherence.tools.summarize_phase_status bridge/background_coherence_recommendations.json --format json
+python -m sophia.audit_memory_lineage_compression_state
+python -m coherence.tools.query_bridge_artifact bridge/memory_compression_audit.json --compact
 ```
 
 ### Constitutional boundary note
