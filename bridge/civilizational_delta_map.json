@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "civilizational_delta_map_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "invariantHash": "sha256:delta",
+  "targets": [
+    {"phaseId": "delta:alpha", "deltaStrength": 12.5, "deltaAlert": false},
+    {"phaseId": "delta:beta", "deltaStrength": 3.5, "deltaAlert": false}
+  ]
+}

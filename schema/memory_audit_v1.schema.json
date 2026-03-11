@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/memory_audit_v1.schema.json",
+  "title": "Memory Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["memory_integrity_ok", "loss_notes", "compression_score"],
+  "properties": {
+    "memory_integrity_ok": {"type": "boolean"},
+    "loss_notes": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "compression_score": {"type": "number", "minimum": 0, "maximum": 1}
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "rebraid_audit_v1",
+  "created_at": "2027-01-01T00:00:00Z",
+  "caution": "Bounded advisory only; findings are watch/docket guidance and do not authorize merger, suppression, or legitimacy closure.",
+  "decision": "pass",
+  "findings": [
+    {
+      "id": "branch:alpha-beta",
+      "severity": "info",
+      "type": "rebraiding-emerging",
+      "message": "Mutual translation and shared invariants have increased (partial braid forming).",
+      "advisory": "watch",
+      "data": {
+        "rebraidPotential": 0.79
+      }
+    },
+    {
+      "id": "branch:gamma-delta",
+      "severity": "info",
+      "type": "within-bounds",
+      "message": "Rebraid indicators remain bounded; continue watch-state monitoring without merger claims.",
+      "advisory": "watch",
+      "data": {
+        "rebraidPotential": 0.34
+      }
+    }
+  ]
+}
