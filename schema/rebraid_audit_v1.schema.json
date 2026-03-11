@@ -10,24 +10,20 @@
     "created_at": {"type": "string"},
     "caution": {"type": "string"},
     "decision": {"enum": ["pass", "warn"]},
-    "findings": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/finding"}}
-  },
-  "$defs": {
-    "finding": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "severity", "type", "message", "advisory", "data"],
-      "properties": {
-        "id": {"type": "string"},
-        "severity": {"type": "string", "enum": ["warn", "info"]},
-        "type": {"type": "string", "enum": ["rebraiding-emerging", "within-bounds", "docket-review"]},
-        "message": {"type": "string"},
-        "advisory": {"type": "string", "enum": ["watch", "docket"]},
-        "data": {
-          "type": "object",
-          "properties": {
-            "rebraidPotential": {"type": "number", "minimum": 0, "maximum": 1}
-          }
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "type", "advisory", "message", "data"],
+        "properties": {
+          "id": {"type": "string"},
+          "severity": {"type": "string", "enum": ["info", "warn"]},
+          "type": {"type": "string"},
+          "advisory": {"type": "string", "enum": ["watch", "docket"]},
+          "message": {"type": "string"},
+          "data": {"type": "object"}
         }
       }
     }
