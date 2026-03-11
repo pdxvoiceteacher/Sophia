@@ -1,0 +1,407 @@
+{
+  "schemaVersion": "phase_lineage_registry_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "coherence.lineage.registry",
+  "producerCommit": "lrq-v0.1",
+  "generatedAt": "2026-01-01T00:00:00Z",
+  "originProject": "CoherenceLattice",
+  "canonicalPhaselock": "bridge formalization lineage -> audit lineage / governance breadcrumbs -> publisher legibility overlays -> bounded steward / Agent Echo usability -> Developer Echo synthesis",
+  "modificationDisclosureRequired": true,
+  "ethicalBoundaryNotice": "No governance transfer, institutional displacement, canon closure, or centralized successor authority claims.",
+  "commonsIntegrityNotice": "Legibility overlays remain plural, reviewable, and non-priestly.",
+  "constraintSignatureVersion": "lrq-v0.1",
+  "constraintSignatureSha256": "sha256:lrq01",
+  "phases": [
+    {
+      "phaseId": "BC",
+      "phaseName": "observer-onboarding",
+      "upstreamArtifacts": [
+        "bridge/observer_onboarding_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/observer_onboarding_audit.json"
+      ],
+      "preservedConstraints": [
+        "no-sovereignty-transfer",
+        "anti-coercion",
+        "anti-capture"
+      ],
+      "transformedConcepts": [
+        "observer legibility",
+        "bounded participation"
+      ],
+      "keyStatuses": [
+        "participation-ready",
+        "require-human-review"
+      ],
+      "humanMeaning": "Clarifies onboarding pathways without granting authority.",
+      "operatorQuestionsAnswered": [
+        "Who can participate and under what safeguards?"
+      ],
+      "relatedDocs": [
+        "README.md#observer-onboarding-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "Guidance remains bounded and non-authorizing."
+    },
+    {
+      "phaseId": "BD",
+      "phaseName": "authorship-integrity",
+      "upstreamArtifacts": [
+        "bridge/authorship_integrity_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/authorship_integrity_audit.json"
+      ],
+      "preservedConstraints": [
+        "provenance transparency",
+        "anti-sabotage"
+      ],
+      "transformedConcepts": [
+        "authorship disclosure",
+        "integrity auditing"
+      ],
+      "keyStatuses": [
+        "disclosure-complete",
+        "require-human-review"
+      ],
+      "humanMeaning": "Keeps contribution lineage visible and accountable.",
+      "operatorQuestionsAnswered": [
+        "Are contributors and modifications attributable?"
+      ],
+      "relatedDocs": [
+        "README.md#authorship-integrity-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No retaliation or coercive enforcement authorization."
+    },
+    {
+      "phaseId": "BE",
+      "phaseName": "trust-surface",
+      "upstreamArtifacts": [
+        "bridge/trust_surface_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/trust_surface_audit.json"
+      ],
+      "preservedConstraints": [
+        "non-punitive framing",
+        "bounded legitimacy"
+      ],
+      "transformedConcepts": [
+        "trust signals",
+        "legitimacy cautions"
+      ],
+      "keyStatuses": [
+        "trust-surface-stable",
+        "require-human-review"
+      ],
+      "humanMeaning": "Tracks trust presentation risk without judgment inflation.",
+      "operatorQuestionsAnswered": [
+        "Is trust presentation degraded or stable?"
+      ],
+      "relatedDocs": [
+        "README.md#trust-surface-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "Audit does not imply wrongdoing or enforcement authority."
+    },
+    {
+      "phaseId": "BF",
+      "phaseName": "civilizational-delta",
+      "upstreamArtifacts": [
+        "bridge/civilizational_delta_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/civilizational_delta_audit.json"
+      ],
+      "preservedConstraints": [
+        "anti-canon-closure",
+        "plural pathways"
+      ],
+      "transformedConcepts": [
+        "delta detection",
+        "renewal pressure"
+      ],
+      "keyStatuses": [
+        "delta-visible",
+        "require-human-review"
+      ],
+      "humanMeaning": "Assesses shifts without declaring epoch authority.",
+      "operatorQuestionsAnswered": [
+        "Is a delta becoming legible without closure?"
+      ],
+      "relatedDocs": [
+        "README.md#civilizational-delta-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No declaration of permanent epoch or centralized authority."
+    },
+    {
+      "phaseId": "BG",
+      "phaseName": "terrace-erosion",
+      "upstreamArtifacts": [
+        "bridge/terrace_erosion_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/terrace_erosion_audit.json"
+      ],
+      "preservedConstraints": [
+        "renewal-first",
+        "anti-regime-replacement"
+      ],
+      "transformedConcepts": [
+        "erosion sensing",
+        "renewal priority"
+      ],
+      "keyStatuses": [
+        "erosion-risk",
+        "require-human-review"
+      ],
+      "humanMeaning": "Detects erosion while prioritizing repair over replacement.",
+      "operatorQuestionsAnswered": [
+        "Where are terraces eroding and how badly?"
+      ],
+      "relatedDocs": [
+        "README.md#terrace-erosion-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No regime-change authorization."
+    },
+    {
+      "phaseId": "BH",
+      "phaseName": "successor-delta",
+      "upstreamArtifacts": [
+        "bridge/renewal_braid_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/successor_delta_audit.json"
+      ],
+      "preservedConstraints": [
+        "anti-capture",
+        "plural recovery"
+      ],
+      "transformedConcepts": [
+        "seed emergence",
+        "braid health"
+      ],
+      "keyStatuses": [
+        "successor-seed-visible",
+        "phase-transition-watch"
+      ],
+      "humanMeaning": "Evaluates successor seed trajectories under plurality constraints.",
+      "operatorQuestionsAnswered": [
+        "Are successor seeds visible without capture?"
+      ],
+      "relatedDocs": [
+        "README.md#successor-delta-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No successor regime replacement authorization."
+    },
+    {
+      "phaseId": "BI",
+      "phaseName": "successor-maturation",
+      "upstreamArtifacts": [
+        "bridge/successor_maturation_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/successor_maturation_audit.json"
+      ],
+      "preservedConstraints": [
+        "false-future suppression",
+        "memory continuity"
+      ],
+      "transformedConcepts": [
+        "maturation visibility",
+        "plurality retention"
+      ],
+      "keyStatuses": [
+        "maturation-visible",
+        "false-future-risk"
+      ],
+      "humanMeaning": "Separates durable maturation from simulated inevitability.",
+      "operatorQuestionsAnswered": [
+        "Is maturation durable or theatrical?"
+      ],
+      "relatedDocs": [
+        "README.md#successor-maturation-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No successor rule authorization."
+    },
+    {
+      "phaseId": "BJ",
+      "phaseName": "successor-crossing",
+      "upstreamArtifacts": [
+        "bridge/successor_crossing_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/successor_crossing_audit.json"
+      ],
+      "preservedConstraints": [
+        "anti-premature-declaration",
+        "plurality gate"
+      ],
+      "transformedConcepts": [
+        "crossing visibility",
+        "false-future decay"
+      ],
+      "keyStatuses": [
+        "crossing-visible",
+        "false-future-decay"
+      ],
+      "humanMeaning": "Checks if crossing is durable or decaying.",
+      "operatorQuestionsAnswered": [
+        "Is this a true crossing or decay pattern?"
+      ],
+      "relatedDocs": [
+        "README.md#successor-crossing-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No epoch declaration or governance transfer."
+    },
+    {
+      "phaseId": "BK",
+      "phaseName": "new-delta-stabilization",
+      "upstreamArtifacts": [
+        "bridge/new_delta_stabilization_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/new_delta_stabilization_audit.json"
+      ],
+      "preservedConstraints": [
+        "resilience priority",
+        "anti-brittle-settlement"
+      ],
+      "transformedConcepts": [
+        "stabilization readiness",
+        "fragmented reversion"
+      ],
+      "keyStatuses": [
+        "stabilization-visible",
+        "fragmented-reversion"
+      ],
+      "humanMeaning": "Measures whether post-crossing futures stabilize robustly.",
+      "operatorQuestionsAnswered": [
+        "Is stabilization durable or reverting?"
+      ],
+      "relatedDocs": [
+        "README.md#post-crossing-stabilization-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No settlement authority implied."
+    },
+    {
+      "phaseId": "BL",
+      "phaseName": "terrace-seed",
+      "upstreamArtifacts": [
+        "bridge/terrace_seed_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/terrace_seed_audit.json"
+      ],
+      "preservedConstraints": [
+        "plural experimentation",
+        "anti-priesthood"
+      ],
+      "transformedConcepts": [
+        "seed formation",
+        "repluralization"
+      ],
+      "keyStatuses": [
+        "seed-visible",
+        "repluralization-visible"
+      ],
+      "humanMeaning": "Keeps early sediment legible while preserving experimentation.",
+      "operatorQuestionsAnswered": [
+        "Should seed formation proceed or reopen plural experiments?"
+      ],
+      "relatedDocs": [
+        "README.md#terrace-seed-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No canonization of emergent futures."
+    },
+    {
+      "phaseId": "BM",
+      "phaseName": "epochal-surface",
+      "upstreamArtifacts": [
+        "bridge/epochal_surface_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/epochal_surface_audit.json"
+      ],
+      "preservedConstraints": [
+        "habitable emergence under review",
+        "plural reopening"
+      ],
+      "transformedConcepts": [
+        "surface livability",
+        "experiment reopen"
+      ],
+      "keyStatuses": [
+        "surface-visible",
+        "experimentation-reopen"
+      ],
+      "humanMeaning": "Assesses whether surfaces are habitable yet still revisable.",
+      "operatorQuestionsAnswered": [
+        "Is surface livable or should experiments reopen?"
+      ],
+      "relatedDocs": [
+        "README.md#epochal-surface-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No settlement completion claims."
+    },
+    {
+      "phaseId": "BN",
+      "phaseName": "living-terrace",
+      "upstreamArtifacts": [
+        "bridge/living_terrace_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/living_terrace_audit.json"
+      ],
+      "preservedConstraints": [
+        "ordinary habitability",
+        "open plurality"
+      ],
+      "transformedConcepts": [
+        "living terrace consolidation",
+        "keep-open"
+      ],
+      "keyStatuses": [
+        "terrace-visible",
+        "keep-open"
+      ],
+      "humanMeaning": "Ensures terraces are habitable by more than experts.",
+      "operatorQuestionsAnswered": [
+        "Is the terrace broadly habitable and ordinary?"
+      ],
+      "relatedDocs": [
+        "README.md#living-terrace-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No centralized successor rule or settlement authority."
+    },
+    {
+      "phaseId": "BO",
+      "phaseName": "background-coherence",
+      "upstreamArtifacts": [
+        "bridge/background_coherence_map.json"
+      ],
+      "downstreamArtifacts": [
+        "bridge/background_coherence_audit.json"
+      ],
+      "preservedConstraints": [
+        "non-priestly ordinariness",
+        "plural continuity"
+      ],
+      "transformedConcepts": [
+        "normalization legibility",
+        "ambient memory"
+      ],
+      "keyStatuses": [
+        "background-visible",
+        "keep-open"
+      ],
+      "humanMeaning": "Tracks when coherence becomes ordinary without closure.",
+      "operatorQuestionsAnswered": [
+        "Is normalization deserved while plurality remains healthy?"
+      ],
+      "relatedDocs": [
+        "README.md#background-coherence-guidance-boundary"
+      ],
+      "canonicalBoundaryNote": "No final epoch or authority claims."
+    }
+  ]
+}
