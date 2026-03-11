@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "river_capture_risk_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "rivers": [
+    {"id": "river:alpha", "captureRisk": 0.71},
+    {"id": "river:beta", "captureRisk": 0.30}
+  ]
+}
