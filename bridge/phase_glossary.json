@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "phase_glossary_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "coherence.lineage.glossary",
+  "producerCommit": "lrq-v0.1",
+  "generatedAt": "2026-01-01T00:00:00Z",
+  "originProject": "CoherenceLattice",
+  "canonicalPhaselock": "bridge formalization lineage -> audit lineage / governance breadcrumbs -> publisher legibility overlays -> bounded steward / Agent Echo usability -> Developer Echo synthesis",
+  "modificationDisclosureRequired": true,
+  "ethicalBoundaryNotice": "No governance transfer, institutional displacement, canon closure, or centralized successor authority claims.",
+  "commonsIntegrityNotice": "Legibility overlays remain plural, reviewable, and non-priestly.",
+  "constraintSignatureVersion": "lrq-v0.1",
+  "constraintSignatureSha256": "sha256:lrq01",
+  "terms": [
+    {
+      "term": "ambient memory registry",
+      "definition": "Cross-phase memory signals that preserve ordinary stewardship context."
+    },
+    {
+      "term": "background coherence",
+      "definition": "A state where coherence becomes ordinary and usable without authority claims."
+    },
+    {
+      "term": "branch emergence",
+      "definition": "A new pathway arising from pattern differentiation under bounded constraints."
+    },
+    {
+      "term": "canonical integrity",
+      "definition": "Constraint-signature-backed assurance that safety boundaries were not silently altered."
+    },
+    {
+      "term": "delta",
+      "definition": "A legible shift corridor between prior and emergent stewardship configurations."
+    },
+    {
+      "term": "discovery corridor",
+      "definition": "A bounded exploration path that does not authorize deployment or closure."
+    },
+    {
+      "term": "executive review",
+      "definition": "Escalation marker requiring additional human governance scrutiny before action."
+    },
+    {
+      "term": "keep-open",
+      "definition": "A recommendation to preserve plural habitation and revision rather than settle prematurely."
+    },
+    {
+      "term": "knowledge river",
+      "definition": "Distributed knowledge flow prioritizing tributary plurality over singular prestige channels."
+    },
+    {
+      "term": "living terrace",
+      "definition": "A broadly habitable, ordinary stewardship layer beyond expert-only operation."
+    },
+    {
+      "term": "pattern donation",
+      "definition": "Transfer of validated pattern fragments from one context to another under bounded constraints."
+    },
+    {
+      "term": "plurality-protect",
+      "definition": "A safeguard status indicating plurality health must be defended before uplift."
+    },
+    {
+      "term": "projection",
+      "definition": "A bounded forward model of possible outcomes used for reviewable guidance."
+    },
+    {
+      "term": "successor seed",
+      "definition": "Early successor-forming pattern that is not yet authorized as settled governance."
+    },
+    {
+      "term": "telemetry field",
+      "definition": "Structured observation space for measurable state signals and anomalies."
+    },
+    {
+      "term": "terrace",
+      "definition": "A semi-stable stewardship layer shaped by renewal, memory, and plurality."
+    },
+    {
+      "term": "trustPresentationDegraded",
+      "definition": "Flag indicating trust legibility/presentation quality has degraded and requires caution."
+    }
+  ]
+}

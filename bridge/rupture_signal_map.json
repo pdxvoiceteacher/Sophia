@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "rupture_signal_map_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "targets": [
+    {"phaseId": "rupture:alpha", "ruptureRatio": 1.18},
+    {"phaseId": "rupture:beta", "ruptureRatio": 0.62}
+  ]
+}

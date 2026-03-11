@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "terrace_precursor_v1",
+  "producerRepo": "Sophia",
+  "producerModule": "coherencelattice.terrace_precursor.fixture",
+  "producerCommit": "local-dev",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "targets": [
+    {
+      "targetId": "target:alpha",
+      "terracePrecursorScore": 0.82,
+      "coherencePsi": 0.77,
+      "memoryContinuity": 0.51,
+      "pluralityRetention": 0.63,
+      "deltaS": 0.05,
+      "lambda": 0.04
+    },
+    {
+      "targetId": "target:beta",
+      "terracePrecursorScore": 0.73,
+      "coherencePsi": 0.71,
+      "memoryContinuity": 0.62,
+      "pluralityRetention": 0.61,
+      "deltaS": -0.03,
+      "lambda": 0.02
+    },
+    {
+      "targetId": "target:gamma",
+      "terracePrecursorScore": 0.67,
+      "coherencePsi": 0.66,
+      "memoryContinuity": 0.74,
+      "pluralityRetention": 0.76,
+      "deltaS": 0.02,
+      "lambda": 0.03
+    }
+  ]
+}
