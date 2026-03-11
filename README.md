@@ -589,3 +589,37 @@ Recommendations are bounded living-terrace guidance only and do not declare new 
 
 Recommendations are bounded background-coherence guidance only and do not declare final epochs, authorize settlement, or canonize emergent civilizational assumptions.
 
+
+## Legibility, Lineage, and Queryability Hardening
+
+This refinement track improves operator usability and cross-phase navigation without introducing a new cosmological phase or changing constitutional boundaries.
+
+### Purpose
+
+- Compress bridge complexity into deterministic lineage and memory traces.
+- Make phase-to-phase inheritance legible for bounded stewards.
+- Improve queryability of large bridge artifacts.
+
+### Operator value
+
+- Faster incident triage through explicit lineage maps and glossary terms.
+- Repeatable summaries of status/action distributions across artifacts.
+- Less founder-only context required for day-to-day stewardship.
+
+### Agent Echo field-test relevance
+
+Agent Echo workflows depend on bounded, queryable context windows. LRQ artifacts provide compact lineage breadcrumbs and memory compression so field operators can inspect high-signal state quickly while preserving non-authoritative constraints.
+
+### Helper commands
+
+```bash
+python -m coherence.tools.query_bridge_artifact bridge/background_coherence_recommendations.json --status keep-open --compact
+python -m coherence.tools.query_bridge_artifact bridge/phase_lineage_registry.json --phase-id BO --compact
+python -m coherence.tools.summarize_phase_status bridge/living_terrace_recommendations.json bridge/background_coherence_recommendations.json --format markdown
+python -m coherence.tools.summarize_phase_status bridge/background_coherence_recommendations.json --format json
+```
+
+### Constitutional boundary note
+
+This track improves legibility, lineage visibility, queryability, and worked-example reproducibility only. It does not authorize governance transfer, settlement authority, canon closure, centralized authority claims, or epoch finalization.
+
