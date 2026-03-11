@@ -70,22 +70,80 @@ def _trace(valid: bool = True, invalid_tier: bool = False) -> dict:
     }
 
 
+def _memory_trace(valid: bool) -> dict:
+    reg = _registry()["phases"]
+    bf = _expected_hash(reg[0])[0]
+    bo = _expected_hash(reg[1])[0]
+    if not valid:
+        bo = "sha256:mismatch"
+    return {
+        "schemaVersion": "memory_trace_v1",
+        "fullDataContext": {
+            "invariants": ["lineage-preserved", "compression-reversible"],
+            "governanceConstraints": ["plurality-protect", "open-dissent"],
+            "protectedSignals": ["plurality-protect", "open-dissent"],
+        },
+        "entries": [
+            {
+                "memoryId": "BF",
+                "phaseId": "BF",
+                "tier": "hot",
+                "semanticHandle": "mem://bf",
+                "content": "recent state retained",
+                "lineage_hash": bf,
+                "invariants_preserved": ["lineage-preserved", "compression-reversible"],
+                "governance_constraints": ["plurality-protect", "open-dissent"],
+                "dropped_signals": [],
+                "skipped_patterns": ["pat:1"],
+                "donated_patterns": [],
+            },
+            {
+                "memoryId": "BO",
+                "phaseId": "BO",
+                "tier": "warm",
+                "key": "bo-summary",
+                "source_link": "README.md",
+                "lineage_hash": bo,
+                "invariants_preserved": ["lineage-preserved"] if not valid else ["lineage-preserved", "compression-reversible"],
+                "governance_constraints": ["plurality-protect", "open-dissent"],
+                "dropped_signals": [{"signal": "open-dissent", "explanation": ""}] if not valid else [],
+                "skipped_patterns": ["pat:missing"] if not valid else [],
+                "donated_patterns": [],
+            },
+        ],
+    }
+
+
+def _compression_log(valid: bool) -> dict:
+    entries = [{"patternId": "pat:1", "action": "skip", "reason": "duplicate"}]
+    if valid:
+        entries.append({"patternId": "pat:2", "action": "donate", "reason": "cross-linked"})
+    return {"schemaVersion": "compression_log_v1", "entries": entries}
+
+
 def test_outputs_and_issue_detection(monkeypatch, tmp_path: Path) -> None:
     b = tmp_path / "bridge"
     s = tmp_path / "schema"
     _write(b / "phase_lineage_registry.json", _registry())
     _write(b / "coherence_memory_trace.json", _trace(valid=False, invalid_tier=True))
+    _write(b / "memory_trace.json", _memory_trace(valid=False))
+    _write(b / "compression_log.json", _compression_log(valid=False))
+    _write(b / "background_coherence_audit.json", {"ok": True})
     _write(s / "memory_compression_audit_v1.schema.json", json.loads(Path("/workspace/Sophia/schema/memory_compression_audit_v1.schema.json").read_text()))
     _write(s / "lineage_integrity_report_v1.schema.json", json.loads(Path("/workspace/Sophia/schema/lineage_integrity_report_v1.schema.json").read_text()))
     _write(s / "compression_recommendations_v1.schema.json", json.loads(Path("/workspace/Sophia/schema/compression_recommendations_v1.schema.json").read_text()))
+    _write(s / "memory_audit_v1.schema.json", json.loads(Path("/workspace/Sophia/schema/memory_audit_v1.schema.json").read_text()))
 
     monkeypatch.setattr(module, "COHERENCE_MEMORY_TRACE_PATH", b / "coherence_memory_trace.json")
     monkeypatch.setattr(module, "PHASE_LINEAGE_REGISTRY_PATH", b / "phase_lineage_registry.json")
+    monkeypatch.setattr(module, "MEMORY_TRACE_PATH", b / "memory_trace.json")
+    monkeypatch.setattr(module, "COMPRESSION_LOG_PATH", b / "compression_log.json")
     monkeypatch.setattr(module, "MEMORY_COMPRESSION_AUDIT_SCHEMA_PATH", s / "memory_compression_audit_v1.schema.json")
     monkeypatch.setattr(module, "LINEAGE_INTEGRITY_REPORT_SCHEMA_PATH", s / "lineage_integrity_report_v1.schema.json")
     monkeypatch.setattr(module, "COMPRESSION_RECOMMENDATIONS_SCHEMA_PATH", s / "compression_recommendations_v1.schema.json")
+    monkeypatch.setattr(module, "MEMORY_AUDIT_SCHEMA_PATH", s / "memory_audit_v1.schema.json")
 
-    mem, lin, rec = module.build_outputs()
+    mem, lin, rec, trace_audit = module.build_outputs()
 
     assert mem["totalMemoryEntries"] == 2
     assert mem["warmMemoryUsage"] == 1  # invalid tier normalized
@@ -97,9 +155,14 @@ def test_outputs_and_issue_detection(monkeypatch, tmp_path: Path) -> None:
 
     assert rec["actionItems"]
 
+    assert trace_audit["memory_integrity_ok"] is False
+    assert any("protected signal dropped without explanation" in note for note in trace_audit["loss_notes"])
+    assert any("unlogged skipped_patterns" in note for note in trace_audit["loss_notes"])
+
     Draft202012Validator(json.loads((s / "memory_compression_audit_v1.schema.json").read_text())).validate(mem)
     Draft202012Validator(json.loads((s / "lineage_integrity_report_v1.schema.json").read_text())).validate(lin)
     Draft202012Validator(json.loads((s / "compression_recommendations_v1.schema.json").read_text())).validate(rec)
+    Draft202012Validator(json.loads((s / "memory_audit_v1.schema.json").read_text())).validate(trace_audit)
 
 
 def test_boundary_language_in_outputs(monkeypatch, tmp_path: Path) -> None:
@@ -107,20 +170,28 @@ def test_boundary_language_in_outputs(monkeypatch, tmp_path: Path) -> None:
     s = tmp_path / "schema"
     _write(b / "phase_lineage_registry.json", _registry())
     _write(b / "coherence_memory_trace.json", _trace(valid=True, invalid_tier=False))
+    _write(b / "memory_trace.json", _memory_trace(valid=True))
+    _write(b / "compression_log.json", _compression_log(valid=True))
+    _write(b / "background_coherence_audit.json", {"ok": True})
     _write(s / "memory_compression_audit_v1.schema.json", json.loads(Path("/workspace/Sophia/schema/memory_compression_audit_v1.schema.json").read_text()))
     _write(s / "lineage_integrity_report_v1.schema.json", json.loads(Path("/workspace/Sophia/schema/lineage_integrity_report_v1.schema.json").read_text()))
     _write(s / "compression_recommendations_v1.schema.json", json.loads(Path("/workspace/Sophia/schema/compression_recommendations_v1.schema.json").read_text()))
+    _write(s / "memory_audit_v1.schema.json", json.loads(Path("/workspace/Sophia/schema/memory_audit_v1.schema.json").read_text()))
 
     monkeypatch.setattr(module, "COHERENCE_MEMORY_TRACE_PATH", b / "coherence_memory_trace.json")
     monkeypatch.setattr(module, "PHASE_LINEAGE_REGISTRY_PATH", b / "phase_lineage_registry.json")
+    monkeypatch.setattr(module, "MEMORY_TRACE_PATH", b / "memory_trace.json")
+    monkeypatch.setattr(module, "COMPRESSION_LOG_PATH", b / "compression_log.json")
     monkeypatch.setattr(module, "MEMORY_COMPRESSION_AUDIT_SCHEMA_PATH", s / "memory_compression_audit_v1.schema.json")
     monkeypatch.setattr(module, "LINEAGE_INTEGRITY_REPORT_SCHEMA_PATH", s / "lineage_integrity_report_v1.schema.json")
     monkeypatch.setattr(module, "COMPRESSION_RECOMMENDATIONS_SCHEMA_PATH", s / "compression_recommendations_v1.schema.json")
+    monkeypatch.setattr(module, "MEMORY_AUDIT_SCHEMA_PATH", s / "memory_audit_v1.schema.json")
 
-    mem, lin, _ = module.build_outputs()
-    text = " ".join(mem["recommendations"] + lin["recommendations"]).lower()
+    mem, lin, _, trace_audit = module.build_outputs()
+    text = " ".join(mem["recommendations"] + lin["recommendations"] + trace_audit["loss_notes"]).lower()
     assert "governance transfer" in text
     assert "canon closure" in text
     assert "automatic promotion" in text
     assert "automatic deletion" in text
     assert "epoch finalized" not in text
+    assert trace_audit["memory_integrity_ok"] is True
