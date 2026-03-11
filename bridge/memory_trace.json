@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "memory_trace_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "fullDataContext": {
+    "invariants": [
+      "lineage-preserved",
+      "compression-reversible"
+    ],
+    "governanceConstraints": [
+      "plurality-protect",
+      "open-dissent"
+    ],
+    "protectedSignals": [
+      "plurality-protect",
+      "open-dissent"
+    ]
+  },
+  "entries": [
+    {
+      "memoryId": "BF",
+      "phaseId": "BF",
+      "tier": "hot",
+      "semanticHandle": "mem://phase/BF",
+      "content": "Civilizational delta checks remain explorable in hot tier.",
+      "lineage_hash": "sha256:fff872e596f12039",
+      "invariants_preserved": [
+        "lineage-preserved",
+        "compression-reversible"
+      ],
+      "governance_constraints": [
+        "plurality-protect",
+        "open-dissent"
+      ],
+      "dropped_signals": [],
+      "skipped_patterns": [
+        "pat:bf-dup-01"
+      ],
+      "donated_patterns": []
+    },
+    {
+      "memoryId": "BO",
+      "phaseId": "BO",
+      "tier": "warm",
+      "key": "background-coherence-summary",
+      "source_link": "README.md",
+      "lineage_hash": "sha256:880a6d8629df02d0",
+      "invariants_preserved": [
+        "lineage-preserved",
+        "compression-reversible"
+      ],
+      "governance_constraints": [
+        "plurality-protect",
+        "open-dissent"
+      ],
+      "dropped_signals": [],
+      "skipped_patterns": [],
+      "donated_patterns": [
+        "pat:bo-donation-01"
+      ]
+    }
+  ]
+}

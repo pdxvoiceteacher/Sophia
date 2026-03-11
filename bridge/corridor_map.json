@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "corridor_map_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "targets": [
+    {"targetId": "target:delta", "corridorPotential": 0.79},
+    {"targetId": "target:gamma", "corridorPotential": 0.46}
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/terrace_erosion_recommendations_v1.schema.json",
+  "title": "Terrace Erosion Recommendations v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "phaselock", "caution", "metadata", "recommendations"],
+  "properties": {
+    "schema": {"const": "terrace_erosion_recommendations_v1"},
+    "created_at": {"type": "string"},
+    "phaselock": {"type": "string"},
+    "caution": {"type": "string"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "recommendations": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supportRisk", "trustSurfaceRisk", "inputArtifacts", "canonicalIntegrity", "supportingAudits"],
+      "properties": {
+        "supportRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "trustSurfaceRisk": {"type": "number", "minimum": 0, "maximum": 1},
+        "inputArtifacts": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/$defs/inputArtifact"}},
+        "canonicalIntegrity": {"$ref": "#/$defs/canonicalIntegrity"},
+        "supportingAudits": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "prefixItems": [
+            {"const": "epochal terrace"},
+            {"const": "civilizational delta"},
+            {"const": "knowledge river"},
+            {"const": "trust surface"},
+            {"const": "civilizational memory"},
+            {"const": "commons sovereignty"},
+            {"const": "value alignment"}
+          ],
+          "items": false
+        }
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "schemaVersion", "producerRepo", "producerModule", "producerCommit", "generatedAt"],
+      "properties": {
+        "path": {"type": "string"},
+        "schemaVersion": {"const": "terrace_erosion_v1"},
+        "producerRepo": {"enum": ["Sophia", "Sophia-Fixtures"]},
+        "producerModule": {"type": "string"},
+        "producerCommit": {"type": "string"},
+        "generatedAt": {"type": "string"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targetId", "targetType", "erosionStatus", "coherenceScore", "riskScore", "terraceContext", "orthodoxyContext", "renewalContext", "transitionContext", "commonsContext", "governingRule", "explanation", "targetPublisherAction"],
+      "properties": {
+        "targetId": {"type": "string"},
+        "targetType": {"type": "string"},
+        "erosionStatus": {"enum": ["erosion-local", "plurality-repair", "renewal-visible", "orthodoxy-risk", "phase-transition-watch", "require-human-review"]},
+        "coherenceScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "riskScore": {"type": "number", "minimum": 0, "maximum": 1},
+        "terraceContext": {"type": "string"},
+        "orthodoxyContext": {"type": "string"},
+        "renewalContext": {"type": "string"},
+        "transitionContext": {"type": "string"},
+        "commonsContext": {"type": "string"},
+        "governingRule": {"type": "string"},
+        "explanation": {"type": "string"},
+        "targetPublisherAction": {"enum": ["docket", "watch", "suppress"]}
+      }
+    },
+    "canonicalIntegrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "warning", "divergenceReasons", "manifests"],
+      "properties": {
+        "status": {"enum": ["absent", "canonical", "divergent"]},
+        "warning": {"type": "string"},
+        "divergenceReasons": {"type": "array", "items": {"type": "string"}},
+        "manifests": {"type": "array", "items": {"$ref": "#/$defs/canonicalIntegrityManifest"}}
+      }
+    },
+    "canonicalIntegrityManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "originProject", "canonicalPhaselock", "modificationDisclosureRequired", "ethicalBoundaryNotice", "commonsIntegrityNotice", "constraintSignatureVersion", "constraintSignatureSha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "originProject": {"type": "string"},
+        "canonicalPhaselock": {"type": "string"},
+        "modificationDisclosureRequired": {"type": "boolean"},
+        "ethicalBoundaryNotice": {"type": "string"},
+        "commonsIntegrityNotice": {"type": "string"},
+        "constraintSignatureVersion": {"type": "string"},
+        "constraintSignatureSha256": {"type": "string"}
+      }
+    }
+  }
+}

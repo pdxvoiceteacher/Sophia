@@ -1,0 +1,7 @@
+{
+  "memory_integrity_ok": true,
+  "loss_notes": [
+    "No unlogged loss detected; invariants, governance constraints, and protected signals remained visible."
+  ],
+  "compression_score": 0.25
+}
