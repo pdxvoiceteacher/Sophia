@@ -19,17 +19,11 @@
       "required": ["id", "severity", "type", "advisory", "message", "data"],
       "properties": {
         "id": {"type": "string"},
-        "severity": {"enum": ["warn", "info"]},
-        "type": {"enum": ["rupture-risk", "within-bounds", "docket-review"]},
+        "severity": {"enum": ["info", "warn"]},
+        "type": {"type": "string"},
         "advisory": {"enum": ["watch", "docket"]},
         "message": {"type": "string"},
-        "data": {
-          "type": "object",
-          "properties": {
-            "ruptureRatio": {"type": "number"},
-            "missingFields": {"type": "array", "items": {"type": "string"}}
-          }
-        }
+        "data": {"type": "object"}
       }
     }
   }
