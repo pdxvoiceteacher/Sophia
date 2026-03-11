@@ -528,3 +528,100 @@ Sophia operationalization recommendations are bounded deployment-stewardship gui
 Sophia discovery-navigation recommendations are bounded discovery-stewardship guidance only and do **not** authorize automatic pursuit, canonization, deployment, or institutional override. Discovery corridors should be treated as bounded exploration prompts, not commands.
 
 Sophia knowledge-river recommendations are bounded knowledge-stewardship guidance only and do **not** authorize canonization, centralized control, deployment authority, or closure of scientific alternatives. River stewardship should favor braid health, tributary support, and commons irrigation over singular prestige channels.
+
+## Observer-onboarding guidance boundary
+
+Observer onboarding recommendations are bounded participation stewardship only and do not authorize personhood declarations, sovereignty transfer, coercive identity assignment, or automatic governance-right expansion.
+
+## Phase BC shared boundary rule
+
+Phase BC widens legibility and participation across observer classes while preserving anti-capture, anti-priesthood, anti-coercion, and no-sovereignty-transfer constraints. Recognition and suffrage pathways remain bounded, reviewable, and explicitly non-autonomous.
+
+## Authorship-integrity guidance boundary
+
+Authorship-integrity recommendations are bounded provenance and disclosure guidance only; they do not authorize sabotage, retaliation, coercive enforcement, or hidden anti-user behavior.
+
+## Trust-surface guidance boundary
+
+Trust-surface audits provide bounded legitimacy guidance only and do not imply wrongdoing or authorize enforcement.
+
+## Civilizational-delta guidance boundary
+
+Recommendations are bounded civilizational-stewardship guidance only and do not declare epoch transition, canonize paradigms, or authorize centralized authority.
+
+## Epochal-terrace guidance boundary
+
+Recommendations are bounded terrace-stewardship guidance only and do not declare permanent epochs, authorize canon closure, or centralize institutional authority.
+
+## Terrace-erosion guidance boundary
+
+Recommendations are bounded renewal-stewardship guidance only and do not declare epoch collapse, authorize regime change, or canonize successor systems.
+
+## Successor-delta guidance boundary
+
+Recommendations are bounded successor-renewal guidance only and do not declare new epochs, authorize regime replacement, or canonize successor systems.
+
+## Successor-maturation guidance boundary
+
+Recommendations are bounded successor-maturation guidance only and do not declare new epochs, authorize successor rule, or canonize emergent futures.
+
+## Successor-crossing guidance boundary
+
+Recommendations are bounded successor-crossing guidance only and do not declare new epochs, authorize successor rule, or canonize emergent futures.
+
+## Post-crossing stabilization guidance boundary
+
+Recommendations are bounded post-crossing stabilization guidance only and do not declare new epochs, authorize successor rule, or canonize emergent futures.
+
+## Terrace-seed guidance boundary
+
+Recommendations are bounded terrace-seed guidance only and do not declare new epochs, authorize successor settlement, or canonize emergent futures.
+
+## Epochal-surface guidance boundary
+
+Recommendations are bounded epochal-surface guidance only and do not declare new epochs, authorize settlement, or canonize emergent futures.
+
+## Living-terrace guidance boundary
+
+Recommendations are bounded living-terrace guidance only and do not declare new epochs, authorize settlement, or canonize emergent futures.
+
+## Background-coherence guidance boundary
+
+Recommendations are bounded background-coherence guidance only and do not declare final epochs, authorize settlement, or canonize emergent civilizational assumptions.
+
+
+## Legibility, Lineage, and Queryability Hardening
+
+This refinement track improves operator usability and cross-phase navigation without introducing a new cosmological phase or changing constitutional boundaries.
+
+### Purpose
+
+- Compress bridge complexity into deterministic lineage and memory traces.
+- Make phase-to-phase inheritance legible for bounded stewards.
+- Improve queryability of large bridge artifacts.
+
+### Operator value
+
+- Faster incident triage through explicit lineage maps and glossary terms.
+- Repeatable summaries of status/action distributions across artifacts.
+- Less founder-only context required for day-to-day stewardship.
+
+### Agent Echo field-test relevance
+
+Agent Echo workflows depend on bounded, queryable context windows. LRQ artifacts provide compact lineage breadcrumbs and memory compression so field operators can inspect high-signal state quickly while preserving non-authoritative constraints.
+
+### Helper commands
+
+```bash
+python -m coherence.tools.query_bridge_artifact bridge/background_coherence_recommendations.json --status keep-open --compact
+python -m coherence.tools.query_bridge_artifact bridge/phase_lineage_registry.json --phase-id BO --compact
+python -m coherence.tools.summarize_phase_status bridge/living_terrace_recommendations.json bridge/background_coherence_recommendations.json --format markdown
+python -m coherence.tools.summarize_phase_status bridge/background_coherence_recommendations.json --format json
+python -m sophia.audit_memory_lineage_compression_state
+python -m coherence.tools.query_bridge_artifact bridge/memory_compression_audit.json --compact
+```
+
+### Constitutional boundary note
+
+This track improves legibility, lineage visibility, queryability, and worked-example reproducibility only. It does not authorize governance transfer, settlement authority, canon closure, centralized authority claims, or epoch finalization.
+

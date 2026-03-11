@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://sophia/schema/knowledge_river_audit_v1.schema.json",
-  "title": "Knowledge River Audit v1",
+  "$id": "https://sophia/schema/schism_audit_v1.schema.json",
+  "title": "Schism Audit v1",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema", "created_at", "caution", "decision", "findings"],
   "properties": {
-    "schema": {"const": "knowledge_river_audit_v1"},
+    "schema": {"const": "schism_audit_v1"},
     "created_at": {"type": "string"},
     "caution": {"type": "string"},
     "decision": {"enum": ["pass", "warn"]},
@@ -16,13 +16,13 @@
     "finding": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "severity", "type", "advisory", "message", "data"],
+      "required": ["id", "severity", "type", "message", "advisory", "data"],
       "properties": {
         "id": {"type": "string"},
-        "severity": {"enum": ["info", "warn"]},
-        "type": {"type": "string"},
-        "advisory": {"enum": ["watch", "docket"]},
+        "severity": {"type": "string", "enum": ["warn", "info"]},
+        "type": {"type": "string", "enum": ["schism-risk", "within-bounds", "missing-data"]},
         "message": {"type": "string"},
+        "advisory": {"type": "string", "enum": ["watch", "docket"]},
         "data": {"type": "object"}
       }
     }

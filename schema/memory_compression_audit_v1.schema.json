@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/memory_compression_audit_v1.schema.json",
+  "title": "Memory Compression Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["hotMemoryUsage", "warmMemoryUsage", "coldMemoryUsage", "totalMemoryEntries", "invariantHashChecks", "recommendations"],
+  "properties": {
+    "hotMemoryUsage": {"type": "integer", "minimum": 0},
+    "warmMemoryUsage": {"type": "integer", "minimum": 0},
+    "coldMemoryUsage": {"type": "integer", "minimum": 0},
+    "totalMemoryEntries": {"type": "integer", "minimum": 0},
+    "invariantHashChecks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["memoryId", "issue", "expected", "actual"],
+        "properties": {
+          "memoryId": {"type": "string"},
+          "issue": {"type": "string"},
+          "expected": {"type": "array", "items": {"type": "string"}},
+          "actual": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "recommendations": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+  }
+}

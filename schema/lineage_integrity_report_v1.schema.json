@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/lineage_integrity_report_v1.schema.json",
+  "title": "Lineage Integrity Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["lineageComplete", "missingLinks", "issuesDetected", "recommendations"],
+  "properties": {
+    "lineageComplete": {"type": "boolean"},
+    "missingLinks": {"type": "array", "items": {"type": "string"}},
+    "issuesDetected": {"type": "array", "items": {"type": "string"}},
+    "recommendations": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+  }
+}
