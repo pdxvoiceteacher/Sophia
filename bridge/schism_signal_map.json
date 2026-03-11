@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "schism_signal_map_v1",
+  "generatedAt": "2027-01-01T00:00:00Z",
+  "targets": [
+    {
+      "targetId": "target:alpha",
+      "schismPotential": 0.81,
+      "sharedPlurality": 0.43,
+      "schismAlert": true
+    },
+    {
+      "targetId": "target:beta",
+      "schismPotential": 0.38,
+      "sharedPlurality": 0.71,
+      "schismAlert": false
+    }
+  ]
+}

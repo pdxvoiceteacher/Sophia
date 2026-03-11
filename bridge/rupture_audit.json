@@ -1,0 +1,28 @@
+{
+  "schema": "rupture_audit_v1",
+  "created_at": "2027-01-01T00:00:00Z",
+  "caution": "Bounded advisory only; use watch/docket follow-up and do not infer final legitimacy or closure.",
+  "decision": "warn",
+  "findings": [
+    {
+      "id": "rupture:alpha",
+      "severity": "warn",
+      "type": "rupture-risk",
+      "advisory": "watch",
+      "message": "Rupture signal high (1.180). Cohesion is at risk.",
+      "data": {
+        "ruptureRatio": 1.18
+      }
+    },
+    {
+      "id": "rupture:beta",
+      "severity": "info",
+      "type": "within-bounds",
+      "advisory": "watch",
+      "message": "Rupture indicators are bounded; continue watch-state monitoring.",
+      "data": {
+        "ruptureRatio": 0.62
+      }
+    }
+  ]
+}
