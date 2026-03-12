@@ -55,6 +55,20 @@ def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str
         "requiresHumanReview": requires_review,
     }
 
+    for audit_file in ["cascade_audit.json", "discovery_corridor_audit.json"]:
+        findings.extend(_load_findings(_resolve_audit_file(root, audit_file)))
+
+    weights = {"noveltyWeight": 0.0, "pluralityWeight": 0.0, "humilityWeight": 0.0}
+    requires_review = False
+
+    for finding in findings:
+        mods = FINDING_TO_MODS.get(str(finding.get("id")), {})
+        for key, value in mods.items():
+            weights[key] = min(1.0, weights[key] + value)
+        if str(finding.get("advisory")) == "docket":
+            requires_review = True
+
+    guidance = {**weights, "requiresHumanReview": requires_review}
     Draft202012Validator(json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))).validate(guidance)
 
     target = Path(out_file) if out_file else root / "ai_guidance.json"
@@ -63,7 +77,7 @@ def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str
     return guidance
 
 
-def main(argv: list[str] | None = None) -> int:
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--bridge-root", default=".")
     parser.add_argument("--out", dest="out_file", default=None)
@@ -73,6 +87,6 @@ def main(argv: list[str] | None = None) -> int:
     build_ai_guidance(args.bridge_root, args.out_file)
     return 0
 
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+    guidance = build_ai_guidance(args.bridge_root, args.output_file)
+    if not args.output_file:
+        print(json.dumps(guidance, indent=2))
