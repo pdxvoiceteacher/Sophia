@@ -46,7 +46,7 @@ def build_ai_guidance(cascade_audit: dict[str, Any], corridor_audit: dict[str, A
     return guidance
 
 
-def main(argv: list[str] | None = None) -> int:
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cascade", required=True)
     parser.add_argument("--corridor", required=True)
@@ -61,6 +61,6 @@ def main(argv: list[str] | None = None) -> int:
     out_path.write_text(json.dumps(guidance, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return 0
 
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+    guidance = build_ai_guidance(args.bridge_root, args.output_file)
+    if not args.output_file:
+        print(json.dumps(guidance, indent=2))
