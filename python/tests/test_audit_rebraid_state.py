@@ -50,3 +50,13 @@ def test_schema_rejects_invalid_advisory() -> None:
     }
     with pytest.raises(ValidationError):
         Draft202012Validator(schema).validate(bad_payload)
+
+
+def test_compat_entrypoint_writes_file(tmp_path: Path) -> None:
+    bridge = tmp_path / "bridge"
+    _write(bridge / "rebraid_signal_map.json", {"generatedAt": "2027-01-01T00:00:00Z", "rebraidStrength": 0.8})
+    out = tmp_path / "rebraid_audit.json"
+
+    module.audit_rebraid_state(str(bridge), str(out))
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["findings"][0]["advisory"] in {"watch", "docket"}
