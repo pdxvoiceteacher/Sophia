@@ -37,6 +37,13 @@ def _fail_closed(reason: str, created_at: str = "1970-01-01T00:00:00Z") -> dict[
     }
 
 
+
+
+def _resolve_bridge_root(bridge_root: Path) -> Path:
+    nested = bridge_root / "bridge"
+    return nested if nested.exists() else bridge_root
+
+
 def build_outputs(*, bridge_root: Path = DEFAULT_BRIDGE_ROOT) -> dict[str, Any]:
     path = bridge_root / "civilizational_delta_map.json"
     if not path.exists():
@@ -103,13 +110,21 @@ def build_outputs(*, bridge_root: Path = DEFAULT_BRIDGE_ROOT) -> dict[str, Any]:
     return payload
 
 
+def audit_civilizational_delta_state(bridge_root: str, output_file: str | None = None) -> dict[str, Any]:
+    """Compatibility entrypoint used by existing callers/tests."""
+    payload = build_outputs(bridge_root=_resolve_bridge_root(Path(bridge_root)))
+    if output_file is not None:
+        Path(output_file).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return payload
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run Sophia civilizational delta audit")
     parser.add_argument("--bridge-root", type=Path, default=DEFAULT_BRIDGE_ROOT)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args(argv)
 
-    payload = build_outputs(bridge_root=args.bridge_root)
+    payload = build_outputs(bridge_root=_resolve_bridge_root(args.bridge_root))
     args.out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {args.out}")
     return 0
