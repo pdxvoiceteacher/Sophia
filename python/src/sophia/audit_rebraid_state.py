@@ -27,33 +27,37 @@ def _resolve_rebraid_map(bridge_root: Path) -> Path | None:
 
 def _docket_finding(reason: str) -> dict[str, Any]:
     return {
-        "id": "REBRAID_MISSING",
+        "id": "rebraid.missingInput",
         "severity": "warn",
-        "type": "rebraid",
+        "type": "rebraid-alert",
         "advisory": "docket",
-        "message": f"Missing rebraid signal map input; requires executive review ({reason}).",
+        "message": f"Missing or invalid rebraid signal input ({reason}); fail-closed docket review required.",
         "data": {},
     }
 
 
-def _evaluate_strength(target_id: str, strength: float) -> dict[str, Any]:
-    if strength < 0.3:
-        return {
-            "id": f"REBRAID_WEAK:{target_id}",
-            "severity": "info",
-            "type": "rebraid",
-            "advisory": "watch",
-            "message": "Rebraid strength is low; cross-domain reintegration appears limited.",
-            "data": {"rebraidStrength": round(strength, 6)},
-        }
-    return {
-        "id": f"REBRAID_STRONG:{target_id}",
-        "severity": "warn",
-        "type": "rebraid",
-        "advisory": "watch",
-        "message": "Rebraid strength is high; strong cross-domain convergence detected.",
-        "data": {"rebraidStrength": round(strength, 6)},
-    }
+def _extract_rebraid_state(source: dict[str, Any]) -> tuple[bool | None, float | None]:
+    alert: bool | None = source.get("rebraidAlert") if isinstance(source.get("rebraidAlert"), bool) else None
+    strength: float | None = float(source["rebraidStrength"]) if isinstance(source.get("rebraidStrength"), (int, float)) else None
+
+    for key in ("targets", "pairs"):
+        rows = source.get(key)
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            if alert is None and isinstance(row.get("rebraidAlert"), bool):
+                alert = row["rebraidAlert"]
+            if strength is None:
+                if isinstance(row.get("rebraidStrength"), (int, float)):
+                    strength = float(row["rebraidStrength"])
+                elif isinstance(row.get("rebraidPotential"), (int, float)):
+                    strength = float(row["rebraidPotential"])
+            if alert is not None and strength is not None:
+                return alert, strength
+
+    return alert, strength
 
 
 def build_outputs(*, bridge_root: Path = DEFAULT_BRIDGE_ROOT) -> dict[str, Any]:
@@ -73,21 +77,31 @@ def build_outputs(*, bridge_root: Path = DEFAULT_BRIDGE_ROOT) -> dict[str, Any]:
     source = _load_json(source_path)
     created_at = str(source.get("generatedAt") or "1970-01-01T00:00:00Z")
 
-    findings: list[dict[str, Any]] = []
-    if isinstance(source.get("rebraidStrength"), (int, float)):
-        findings.append(_evaluate_strength("root", float(source["rebraidStrength"])))
+    alert, strength = _extract_rebraid_state(source)
+    if alert is None and strength is None:
+        findings = [_docket_finding("rebraidAlert/rebraidStrength")]
+    elif alert is True:
+        findings = [
+            {
+                "id": "rebraid.alert",
+                "severity": "warn",
+                "type": "rebraid-alert",
+                "advisory": "watch",
+                "message": "Rebraid alert is active; monitor rebraid risk and keep-open review pathways.",
+                "data": {"rebraidAlert": True, "rebraidStrength": None if strength is None else round(strength, 6)},
+            }
+        ]
     else:
-        targets = [r for r in source.get("targets", []) if isinstance(r, dict)] if isinstance(source.get("targets"), list) else []
-        for row in targets:
-            target_id = str(row.get("targetId") or "target:unknown")
-            if isinstance(row.get("rebraidStrength"), (int, float)):
-                findings.append(_evaluate_strength(target_id, float(row["rebraidStrength"])))
-                continue
-            if isinstance(row.get("rebraidPotential"), (int, float)):
-                findings.append(_evaluate_strength(target_id, float(row["rebraidPotential"])))
-
-    if not findings:
-        findings = [_docket_finding("rebraidStrength/rebraidPotential")]
+        findings = [
+            {
+                "id": "rebraid.normal",
+                "severity": "info",
+                "type": "rebraid-alert",
+                "advisory": "watch",
+                "message": "Rebraid signal is not alerting; continue watch-state monitoring.",
+                "data": {"rebraidAlert": bool(alert) if alert is not None else False, "rebraidStrength": None if strength is None else round(strength, 6)},
+            }
+        ]
 
     payload = {
         "schema": "rebraid_audit_v1",
@@ -108,8 +122,8 @@ def audit_rebraid_state(bridge_root: str, output_file: str) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Audit rebraid state")
-    parser.add_argument("--bridge-root", type=Path, required=True)
-    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--bridge-root", type=Path, default=DEFAULT_BRIDGE_ROOT)
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args(argv)
 
     payload = build_outputs(bridge_root=args.bridge_root)
