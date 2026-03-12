@@ -1,12 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Discovery Corridor Audit v1",
+  "title": "Navigation State Audit Advisory",
   "type": "object",
   "required": ["findings"],
   "properties": {
     "schema": {"type": "string"},
-    "decision": {"type": "string"},
-    "created_at": {"type": "string", "format": "date-time"},
+    "decision": {"type": "string", "enum": ["pass", "warn", "fail"]},
     "caution": {"type": "string"},
     "semanticMode": {"type": "string"},
     "findings": {
