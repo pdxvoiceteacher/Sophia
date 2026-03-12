@@ -1,0 +1,76 @@
+{
+  "schema": "terrace_precursor_audit_v1",
+  "created_at": "2027-01-01T00:00:00Z",
+  "phaselock": "CoherenceLattice terrace precursor map -> Sophia bounded precursor audit -> publisher watch/docket overlays -> human/community/scientific stewardship",
+  "caution": "This audit provides bounded advisory guidance only. It does not authorize suppression orders, governance transfer, epochal closure, or canon settlement.",
+  "metadata": {
+    "inputArtifact": "bridge/terrace_precursor_map.json",
+    "targetCount": 3,
+    "warningCount": 2,
+    "infoCount": 3
+  },
+  "decision": "warn",
+  "findings": [
+    {
+      "targetId": "target:alpha",
+      "severity": "info",
+      "type": "terrace-not-ready",
+      "message": "Terrace precursor remains unstable under bounded compression checks; continue watch-state instrumentation.",
+      "targetPublisherAction": "watch",
+      "data": {
+        "Theta": 0.82,
+        "memoryContinuity": 0.51,
+        "pluralityRetention": 0.63
+      }
+    },
+    {
+      "targetId": "target:alpha",
+      "severity": "warn",
+      "type": "false-terrace-risk",
+      "message": "High terrace precursor score with weak continuity/plurality suggests premature convergence risk.",
+      "targetPublisherAction": "docket",
+      "data": {
+        "Theta": 0.82,
+        "memoryContinuity": 0.51,
+        "pluralityRetention": 0.63
+      }
+    },
+    {
+      "targetId": "target:beta",
+      "severity": "info",
+      "type": "terrace-not-ready",
+      "message": "Terrace precursor remains unstable under bounded compression checks; continue watch-state instrumentation.",
+      "targetPublisherAction": "watch",
+      "data": {
+        "Theta": 0.73,
+        "memoryContinuity": 0.62,
+        "pluralityRetention": 0.61
+      }
+    },
+    {
+      "targetId": "target:beta",
+      "severity": "warn",
+      "type": "regime-sign-mismatch",
+      "message": "ΔS and Λ signs diverge from expected aligned regimes; keep-open review before advancing terrace claims.",
+      "targetPublisherAction": "docket",
+      "data": {
+        "deltaS": -0.03,
+        "lambda": 0.02
+      }
+    },
+    {
+      "targetId": "target:gamma",
+      "severity": "info",
+      "type": "within-bounds",
+      "message": "Terrace precursor indicators are within bounded watch ranges; retain plurality-protect monitoring.",
+      "targetPublisherAction": "watch",
+      "data": {
+        "Theta": 0.67,
+        "memoryContinuity": 0.74,
+        "pluralityRetention": 0.76,
+        "deltaS": 0.02,
+        "lambda": 0.03
+      }
+    }
+  ]
+}
