@@ -40,3 +40,14 @@ Example CLI usage:
 PYTHONPATH=python/src python -m sophia.audit_discovery_corridor_state --bridge-root . --output-file out/discovery_corridor_audit.json
 PYTHONPATH=python/src python -m sophia.build_ai_guidance --bridge-root . --output-file out/ai_guidance.json
 ```
+- `sophia.audit_navigation_state`
+  - reads `bridge/navigation_state.json`
+  - writes one-line JSONL advisory output (for pipeline-friendly ingestion)
+  - findings use advisory-only format: `{"finding": <id>, "severity": "info|warn", "advisory": "watch|docket"}`
+  - payload includes `semanticMode: "non-executive"`
+
+Navigation CLI example:
+
+```bash
+PYTHONPATH=python/src python -m sophia.audit_navigation_state --bridge-root . --out bridge/navigation_audit.jsonl
+```
