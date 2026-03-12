@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AIGuidance",
+  "title": "AI Guidance v1",
   "type": "object",
   "required": ["noveltyWeight", "pluralityWeight", "humilityWeight", "requiresHumanReview"],
   "properties": {
@@ -8,6 +8,5 @@
     "pluralityWeight": {"type": "number", "minimum": 0, "maximum": 1},
     "humilityWeight": {"type": "number", "minimum": 0, "maximum": 1},
     "requiresHumanReview": {"type": "boolean"}
-  },
-  "required": ["noveltyWeight", "pluralityWeight", "humilityWeight", "requiresHumanReview"]
+  }
 }
