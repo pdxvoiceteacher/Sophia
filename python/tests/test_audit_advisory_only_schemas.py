@@ -18,6 +18,7 @@ import pytest
         Path('/workspace/Sophia/schema/sophia/knowledge_river_audit_v1.schema.json'),
         Path('/workspace/Sophia/schema/sophia/delta_audit_v1.schema.json'),
         Path('/workspace/Sophia/schema/sophia/rupture_audit_v1.schema.json'),
+        Path('/workspace/Sophia/schema/sophia/discovery_corridor_audit_v1.schema.json'),
         Path('/workspace/Sophia/schema/sophia/viability_audit_v1.schema.json'),
     ],
 )
