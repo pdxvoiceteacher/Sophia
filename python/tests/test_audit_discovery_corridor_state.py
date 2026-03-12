@@ -6,26 +6,18 @@ from pathlib import Path
 from sophia.audit_discovery_corridor_state import audit_discovery_corridor_state
 
 
-def test_missing_file(tmp_path: Path) -> None:
-    res = audit_discovery_corridor_state(str(tmp_path), None)
-    assert res["findings"][0]["id"].endswith("missing")
-    assert res["findings"][0]["severity"] == "warn"
-    assert res["findings"][0]["advisory"] == "docket"
+def test_missing_corridor(tmp_path: Path) -> None:
+    audit = audit_discovery_corridor_state(str(tmp_path))
+    assert any(f["id"] == "discovery_corridor.missing" for f in audit["findings"])
+    assert audit["decision"] == "fail"
+    assert audit["semanticMode"] == "non-executive"
 
 
-def test_low_potential(tmp_path: Path) -> None:
-    corr = {"corridorPotential": 0.1}
-    (tmp_path / "bridge").mkdir(parents=True)
-    (tmp_path / "bridge" / "discovery_corridor_map.json").write_text(json.dumps(corr), encoding="utf-8")
-    res = audit_discovery_corridor_state(str(tmp_path), None)
-    assert any(f["id"].endswith("lowPotential") for f in res["findings"])
-
-
-def test_output_file_alias_and_write(tmp_path: Path) -> None:
-    corr = {"corridorPotential": 0.8}
-    (tmp_path / "bridge").mkdir(parents=True)
-    (tmp_path / "bridge" / "discovery_corridor_map.json").write_text(json.dumps(corr), encoding="utf-8")
-    out = tmp_path / "corridor_audit.json"
-    audit_discovery_corridor_state(str(tmp_path), str(out))
-    payload = json.loads(out.read_text(encoding="utf-8"))
-    assert payload["decision"] in {"info", "warn"}
+def test_low_potential_warning(tmp_path: Path) -> None:
+    (tmp_path / "bridge").mkdir()
+    data = {"discoveryCorridors": [{"corridorId": "c1", "transfer": 0.05}]}
+    (tmp_path / "bridge" / "discovery_corridor_map.json").write_text(json.dumps(data), encoding="utf-8")
+    audit_discovery_corridor_state(str(tmp_path), out_file=None)
+    result = json.loads((tmp_path / "discovery_corridor_audit.json").read_text(encoding="utf-8"))
+    assert any(f["id"] == "discovery_corridor.lowPotential" for f in result["findings"])
+    assert result["decision"] == "warn"
