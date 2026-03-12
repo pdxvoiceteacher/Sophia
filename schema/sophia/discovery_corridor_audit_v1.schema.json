@@ -1,13 +1,9 @@
 {
-  "$schema": "http://json-schema.org/draft/2020-12/schema",
-  "title": "Discovery Corridor Audit v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Discovery Corridor Audit V1",
   "type": "object",
   "required": ["findings"],
   "properties": {
-    "schema": {"type": "string"},
-    "decision": {"type": "string"},
-    "created_at": {"type": "string", "format": "date-time"},
-    "caution": {"type": "string"},
     "findings": {
       "type": "array",
       "items": {

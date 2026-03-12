@@ -5,12 +5,17 @@ from pathlib import Path
 
 import pytest
 
-from sophia.build_ai_guidance import DEFAULT_GUIDANCE, build_ai_guidance
+from sophia.build_ai_guidance import build_ai_guidance
 
 
 def test_ai_guidance_no_input(tmp_path: Path) -> None:
     g = build_ai_guidance(str(tmp_path), None)
-    assert g == DEFAULT_GUIDANCE
+    assert g == {
+        "noveltyWeight": 0.0,
+        "pluralityWeight": 0.0,
+        "humilityWeight": 0.0,
+        "requiresHumanReview": False,
+    }
 
 
 def test_ai_guidance_with_docket_and_modifiers(tmp_path: Path) -> None:
@@ -24,9 +29,9 @@ def test_ai_guidance_with_docket_and_modifiers(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     g = build_ai_guidance(str(tmp_path), None)
-    assert g["noveltyWeight"] == pytest.approx(0.7)
-    assert g["pluralityWeight"] == pytest.approx(0.8)
-    assert g["humilityWeight"] == pytest.approx(0.6)
+    assert g["noveltyWeight"] == pytest.approx(0.4)
+    assert g["pluralityWeight"] == pytest.approx(0.2)
+    assert g["humilityWeight"] == pytest.approx(0.0)
     assert g["requiresHumanReview"] is True
 
 
