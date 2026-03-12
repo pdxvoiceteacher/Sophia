@@ -95,6 +95,12 @@ def build_outputs(*, bridge_root: Path = DEFAULT_BRIDGE_ROOT) -> dict[str, Any]:
     return payload
 
 
+def audit_cascade_state(bridge_root: str, output_file: str) -> None:
+    """Compatibility entrypoint used by existing callers/tests."""
+    payload = build_outputs(bridge_root=Path(bridge_root))
+    Path(output_file).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run Sophia cascade state audit")
     parser.add_argument("--bridge-root", type=Path, default=DEFAULT_BRIDGE_ROOT)
