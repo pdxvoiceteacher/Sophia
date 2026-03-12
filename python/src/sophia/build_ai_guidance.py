@@ -65,7 +65,7 @@ def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str
     return guidance
 
 
-def main(argv: list[str] | None = None) -> int:
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--bridge-root", default=".")
     parser.add_argument("--out", dest="out_file", default=None)
@@ -77,6 +77,6 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(guidance, indent=2))
     return 0
 
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+    guidance = build_ai_guidance(args.bridge_root, args.output_file)
+    if not args.output_file:
+        print(json.dumps(guidance, indent=2))
