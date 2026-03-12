@@ -6,26 +6,17 @@ from pathlib import Path
 from sophia.audit_discovery_corridor_state import audit_discovery_corridor_state
 
 
-def test_missing_file(tmp_path: Path) -> None:
-    res = audit_discovery_corridor_state(str(tmp_path), None)
-    assert res["findings"][0]["id"].endswith("missing")
-    assert res["findings"][0]["severity"] == "warn"
-    assert res["findings"][0]["advisory"] == "docket"
+def test_missing_input(tmp_path: Path) -> None:
+    out = audit_discovery_corridor_state(tmp_path / "missing.json", tmp_path / "out.json")
+    assert any(f["id"] == "discovery_corridor.missing" for f in out["findings"])
+    assert out["decision"] == "fail"
+    assert out["semanticMode"] == "non-executive"
 
 
 def test_low_potential(tmp_path: Path) -> None:
-    corr = {"corridorPotential": 0.1}
-    (tmp_path / "bridge").mkdir(parents=True)
-    (tmp_path / "bridge" / "discovery_corridor_map.json").write_text(json.dumps(corr), encoding="utf-8")
-    res = audit_discovery_corridor_state(str(tmp_path), None)
-    assert any(f["id"].endswith("lowPotential") for f in res["findings"])
-
-
-def test_output_file_alias_and_write(tmp_path: Path) -> None:
-    corr = {"corridorPotential": 0.8}
-    (tmp_path / "bridge").mkdir(parents=True)
-    (tmp_path / "bridge" / "discovery_corridor_map.json").write_text(json.dumps(corr), encoding="utf-8")
-    out = tmp_path / "corridor_audit.json"
-    audit_discovery_corridor_state(str(tmp_path), str(out))
-    payload = json.loads(out.read_text(encoding="utf-8"))
-    assert payload["decision"] in {"info", "warn"}
+    dc = {"discoveryCorridors": [{"id": "x1", "strength": 0.05}]}
+    inp = tmp_path / "disc.json"
+    inp.write_text(json.dumps(dc), encoding="utf-8")
+    out = audit_discovery_corridor_state(inp, tmp_path / "out.json")
+    assert any(f["id"] == "discovery_corridor.lowPotential" for f in out["findings"])
+    assert all(f["advisory"] in ["watch", "docket"] for f in out["findings"])

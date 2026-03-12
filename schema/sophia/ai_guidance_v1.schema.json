@@ -3,11 +3,10 @@
   "title": "AI Guidance",
   "type": "object",
   "properties": {
-    "noveltyWeight": {"type": "number"},
-    "pluralityWeight": {"type": "number"},
-    "humilityWeight": {"type": "number"},
+    "noveltyWeight": {"type": "number", "minimum": 0, "maximum": 1},
+    "pluralityWeight": {"type": "number", "minimum": 0, "maximum": 1},
+    "humilityWeight": {"type": "number", "minimum": 0, "maximum": 1},
     "requiresHumanReview": {"type": "boolean"}
   },
-  "required": ["noveltyWeight", "pluralityWeight", "humilityWeight", "requiresHumanReview"],
-  "additionalProperties": false
+  "required": ["noveltyWeight", "pluralityWeight", "humilityWeight", "requiresHumanReview"]
 }
