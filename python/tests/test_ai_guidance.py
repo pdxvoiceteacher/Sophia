@@ -3,35 +3,25 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from sophia import build_ai_guidance as module
+from sophia.build_ai_guidance import GUIDANCE_TEMPLATE, build_ai_guidance
 
 
-def _write(path: Path, payload: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+def test_ai_guidance_no_input(tmp_path: Path) -> None:
+    g = build_ai_guidance(str(tmp_path), None)
+    assert g == GUIDANCE_TEMPLATE
 
 
-def test_ai_guidance_builds_and_is_bounded(tmp_path: Path) -> None:
-    bridge = tmp_path / "bridge"
-    _write(
-        bridge / "cascade_audit.json",
-        {
-            "schema": "cascade_audit_v1",
-            "created_at": "2026-03-11T00:00:00Z",
-            "caution": "bounded",
-            "decision": "warn",
-            "findings": [
-                {"id": "cascade.healthLow", "severity": "warn", "type": "audit", "advisory": "watch", "message": "x", "data": {}}
-            ],
-        },
-    )
-
-    payload = module.build_ai_guidance(bridge_root=tmp_path)
-    assert payload["schema"] == "sophia/ai_guidance_v1"
-    assert isinstance(payload["modifiers"], list) and len(payload["modifiers"]) >= 1
-    assert "increase_plural_exploration" in payload["modifiers"]
+def test_ai_guidance_with_docket(tmp_path: Path) -> None:
+    doc_audit = {"findings": [{"id": "cascade.healthLow", "advisory": "docket"}]}
+    (tmp_path / "bridge").mkdir(parents=True)
+    (tmp_path / "bridge" / "cascade_audit.json").write_text(json.dumps(doc_audit), encoding="utf-8")
+    g2 = build_ai_guidance(str(tmp_path), None)
+    assert g2["pluralityWeight"] == 1.0
+    assert g2["requiresHumanReview"]
 
 
-def test_ai_guidance_defaults_when_no_inputs(tmp_path: Path) -> None:
-    payload = module.build_ai_guidance(bridge_root=tmp_path / "missing")
-    assert payload["modifiers"] == ["increase_epistemic_transparency", "avoid_canon_language"]
+def test_ai_guidance_writes_output(tmp_path: Path) -> None:
+    out = tmp_path / "bridge" / "ai_guidance.json"
+    build_ai_guidance(str(tmp_path), str(out))
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert "noveltyWeight" in payload
