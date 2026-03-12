@@ -10,16 +10,10 @@ from jsonschema import Draft202012Validator
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = REPO_ROOT / "schema/sophia/ai_guidance_v1.schema.json"
 
-GUIDANCE_TEMPLATE = {
-    "noveltyWeight": 0.5,
-    "pluralityWeight": 0.5,
-    "humilityWeight": 0.5,
-    "requiresHumanReview": False,
-}
-
-FINDING_TO_MODIFIER = {
-    "cascade.healthLow": {"noveltyWeight": 1.0, "pluralityWeight": 1.0},
-    "river.captured": {"humilityWeight": 1.0, "pluralityWeight": 1.0},
+FINDING_TO_MODS = {
+    "cascade.healthLow": {"noveltyWeight": 0.3, "pluralityWeight": 0.2},
+    "capture.riskHigh": {"humilityWeight": 0.5},
+    "discovery_corridor.lowPotential": {"noveltyWeight": 0.1},
 }
 
 
@@ -29,49 +23,58 @@ def _load_json(path: Path) -> dict[str, Any] | None:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def _resolve_bridge_file(bridge_root: Path, filename: str) -> Path | None:
+def _resolve_audit_file(bridge_root: Path, filename: str) -> Path:
     p1 = bridge_root / filename
     p2 = bridge_root / "bridge" / filename
-    if p1.exists():
-        return p1
-    if p2.exists():
-        return p2
-    return None
+    return p1 if p1.exists() else p2
 
 
-def build_ai_guidance(bridge_root: str, output_file: str | None = None) -> dict[str, Any]:
-    guidance = GUIDANCE_TEMPLATE.copy()
+def _load_findings(path: Path) -> list[dict[str, Any]]:
+    payload = _load_json(path)
+    if not isinstance(payload, dict):
+        return []
+    findings = payload.get("findings")
+    if not isinstance(findings, list):
+        return []
+    return [f for f in findings if isinstance(f, dict)]
 
-    audit_path = _resolve_bridge_file(Path(bridge_root), "cascade_audit.json")
-    audits = _load_json(audit_path) if audit_path else None
-    if isinstance(audits, dict):
-        for f in audits.get("findings", []) if isinstance(audits.get("findings"), list) else []:
-            if not isinstance(f, dict):
-                continue
-            mod = FINDING_TO_MODIFIER.get(str(f.get("id")))
-            if mod:
-                guidance.update(mod)
-            if str(f.get("advisory")) == "docket":
-                guidance["requiresHumanReview"] = True
 
+def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str, Any]:
+    findings: list[dict[str, Any]] = []
+    root = Path(bridge_root)
+
+    for audit_file in ["cascade_audit.json", "discovery_corridor_audit.json"]:
+        findings.extend(_load_findings(_resolve_audit_file(root, audit_file)))
+
+    weights = {"noveltyWeight": 0.0, "pluralityWeight": 0.0, "humilityWeight": 0.0}
+    requires_review = False
+
+    for finding in findings:
+        mods = FINDING_TO_MODS.get(str(finding.get("id")), {})
+        for key, value in mods.items():
+            weights[key] = min(1.0, weights[key] + value)
+        if str(finding.get("advisory")) == "docket":
+            requires_review = True
+
+    guidance = {**weights, "requiresHumanReview": requires_review}
     Draft202012Validator(json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))).validate(guidance)
 
-    if output_file:
-        out = Path(output_file)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(json.dumps(guidance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    out_path = Path(out_file) if out_file else root / "ai_guidance.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(guidance, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return guidance
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bridge-root", default=".")
-    parser.add_argument("--out", dest="output_file", default=None)
-    parser.add_argument("--output-file", dest="output_file", default=None)
+    parser.add_argument("--out", dest="out_file", default=None)
+    parser.add_argument("--output-file", dest="out_file", default=None)
     args = parser.parse_args(argv)
 
-    g = build_ai_guidance(args.bridge_root, args.output_file)
-    print(json.dumps(g, indent=2))
+    guidance = build_ai_guidance(args.bridge_root, args.out_file)
+    if not args.out_file:
+        print(json.dumps(guidance, indent=2))
     return 0
 
 
