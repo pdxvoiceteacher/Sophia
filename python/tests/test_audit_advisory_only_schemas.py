@@ -15,6 +15,7 @@ import pytest
         Path('/workspace/Sophia/schema/rebraid_audit_v1.schema.json'),
         Path('/workspace/Sophia/schema/cascade_audit_v1.schema.json'),
         Path('/workspace/Sophia/schema/sophia/rebraid_audit_v1.schema.json'),
+        Path('/workspace/Sophia/schema/sophia/viability_audit_v1.schema.json'),
     ],
 )
 def test_schema_finding_severity_and_advisory_are_advisory_only(schema_path: Path) -> None:
