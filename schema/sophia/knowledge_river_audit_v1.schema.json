@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sophia/schema/sophia/knowledge_river_audit_v1.schema.json",
+  "title": "Knowledge River Audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "created_at", "decision", "findings"],
+  "properties": {
+    "schema": {"type": "string"},
+    "created_at": {"type": "string"},
+    "decision": {"enum": ["advisory", "pass", "warn"]},
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/finding"}
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "severity", "type", "advisory", "message", "data"],
+      "properties": {
+        "id": {"type": "string"},
+        "severity": {"enum": ["info", "warn"]},
+        "type": {"type": "string"},
+        "advisory": {"enum": ["watch", "docket"]},
+        "message": {"type": "string"},
+        "data": {"type": "object"}
+      }
+    }
+  }
+}

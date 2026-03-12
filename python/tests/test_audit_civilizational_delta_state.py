@@ -52,3 +52,13 @@ def test_schema_rejects_merge_action() -> None:
     }
     with pytest.raises(ValidationError):
         Draft202012Validator(schema).validate(bad)
+
+
+def test_compat_entrypoint_writes_file(tmp_path: Path) -> None:
+    bridge = tmp_path / "bridge"
+    _write(bridge / "civilizational_delta_map.json", {"generatedAt": "2027-01-01T00:00:00Z", "targets": [{"phaseId": "d:1", "deltaStrength": 2.0}]})
+    out = tmp_path / "delta_audit.json"
+
+    module.audit_civilizational_delta_state(str(tmp_path), str(out))
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["findings"][0]["advisory"] in {"watch", "docket"}
