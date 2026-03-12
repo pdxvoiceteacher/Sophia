@@ -10,81 +10,55 @@ from jsonschema import Draft202012Validator
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = REPO_ROOT / "schema/sophia/ai_guidance_v1.schema.json"
 
+MODIFIER_MAP = {
+    "cascade.healthLow": ("noveltyWeight", 0.2),
+    "capture.riskHigh": ("pluralityWeight", 0.3),
+    "discovery_corridor.lowPotential": ("humilityWeight", 0.1),
+}
 
-def _load_json(path: Path) -> dict[str, Any] | None:
-    if not path.exists():
-        return None
+
+def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str, Any]:
-    novelty = 0.0
-    plurality = 0.0
-    humility = 0.5
-    requires_review = False
-
-    audit_specs = [
-        ("cascade_audit.json", {"cascade.healthLow": 0.5}),
-        ("discovery_corridor_audit.json", {"discovery_corridor.lowPotential": 0.3}),
-    ]
-
-    root = Path(bridge_root)
-    for audit_file, weight_map in audit_specs:
-        path = root / "bridge" / audit_file
-        if not path.exists():
-            continue
-        payload = _load_json(path)
-        findings = payload.get("findings", []) if isinstance(payload, dict) else []
+def build_ai_guidance(cascade_audit: dict[str, Any], corridor_audit: dict[str, Any]) -> dict[str, Any]:
+    guidance = {
+        "noveltyWeight": 0.0,
+        "pluralityWeight": 0.0,
+        "humilityWeight": 0.0,
+        "requiresHumanReview": False,
+    }
+    for audit in (cascade_audit, corridor_audit):
+        findings = audit.get("findings", []) if isinstance(audit, dict) else []
         if not isinstance(findings, list):
             continue
         for finding in findings:
             if not isinstance(finding, dict):
                 continue
-            if finding.get("advisory") == "docket":
-                requires_review = True
             finding_id = finding.get("id")
-            if finding_id == "cascade.healthLow":
-                plurality += float(weight_map.get("cascade.healthLow", 0.0))
-            if finding_id == "discovery_corridor.lowPotential":
-                novelty += float(weight_map.get("discovery_corridor.lowPotential", 0.0))
+            mod_key = MODIFIER_MAP.get(str(finding_id))
+            if mod_key:
+                guidance[mod_key[0]] = min(1.0, guidance[mod_key[0]] + mod_key[1])
+            if finding.get("advisory") == "docket":
+                guidance["requiresHumanReview"] = True
 
-    guidance = {
-        "noveltyWeight": min(novelty, 1.0),
-        "pluralityWeight": min(plurality, 1.0),
-        "humilityWeight": min(humility, 1.0),
-        "requiresHumanReview": requires_review,
-    }
-
-    for audit_file in ["cascade_audit.json", "discovery_corridor_audit.json"]:
-        findings.extend(_load_findings(_resolve_audit_file(root, audit_file)))
-
-    weights = {"noveltyWeight": 0.0, "pluralityWeight": 0.0, "humilityWeight": 0.0}
-    requires_review = False
-
-    for finding in findings:
-        mods = FINDING_TO_MODS.get(str(finding.get("id")), {})
-        for key, value in mods.items():
-            weights[key] = min(1.0, weights[key] + value)
-        if str(finding.get("advisory")) == "docket":
-            requires_review = True
-
-    guidance = {**weights, "requiresHumanReview": requires_review}
-    Draft202012Validator(json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))).validate(guidance)
-
-    target = Path(out_file) if out_file else root / "ai_guidance.json"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(guidance, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    Draft202012Validator(_load_json(SCHEMA_PATH)).validate(guidance)
     return guidance
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--bridge-root", default=".")
-    parser.add_argument("--out", dest="out_file", default=None)
-    parser.add_argument("--output-file", dest="out_file", default=None)
+    parser.add_argument("--cascade", required=True)
+    parser.add_argument("--corridor", required=True)
+    parser.add_argument("--out", dest="out_file", required=False)
     args = parser.parse_args(argv)
 
-    build_ai_guidance(args.bridge_root, args.out_file)
+    cascade_data = _load_json(Path(args.cascade))
+    corridor_data = _load_json(Path(args.corridor))
+    guidance = build_ai_guidance(cascade_data, corridor_data)
+    out_path = Path(args.out_file) if args.out_file else Path(args.cascade).parent / "ai_guidance.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(guidance, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return 0
 
     guidance = build_ai_guidance(args.bridge_root, args.output_file)
