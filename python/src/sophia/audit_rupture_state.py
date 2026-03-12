@@ -44,6 +44,13 @@ def _extract_targets(doc: dict[str, Any]) -> list[dict[str, Any]]:
     return [r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else []
 
 
+
+
+def _resolve_bridge_root(bridge_root: Path) -> Path:
+    nested = bridge_root / "bridge"
+    return nested if nested.exists() else bridge_root
+
+
 def build_outputs(*, bridge_root: Path = DEFAULT_BRIDGE_ROOT) -> dict[str, Any]:
     preferred = bridge_root / "rupture_map.json"
     fallback = bridge_root / "rupture_signal_map.json"
@@ -111,13 +118,21 @@ def build_outputs(*, bridge_root: Path = DEFAULT_BRIDGE_ROOT) -> dict[str, Any]:
     return payload
 
 
+def audit_rupture_state(bridge_root: str, output_file: str | None = None) -> dict[str, Any]:
+    """Compatibility entrypoint used by existing callers/tests."""
+    payload = build_outputs(bridge_root=_resolve_bridge_root(Path(bridge_root)))
+    if output_file is not None:
+        Path(output_file).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return payload
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run Sophia rupture state audit")
     parser.add_argument("--bridge-root", type=Path, default=DEFAULT_BRIDGE_ROOT)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args(argv)
 
-    payload = build_outputs(bridge_root=args.bridge_root)
+    payload = build_outputs(bridge_root=_resolve_bridge_root(args.bridge_root))
     args.out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {args.out}")
     return 0

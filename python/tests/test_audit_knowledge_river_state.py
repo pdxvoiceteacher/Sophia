@@ -46,3 +46,14 @@ def test_schema_rejects_disallowed_advisory() -> None:
     }
     with pytest.raises(ValidationError):
         Draft202012Validator(schema).validate(bad)
+
+
+def test_compat_entrypoint_writes_file(tmp_path: Path) -> None:
+    bridge = tmp_path / "bridge"
+    _write(bridge / "knowledge_river_map.json", {"generatedAt": "2027-01-01T00:00:00Z", "rivers": [{"id": "r:1", "riverStrength": 0.4}]})
+    _write(bridge / "river_capture_risk_report.json", {"rivers": [{"id": "r:1", "captureRisk": 0.2}]})
+    out = tmp_path / "kr_audit.json"
+
+    module.audit_knowledge_river_state(str(tmp_path), str(out))
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["findings"][0]["advisory"] in {"watch", "docket"}

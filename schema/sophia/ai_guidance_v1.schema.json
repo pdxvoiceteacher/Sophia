@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI Guidance",
+  "type": "object",
+  "properties": {
+    "noveltyWeight": {"type": "number"},
+    "pluralityWeight": {"type": "number"},
+    "humilityWeight": {"type": "number"},
+    "requiresHumanReview": {"type": "boolean"}
+  },
+  "required": ["noveltyWeight", "pluralityWeight", "humilityWeight", "requiresHumanReview"],
+  "additionalProperties": false
+}
