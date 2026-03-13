@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft7Validator
 
+SEMANTIC = "non-executive"
+FIELD = "chosen_state"
+DOCKET = {"finding": "navigation.missing", "severity": "warn", "advisory": "docket"}
 REPO_ROOT = Path(__file__).resolve().parents[3]
-SCHEMA_PATH = REPO_ROOT / "schema/sophia/navigation_audit_v1.schema.json"
+SCHEMA_PATH = REPO_ROOT / "python/src/sophia/schemas/navigation_audit.json"
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -23,54 +25,50 @@ def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
             f.write(json.dumps(row, sort_keys=True) + "\n")
 
 
-def audit_navigation_state(bridge_root: Path, out_file: Path) -> dict[str, Any]:
-    """Advisory-only audit for navigation decisions."""
+def audit_navigation_state(bridge_root: Path, out_file: Path) -> list[dict[str, Any]]:
     nav_path = bridge_root / "bridge" / "navigation_state.json"
+    findings: list[dict[str, Any]] = []
 
     if not nav_path.exists():
-        findings = [{"finding": "navigation.missing", "severity": "warn", "advisory": "docket"}]
-        result = {
-            "findings": findings,
-            "decision": "fail",
-            "caution": "Navigation state missing; review required.",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "semanticMode": "non-executive",
-        }
-        Draft7Validator(_load_json(SCHEMA_PATH)).validate(result)
-        _write_jsonl(out_file, [result])
-        return result
+        findings.append(DOCKET.copy())
+    else:
+        data = _load_json(nav_path)
+        chosen = data.get(FIELD, {}) if isinstance(data, dict) else {}
+        if not chosen:
+            findings.append(DOCKET.copy())
+        elif isinstance(chosen, dict):
+            for node, _ in chosen.items():
+                psi_val = data.get("artifactLineageHashes", {}).get(node, {}).get("psi", 0)
+                if isinstance(psi_val, (int, float)) and psi_val < 0.1:
+                    findings.append(
+                        {
+                            "finding": "navigation.low_coherence",
+                            "severity": "info",
+                            "advisory": "watch",
+                            "target": node,
+                        }
+                    )
 
-    nav = _load_json(nav_path)
-    chosen = nav.get("chosen_state", {}) if isinstance(nav, dict) else {}
-    findings: list[dict[str, str]] = []
+    schema = _load_json(SCHEMA_PATH)
+    rows: list[dict[str, Any]] = []
+    for finding in findings:
+        rec = dict(finding)
+        rec["semanticMode"] = SEMANTIC
+        Draft7Validator(schema).validate(rec)
+        rows.append(rec)
 
-    psi = chosen.get("psi", 0.0) if isinstance(chosen, dict) else 0.0
-    if isinstance(psi, (int, float)) and psi < 0.1:
-        findings.append(
-            {"finding": "navigation.low_coherence", "severity": "warn", "advisory": "watch"}
-        )
-
-    decision = "pass" if not findings else "warn"
-    result = {
-        "findings": findings,
-        "decision": decision,
-        "caution": "Review navigation if warnings.",
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "semanticMode": "non-executive",
-    }
-
-    Draft7Validator(_load_json(SCHEMA_PATH)).validate(result)
-    _write_jsonl(out_file, [result])
-    return result
+    _write_jsonl(out_file, rows)
+    return rows
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Audit navigation state (advisory only).")
-    parser.add_argument("--bridge-root", default=".", help="CoherenceLattice root")
+    parser = argparse.ArgumentParser(description="Audit navigation_state.json")
+    parser.add_argument("--bridge-root", required=True, help="CoherenceLattice repo root")
     parser.add_argument("--out", required=True, help="Output JSONL file")
     args = parser.parse_args(argv)
 
     audit_navigation_state(Path(args.bridge_root), Path(args.out))
+    print(f"Navigation audit written to {args.out}")
     return 0
 
 

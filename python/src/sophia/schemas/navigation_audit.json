@@ -1,0 +1,13 @@
+{
+  "$id": "NavigationAudit",
+  "type": "object",
+  "properties": {
+    "finding": {"type": "string"},
+    "severity": {"enum": ["info", "warn"]},
+    "advisory": {"enum": ["watch", "docket"]},
+    "target": {"type": "string"},
+    "semanticMode": {"const": "non-executive"}
+  },
+  "required": ["finding", "severity", "advisory", "semanticMode"],
+  "additionalProperties": false
+}
