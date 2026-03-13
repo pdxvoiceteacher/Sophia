@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NavigationAudit",
+  "type": "object",
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding", "severity", "advisory"],
+        "properties": {
+          "finding": {"type": "string"},
+          "severity": {"type": "string", "enum": ["info", "warn"]},
+          "advisory": {"type": "string", "enum": ["watch", "docket"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "decision": {"type": "string", "enum": ["pass", "warn", "fail"]},
+    "caution": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "semanticMode": {"type": "string", "const": "non-executive"}
+  },
+  "required": ["findings", "decision", "created_at", "semanticMode"],
+  "additionalProperties": false
+}
