@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
+from sophia.build_ai_guidance import build_ai_guidance
 
 from sophia.build_ai_guidance import build_ai_guidance
 
