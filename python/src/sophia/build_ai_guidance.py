@@ -17,9 +17,7 @@ MODIFIER_MAP = {
 }
 
 
-def _load_json(path: Path) -> dict[str, Any] | None:
-    if not path.exists():
-        return None
+def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
@@ -67,7 +65,7 @@ def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str
     return guidance
 
 
-def main(argv: list[str] | None = None) -> int:
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--bridge-root", default=".")
     parser.add_argument("--output-file", default=None)
@@ -77,6 +75,6 @@ def main(argv: list[str] | None = None) -> int:
     build_ai_guidance(args.bridge_root, args.output_file)
     return 0
 
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+    guidance = build_ai_guidance(args.bridge_root, args.output_file)
+    if not args.output_file:
+        print(json.dumps(guidance, indent=2))
