@@ -4,12 +4,12 @@
   "type": "object",
   "required": ["finding", "severity", "advisory", "semanticMode", "created_at"],
   "properties": {
-    "finding": { "type": "string" },
-    "severity": { "enum": ["info", "warn"] },
-    "advisory": { "enum": ["watch", "docket"] },
-    "target": { "type": "string" },
-    "semanticMode": { "const": "non-executive" },
-    "created_at": { "type": "string", "format": "date-time" }
+    "finding": {"type": "string"},
+    "severity": {"enum": ["info", "warn"]},
+    "advisory": {"enum": ["watch", "docket"]},
+    "target": {"type": "string"},
+    "semanticMode": {"const": "non-executive"},
+    "created_at": {"type": "string", "format": "date-time"}
   },
   "additionalProperties": false
 }
