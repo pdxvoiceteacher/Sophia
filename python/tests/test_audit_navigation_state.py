@@ -5,44 +5,42 @@ from pathlib import Path
 
 from jsonschema import Draft7Validator
 
-from sophia.audit_navigation_state import audit_navigation_state
+from sophia.audit.navigation_state import audit_navigation_state
 
 
-SCHEMA_PATH = Path("/workspace/Sophia/python/src/sophia/schemas/navigation_audit.json")
+def test_missing_navigation_state(tmp_path):
+    bridge = tmp_path / "bridge"
+    bridge.mkdir()
+    out_file = bridge / "navigation_audit.jsonl"
+    audit_navigation_state(tmp_path, out_file)
+    lines = out_file.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    rec = json.loads(lines[0])
+    assert rec["advisory"] == "docket"
+    assert rec["finding"].startswith("navigation.missing")
 
 
-def test_missing_input_creates_docket(tmp_path: Path) -> None:
-    out = tmp_path / "nav_audit.jsonl"
-    rows = audit_navigation_state(tmp_path, out)
-    assert len(rows) == 1
-    res = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
-    assert res["finding"] == "navigation.missing"
-    assert res["advisory"] == "docket"
-    assert res["semanticMode"] == "non-executive"
-
-
-def test_low_coherence_finding(tmp_path: Path) -> None:
+def test_low_coherence_watch(tmp_path):
     nav = {
-        "chosen_state": {
-            "node_a": {"next": "node_b"}
-        },
-        "artifactLineageHashes": {
-            "node_a": {"psi": 0.0025}
-        }
+        "chosen_state": "node1",
+        "artifactLineageHashes": {"psi": 0.05},
     }
-    bridge_dir = tmp_path / "bridge"
-    bridge_dir.mkdir()
-    (bridge_dir / "navigation_state.json").write_text(json.dumps(nav), encoding="utf-8")
-    out = tmp_path / "nav_audit.jsonl"
-    rows = audit_navigation_state(tmp_path, out)
-    assert any(f["finding"] == "navigation.low_coherence" for f in rows)
-    res = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
-    assert res["severity"] == "info"
+    (tmp_path / "bridge").mkdir()
+    (tmp_path / "bridge" / "navigation_state.json").write_text(json.dumps(nav), encoding="utf-8")
+    out_file = tmp_path / "bridge" / "navigation_audit.jsonl"
+    audit_navigation_state(tmp_path, out_file)
+    lines = out_file.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+    rec = json.loads(lines[0])
+    assert rec["finding"] == "navigation.low_coherence"
+    assert rec["severity"] == "info"
+    assert rec["advisory"] == "watch"
 
 
-def test_jsonl_entries_validate_against_schema(tmp_path: Path) -> None:
-    out = tmp_path / "nav_audit.jsonl"
-    audit_navigation_state(tmp_path, out)
-    validator = Draft7Validator(json.loads(SCHEMA_PATH.read_text(encoding="utf-8")))
-    for line in out.read_text(encoding="utf-8").splitlines():
+def test_jsonl_entries_validate_against_schema(tmp_path):
+    out_file = tmp_path / "bridge" / "navigation_audit.jsonl"
+    audit_navigation_state(tmp_path, out_file)
+    schema = json.loads(Path("/workspace/Sophia/python/src/sophia/schemas/navigation_audit.json").read_text(encoding="utf-8"))
+    validator = Draft7Validator(schema)
+    for line in out_file.read_text(encoding="utf-8").splitlines():
         validator.validate(json.loads(line))

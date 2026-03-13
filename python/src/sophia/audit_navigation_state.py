@@ -3,62 +3,46 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Any
 
-from jsonschema import Draft7Validator
-
-SEMANTIC = "non-executive"
-FIELD = "chosen_state"
-DOCKET = {"finding": "navigation.missing", "severity": "warn", "advisory": "docket"}
-REPO_ROOT = Path(__file__).resolve().parents[3]
-SCHEMA_PATH = REPO_ROOT / "python/src/sophia/schemas/navigation_audit.json"
+from sophia.audit.common import advisory_docket, advisory_watch
+from sophia.schema import validate_record
 
 
-def _load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8-sig"))
-
-
-def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        for row in rows:
-            f.write(json.dumps(row, sort_keys=True) + "\n")
-
-
-def audit_navigation_state(bridge_root: Path, out_file: Path) -> list[dict[str, Any]]:
+def audit_navigation_state(bridge_root: Path, out_file: Path) -> None:
+    """
+    Reads bridge/navigation_state.json and writes advisory findings (one JSON per line).
+    Emits:
+      - navigation.missing (docket) if navigation_state is absent or empty
+      - navigation.low_coherence (watch) if chosen_state.psi < threshold
+    """
     nav_path = bridge_root / "bridge" / "navigation_state.json"
-    findings: list[dict[str, Any]] = []
+    out_path = Path(out_file)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    findings: list[dict[str, str]] = []
 
     if not nav_path.exists():
-        findings.append(DOCKET.copy())
+        findings.append(advisory_docket("navigation.missing", "Navigation state missing or empty"))
     else:
-        data = _load_json(nav_path)
-        chosen = data.get(FIELD, {}) if isinstance(data, dict) else {}
+        nav = json.loads(nav_path.read_text(encoding="utf-8-sig"))
+        chosen = nav.get("chosen_state") if isinstance(nav, dict) else None
         if not chosen:
-            findings.append(DOCKET.copy())
-        elif isinstance(chosen, dict):
-            for node, _ in chosen.items():
-                psi_val = data.get("artifactLineageHashes", {}).get(node, {}).get("psi", 0)
-                if isinstance(psi_val, (int, float)) and psi_val < 0.1:
-                    findings.append(
-                        {
-                            "finding": "navigation.low_coherence",
-                            "severity": "info",
-                            "advisory": "watch",
-                            "target": node,
-                        }
+            findings.append(advisory_docket("navigation.missing", "Navigation state missing or empty"))
+        else:
+            psi_val = nav.get("artifactLineageHashes", {}).get("psi", 0.0)
+            if isinstance(psi_val, (int, float)) and psi_val < 0.1:
+                findings.append(
+                    advisory_watch(
+                        "navigation.low_coherence",
+                        f"Low coherence for chosen state ({psi_val:.2f})",
+                        target=chosen,
                     )
+                )
 
-    schema = _load_json(SCHEMA_PATH)
-    rows: list[dict[str, Any]] = []
-    for finding in findings:
-        rec = dict(finding)
-        rec["semanticMode"] = SEMANTIC
-        Draft7Validator(schema).validate(rec)
-        rows.append(rec)
-
-    _write_jsonl(out_file, rows)
-    return rows
+    schema_path = Path(__file__).parent / "schemas" / "navigation_audit.json"
+    with out_path.open("w", encoding="utf-8") as f:
+        for rec in findings:
+            validate_record(rec, schema_path)
+            f.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
 def main(argv: list[str] | None = None) -> int:
