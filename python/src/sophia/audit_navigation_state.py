@@ -4,55 +4,61 @@ import argparse
 import json
 from pathlib import Path
 
-from sophia.audit.common import advisory_docket, advisory_watch
-from sophia.schema import validate_record
+from sophia.schema import validate_json_lines
 
 
-def audit_navigation_state(bridge_root: Path, out_file: Path) -> None:
-    """
-    Reads bridge/navigation_state.json and writes advisory findings (one JSON per line).
-    Emits:
-      - navigation.missing (docket) if navigation_state is absent or empty
-      - navigation.low_coherence (watch) if chosen_state.psi < threshold
-    """
+def audit_navigation_state(bridge_root: Path, output_file: Path) -> None:
     nav_path = bridge_root / "bridge" / "navigation_state.json"
-    out_path = Path(out_file)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    findings: list[dict[str, str]] = []
+    findings: list[dict[str, object]] = []
 
     if not nav_path.exists():
-        findings.append(advisory_docket("navigation.missing", "Navigation state missing or empty"))
+        findings.append(
+            {
+                "finding": "navigation.missing",
+                "severity": "warn",
+                "advisory": "docket",
+                "semanticMode": "non-executive",
+            }
+        )
     else:
-        nav = json.loads(nav_path.read_text(encoding="utf-8-sig"))
-        chosen = nav.get("chosen_state") if isinstance(nav, dict) else None
+        data = json.loads(nav_path.read_text(encoding="utf-8-sig"))
+        chosen = data.get("chosen_state") if isinstance(data, dict) else None
         if not chosen:
-            findings.append(advisory_docket("navigation.missing", "Navigation state missing or empty"))
+            findings.append(
+                {
+                    "finding": "navigation.empty",
+                    "severity": "warn",
+                    "advisory": "watch",
+                    "semanticMode": "non-executive",
+                }
+            )
         else:
-            psi_val = nav.get("artifactLineageHashes", {}).get("psi", 0.0)
+            psi_val = data.get("chosen_state_psi", 0)
             if isinstance(psi_val, (int, float)) and psi_val < 0.1:
                 findings.append(
-                    advisory_watch(
-                        "navigation.low_coherence",
-                        f"Low coherence for chosen state ({psi_val:.2f})",
-                        target=chosen,
-                    )
+                    {
+                        "finding": "navigation.low_coherence",
+                        "severity": "info",
+                        "advisory": "watch",
+                        "semanticMode": "non-executive",
+                        "target": str(chosen),
+                    }
                 )
 
-    schema_path = Path(__file__).parent / "schemas" / "navigation_audit.json"
-    with out_path.open("w", encoding="utf-8") as f:
-        for rec in findings:
-            validate_record(rec, schema_path)
-            f.write(json.dumps(rec, sort_keys=True) + "\n")
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    with output_file.open("w", encoding="utf-8") as f:
+        for record in findings:
+            f.write(json.dumps(record, sort_keys=True) + "\n")
+
+    validate_json_lines(output_file, schema="navigation_audit")
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Audit navigation_state.json")
-    parser.add_argument("--bridge-root", required=True, help="CoherenceLattice repo root")
-    parser.add_argument("--out", required=True, help="Output JSONL file")
+    parser = argparse.ArgumentParser(description="Audit navigation state to advisory JSONL.")
+    parser.add_argument("--bridge-root", required=True, type=Path, help="Path to bridge root.")
+    parser.add_argument("--out", required=True, type=Path, help="Output JSONL file for audit findings.")
     args = parser.parse_args(argv)
-
-    audit_navigation_state(Path(args.bridge_root), Path(args.out))
-    print(f"Navigation audit written to {args.out}")
+    audit_navigation_state(args.bridge_root, args.out)
     return 0
 
 
