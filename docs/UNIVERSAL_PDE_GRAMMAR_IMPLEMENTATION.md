@@ -1,5 +1,7 @@
 # Universal PDE Grammar Implementation
 
+> Reference implementation now lives under `python/src/coherence/pde/` with schemas in `schema/coherence/` for direct execution and validation.
+
 Below are example code blocks implementing a universal PDE grammar framework for the Triadic Brain. The code defines a structured DSL (typed AST) for fields and operators, compiles user-defined PDE specifications into an internal form, and executes graph-based updates with governance projection. These blocks follow the consultant’s recommendations (typed AST, operator registry, compile-time checks, runtime admissibility, derived fields, etc.) and build on the existing CoherenceLattice scaffolds.
 
 ## 1. JSON Schema for PDE Specification
