@@ -1,13 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AI Guidance",
+  "title": "AI Guidance v1",
   "type": "object",
-  "properties": {
-    "noveltyWeight": {"type": "number"},
-    "pluralityWeight": {"type": "number"},
-    "humilityWeight": {"type": "number"},
-    "requiresHumanReview": {"type": "boolean"}
-  },
   "required": ["noveltyWeight", "pluralityWeight", "humilityWeight", "requiresHumanReview"],
-  "additionalProperties": false
+  "properties": {
+    "noveltyWeight": {"type": "number", "minimum": 0, "maximum": 1},
+    "pluralityWeight": {"type": "number", "minimum": 0, "maximum": 1},
+    "humilityWeight": {"type": "number", "minimum": 0, "maximum": 1},
+    "requiresHumanReview": {"type": "boolean"}
+  }
 }

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sophia/schema/coherence/pde_spec.schema.json",
+  "title": "Triadic PDE Specification",
+  "type": "object",
+  "properties": {
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "role": { "enum": ["primitive", "derived", "observable"] }
+        },
+        "required": ["name", "role"],
+        "additionalProperties": false
+      }
+    },
+    "operators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "outputs": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "formula": { "$ref": "expression.schema.json" },
+          "requires_governance": { "type": "boolean" },
+          "parameters": { "type": "object" }
+        },
+        "required": ["name"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["fields", "operators"],
+  "additionalProperties": false
+}

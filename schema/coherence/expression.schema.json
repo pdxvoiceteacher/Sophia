@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sophia/schema/coherence/expression.schema.json",
+  "title": "PDE Expression AST",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "field": { "type": "string" }
+      },
+      "required": ["field"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "const": { "type": "number" }
+      },
+      "required": ["const"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": { "enum": ["add", "sub", "mul", "div"] },
+        "left": { "$ref": "expression.schema.json" },
+        "right": { "$ref": "expression.schema.json" }
+      },
+      "required": ["op", "left", "right"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": { "enum": ["neg", "pos"] },
+        "arg": { "$ref": "expression.schema.json" }
+      },
+      "required": ["op", "arg"],
+      "additionalProperties": false
+    }
+  ]
+}
