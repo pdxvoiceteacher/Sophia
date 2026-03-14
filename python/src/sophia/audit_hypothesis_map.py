@@ -1,14 +1,13 @@
-def audit_discovery_corridors(artifact):
+def audit_hypotheses(artifact):
 
     findings = []
 
-    if artifact["summary"]["corridorCount"] == 0:
-
+    if artifact["summary"]["count"] == 0:
         findings.append({
             "severity": "info",
             "advisory": "watch",
             "semanticMode": "non-executive",
-            "message": "No discovery corridors detected.",
+            "message": "No hypotheses generated.",
         })
 
     return findings
