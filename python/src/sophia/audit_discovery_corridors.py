@@ -1,25 +1,14 @@
-def audit_corridor_gradients(state):
-
-    psi = state["Psi"]
+def audit_discovery_corridors(artifact):
 
     findings = []
 
-    max_gradient = max(psi) - min(psi)
+    if artifact["summary"]["corridorCount"] == 0:
 
-    if max_gradient < 0.01:
         findings.append({
-            "severity": "watch",
+            "severity": "info",
             "advisory": "watch",
             "semanticMode": "non-executive",
-            "message": "No discovery gradients detected."
-        })
-
-    if max_gradient > 0.8:
-        findings.append({
-            "severity": "warn",
-            "advisory": "watch",
-            "semanticMode": "non-executive",
-            "message": "Potential coherence shock detected."
+            "message": "No discovery corridors detected.",
         })
 
     return findings
