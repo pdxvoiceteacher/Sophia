@@ -52,7 +52,7 @@ def audit_civilizational_coherence(artifact: dict) -> list[dict]:
                 "severity": "warn",
                 "advisory": "watch",
                 "semanticMode": "non-executive",
-                "message": "Entropy and trust/memory breakdown indicate fragmentation risk.",
+                "message": f"Fragmentation detected: ΔS={1-scalar:.3f}, Ψ={scalar:.3f}",
                 "law": "fragmentation_noise",
                 "S_civ": scalar,
             }
