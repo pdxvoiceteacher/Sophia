@@ -5,7 +5,11 @@ def evaluate_signal_quality(records):
     total_terms = 0
     unique_terms = set()
     for r in records:
-        text = (r.get("title", "") + " " + r.get("abstract", "")).lower()
+        # dict.get(key, default) returns None if the key exists but value is None.
+        # Coerce safely to string to handle null/non-string upstream payloads.
+        title = r.get("title") or ""
+        abstract = r.get("abstract") or ""
+        text = (str(title) + " " + str(abstract)).lower()
         terms = text.split()
         total_terms += len(terms)
         unique_terms.update(terms)
