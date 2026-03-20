@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 
+def normalize_delta_s(deltaS, series_length):
+    return deltaS / (series_length + 1e-9)
+
+
 def audit_civilizational_coherence(artifact: dict) -> list[dict]:
     findings = []
 
@@ -12,6 +16,10 @@ def audit_civilizational_coherence(artifact: dict) -> list[dict]:
         scalar = float(artifact["metrics"].get("S_civ", 0.0))
     else:
         scalar = float(artifact.get("S_civ", 0.0))
+
+    series = artifact.get("series") or [None]
+    delta_s = float(artifact.get("deltaS", 1 - scalar))
+    delta_s_norm = normalize_delta_s(delta_s, len(series))
 
     # If regime is not provided, derive a minimal regime label from S_civ.
     if regime == "unknown":
@@ -52,7 +60,7 @@ def audit_civilizational_coherence(artifact: dict) -> list[dict]:
                 "severity": "warn",
                 "advisory": "watch",
                 "semanticMode": "non-executive",
-                "message": f"Fragmentation detected: ΔS={1-scalar:.3f}, Ψ={scalar:.3f}",
+                "message": f"Fragmentation detected: ΔS={delta_s_norm:.3f}, Ψ={scalar:.3f}",
                 "law": "fragmentation_noise",
                 "S_civ": scalar,
             }
