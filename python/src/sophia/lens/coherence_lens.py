@@ -1,16 +1,29 @@
+def _coerce_record_text(record):
+    title = record.get("title") or ""
+    abstract = record.get("abstract") or ""
+    return (str(title) + " " + str(abstract)).lower()
+
+
+def compute_relevance_score(record):
+    """
+    Compute a structural relevance proxy from token diversity in a single record.
+    """
+    terms = _coerce_record_text(record).split()
+    if not terms:
+        return 0.0
+
+    diversity = len(set(terms)) / len(terms)
+    return diversity
+
+
 def evaluate_signal_quality(records):
     """
     PURELY statistical — no domain knowledge.
     """
     total_terms = 0
     unique_terms = set()
-    for r in records:
-        # dict.get(key, default) returns None if the key exists but value is None.
-        # Coerce safely to string to handle null/non-string upstream payloads.
-        title = r.get("title") or ""
-        abstract = r.get("abstract") or ""
-        text = (str(title) + " " + str(abstract)).lower()
-        terms = text.split()
+    for record in records:
+        terms = _coerce_record_text(record).split()
         total_terms += len(terms)
         unique_terms.update(terms)
     if total_terms == 0:
@@ -25,3 +38,20 @@ def apply_lens_weights(series, lens_metrics):
     """
     quality = lens_metrics["signal_quality"]
     return [(year, value * quality) for year, value in series]
+
+
+def audit_dataset(records):
+    results = []
+
+    for record in records:
+        score = compute_relevance_score(record)
+
+        results.append(
+            {
+                "record": record,
+                "relevance": score,
+                "flag": score < 0.1,
+            }
+        )
+
+    return results
