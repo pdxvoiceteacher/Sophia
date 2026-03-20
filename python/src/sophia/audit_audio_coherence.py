@@ -1,21 +1,28 @@
-"""Advisory audit checks for audio coherence streams."""
+"""Advisory audit checks for coherence quality in sonified outputs."""
 
 from __future__ import annotations
 
 
-def audit_audio_coherence(midi_stream: dict) -> list[dict]:
+def audit_audio_coherence(metrics: dict) -> list[dict]:
     findings = []
 
-    pitch_variance = midi_stream.get("pitch_variance", 0.0)
+    psi = metrics.get("phi_total", 0)
 
-    if pitch_variance > 24:
+    if psi < 0.2:
         findings.append(
             {
-                "law": "audio_entropy_excess",
+                "law": "audio_coherence_low",
                 "severity": "watch",
-                "advisory": "watch",
                 "semanticMode": "non-executive",
-                "message": "Audio pitch variance indicates elevated entropy in sonified coherence signals.",
+            }
+        )
+
+    if psi > 0.8:
+        findings.append(
+            {
+                "law": "audio_high_coherence_peak",
+                "severity": "info",
+                "semanticMode": "non-executive",
             }
         )
 
