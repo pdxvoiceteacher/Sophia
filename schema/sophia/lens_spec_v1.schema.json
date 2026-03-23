@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sophia://schema/sophia/lens_spec_v1.schema.json",
+  "title": "LensSpec v1 (Advisory-only, hashable)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "lens_id",
+    "created_at",
+    "semantic_mode",
+    "advisory_only",
+    "purpose",
+    "scope",
+    "canonicalization",
+    "operations",
+    "constraints",
+    "disclosure",
+    "lens_spec_hash"
+  ],
+  "properties": {
+    "schema_version": { "const": "sophia.lens_spec.v1" },
+    "lens_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "description": "Stable identifier for this lens configuration."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp.",
+      "examples": ["2026-03-19T19:05:00Z"]
+    },
+    "semantic_mode": {
+      "type": "string",
+      "const": "non-executive",
+      "description": "LensSpec is diagnostic/advisory only."
+    },
+    "advisory_only": {
+      "type": "boolean",
+      "const": true
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 24,
+      "maxLength": 2000,
+      "description": "Human-readable purpose statement: what this lens measures and what it refuses to do."
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applies_to", "policy"],
+      "properties": {
+        "applies_to": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "dataset_summary",
+              "corridor_series",
+              "drift_series",
+              "civilizational_scalar"
+            ]
+          }
+        },
+        "policy": {
+          "type": "string",
+          "enum": ["report_only", "derived_output_only"],
+          "description": "report_only: lens cannot generate adjusted metrics. derived_output_only: may produce adjusted artifacts, but must preserve raw artifacts unchanged."
+        }
+      }
+    },
+    "canonicalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["json_canonicalization", "hash_algorithm"],
+      "properties": {
+        "json_canonicalization": {
+          "type": "string",
+          "enum": ["rfc8785_jcs"],
+          "description": "Use RFC 8785 JSON Canonicalization Scheme."
+        },
+        "hash_algorithm": {
+          "type": "string",
+          "enum": ["sha256"],
+          "description": "Hash algorithm for spec and artifacts."
+        }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Allow-listed lens operations, with bounded parameters.",
+      "items": { "$ref": "#/$defs/lensOperation" }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preserve_raw_outputs",
+        "no_domain_keywords_by_default",
+        "min_records_per_bucket",
+        "max_adjustment_gain"
+      ],
+      "properties": {
+        "preserve_raw_outputs": {
+          "type": "boolean",
+          "const": true,
+          "description": "Raw detector series must never be overwritten by lens outputs."
+        },
+        "no_domain_keywords_by_default": {
+          "type": "boolean",
+          "const": true,
+          "description": "Lens should be statistical/structural. Any domain filters require explicit exemption in disclosure."
+        },
+        "min_records_per_bucket": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000,
+          "default": 10,
+          "description": "Minimum records required for a bucket/year to be considered reliable."
+        },
+        "max_adjustment_gain": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 2.0,
+          "description": "Maximum multiplicative change permitted by any lens operation."
+        }
+      }
+    },
+    "disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonical_boundary_note", "exemptions"],
+      "properties": {
+        "canonical_boundary_note": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 4000,
+          "description": "Explicit statement: advisory-only; no closure/governance claims; raw outputs preserved."
+        },
+        "exemptions": {
+          "type": "array",
+          "default": [],
+          "description": "If you ever allow domain filtering or special handling, list it here explicitly with rationale + docket flagging.",
+          "items": { "$ref": "#/$defs/exemption" }
+        }
+      }
+    },
+    "lens_spec_hash": {
+      "type": "string",
+      "pattern": "^(sha256:)?[A-Fa-f0-9]{64}$",
+      "description": "Hash of the canonicalized LensSpec content, excluding this field."
+    }
+  },
+  "$defs": {
+    "lensOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "params"],
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "signal_quality_diversity_v1",
+            "noise_ratio_v1",
+            "bucket_reliability_gate_v1",
+            "quality_weight_series_v1"
+          ],
+          "description": "Allow-listed, domain-agnostic operations."
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "use_fields": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["title", "abstract", "concepts"] },
+              "default": ["title"]
+            },
+            "tokenization": {
+              "type": "string",
+              "enum": ["whitespace_lower", "unicode_word"],
+              "default": "whitespace_lower"
+            },
+            "stopwords": {
+              "type": "string",
+              "enum": ["none", "english_minimal"],
+              "default": "english_minimal"
+            },
+            "reliability_floor": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.0
+            },
+            "weight_floor": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10,
+              "default": 0.1
+            },
+            "weight_ceiling": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10,
+              "default": 2.0
+            }
+          }
+        }
+      }
+    },
+    "exemption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "reason", "requires_docket"],
+      "properties": {
+        "id": { "type": "string", "minLength": 3, "maxLength": 128 },
+        "reason": { "type": "string", "minLength": 16, "maxLength": 2000 },
+        "requires_docket": { "type": "boolean", "const": true }
+      }
+    }
+  }
+}
