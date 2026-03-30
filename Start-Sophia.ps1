@@ -8,7 +8,8 @@ if (!(Test-Path ".venv")) {
 
 . .\.venv\Scripts\Activate.ps1
 
-pip install -e .
-pip install fastapi uvicorn
+python -m pip install --upgrade pip
+python -m pip install -e .
+python -m pip install fastapi uvicorn
 
 python -m sophia.api

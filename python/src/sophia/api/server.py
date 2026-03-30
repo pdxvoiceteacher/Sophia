@@ -16,11 +16,6 @@ def health():
 @app.post("/govern/divergence")
 def govern_divergence():
     packet_path = Path(r"C:\UVLM\CoherenceLattice\bridge\governance_packet.json")
-    local_packet_path = Path("bridge") / "governance_packet.json"
-
-    if not packet_path.exists() and local_packet_path.exists():
-        packet_path = local_packet_path
-
     if not packet_path.exists():
         return {"error": f"governance_packet.json not found at {packet_path}"}
 
@@ -29,10 +24,7 @@ def govern_divergence():
 
     decision = evaluate_divergence(packet)
 
-    if packet_path == local_packet_path:
-        out_path = Path("bridge") / "governance_decision.json"
-    else:
-        out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\governance_decision.json")
+    out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\governance_decision.json")
     save_governance_decision(decision, out_path)
 
     return decision

@@ -100,18 +100,16 @@ def test_govern_divergence_reads_packet_and_writes_decision(
     tmp_path: Path, monkeypatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
-    bridge = tmp_path / "bridge"
-    bridge.mkdir(parents=True)
     packet = {
         "risk_signals": {"lexical_flags": {"contains_policy_terms": True}},
         "termination_signals": {"deltaS": 0.0, "lambda": 0.0, "iteration": 0},
     }
-    (bridge / "governance_packet.json").write_text(
-        json.dumps(packet), encoding="utf-8"
-    )
+    packet_file = Path(r"C:\UVLM\CoherenceLattice\bridge\governance_packet.json")
+    packet_file.write_text(json.dumps(packet), encoding="utf-8")
 
     result = govern_divergence()
 
     assert result["directive"] == "continue"
-    saved = json.loads((bridge / "governance_decision.json").read_text(encoding="utf-8"))
+    decision_file = Path(r"C:\UVLM\CoherenceLattice\bridge\governance_decision.json")
+    saved = json.loads(decision_file.read_text(encoding="utf-8"))
     assert saved == result
