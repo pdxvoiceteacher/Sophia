@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sophia://schema/sophia/lens_witness_v1.schema.json",
+  "title": "LensWitness v1 (Advisory-only telemetry)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event",
+    "timestamp",
+    "run_id",
+    "target_id",
+    "semantic_mode",
+    "advisory_only",
+    "lens",
+    "inputs",
+    "outputs",
+    "metrics",
+    "hashes"
+  ],
+  "properties": {
+    "schema_version": { "const": "telemetry.lens_witness.v1" },
+    "event": { "const": "lens_witness" },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp."
+    },
+    "run_id": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "step": {
+      "anyOf": [
+        { "type": "integer", "minimum": 0 },
+        { "type": "string", "pattern": "^[0-9]+$" }
+      ]
+    },
+    "target_id": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "semantic_mode": { "type": "string", "const": "non-executive" },
+    "advisory_only": { "type": "boolean", "const": true },
+    "lens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lens_id", "lens_spec_hash", "policy"],
+      "properties": {
+        "lens_id": { "type": "string" },
+        "lens_spec_hash": { "type": "string", "pattern": "^(sha256:)?[A-Fa-f0-9]{64}$" },
+        "policy": { "type": "string", "enum": ["report_only", "derived_output_only"] }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/artifactRef" }
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/artifactRef" }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signal_quality", "noise_ratio"],
+      "properties": {
+        "signal_quality": { "type": "number", "minimum": 0, "maximum": 1 },
+        "noise_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Structural notes only; must not include user/private data."
+        }
+      }
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonicalization", "hash_algorithm", "witness_hash"],
+      "properties": {
+        "canonicalization": { "type": "string", "enum": ["rfc8785_jcs"] },
+        "hash_algorithm": { "type": "string", "enum": ["sha256"] },
+        "witness_hash": { "type": "string", "pattern": "^(sha256:)?[A-Fa-f0-9]{64}$" }
+      }
+    }
+  },
+  "$defs": {
+    "artifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "hash"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "hash": { "type": "string", "pattern": "^(sha256:)?[A-Fa-f0-9]{64}$" }
+      }
+    }
+  }
+}
