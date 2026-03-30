@@ -24,3 +24,4 @@ def test_evaluate_divergence_minimal_packet():
     assert "risk_tier" in decision
     assert "directive" in decision
     assert "reason" in decision
+    assert "track_id" in decision

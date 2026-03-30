@@ -41,6 +41,7 @@ def test_evaluate_divergence_halts_on_iteration_budget() -> None:
         "risk_tier": "TRIVIAL",
         "directive": "halt",
         "reason": "iteration_budget_exhausted",
+        "track_id": "unknown",
     }
 
 
@@ -56,6 +57,9 @@ def test_evaluate_divergence_redirects_when_exploration_allowed() -> None:
         "risk_tier": "ANALYTICAL",
         "directive": "redirect",
         "reason": "divergence_exceeds_policy_but_exploration_allowed",
+        "track_id": "unknown",
+        "deltaS": 0.0,
+        "lambda": 0.001,
     }
 
 
@@ -75,7 +79,25 @@ def test_evaluate_divergence_continues_within_policy_band() -> None:
         "risk_tier": "ANALYTICAL",
         "directive": "continue",
         "reason": "within_policy_band",
+        "track_id": "unknown",
+        "deltaS": 0.0,
+        "lambda": 0.0,
     }
+
+
+def test_evaluate_divergence_handles_track_list() -> None:
+    packet = {
+        "risk_signals": {"lexical_flags": {"contains_policy_terms": True}},
+        "termination_signals": [
+            {"track_id": "a", "signals": {"lambda": 0.0, "deltaS": 0.0}},
+            {"track_id": "b", "signals": {"diverging": True, "lambda": 0.001}},
+        ],
+    }
+
+    result = evaluate_divergence(packet)
+
+    assert result["track_id"] == "b"
+    assert result["directive"] == "redirect"
 
 
 def test_save_governance_decision(tmp_path: Path) -> None:
