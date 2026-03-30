@@ -93,7 +93,7 @@ def test_govern_divergence_returns_error_without_packet(tmp_path: Path, monkeypa
 
     result = govern_divergence()
 
-    assert result == {"error": "governance_packet.json not found"}
+    assert "governance_packet.json not found at" in result["error"]
 
 
 def test_govern_divergence_reads_packet_and_writes_decision(
