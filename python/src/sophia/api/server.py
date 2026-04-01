@@ -5,6 +5,7 @@ import traceback
 from fastapi import FastAPI
 from sophia.governance.divergence_governor import evaluate_divergence
 from sophia.governance.store import save_governance_decision
+from sophia.governance.relevance_router import route_relevance_and_novelty
 
 app = FastAPI(title="Sophia Governance API", version="0.1.0")
 
@@ -36,3 +37,21 @@ def govern_divergence():
             "error": str(e),
             "traceback": traceback.format_exc(),
         }
+
+
+@app.post("/govern/routing")
+def govern_routing():
+    packet_path = Path(r"C:\UVLM\CoherenceLattice\bridge\routing_packet.json")
+    if not packet_path.exists():
+        return {"error": f"routing_packet.json not found at {packet_path}"}
+
+    with open(packet_path, "r", encoding="utf-8") as f:
+        packet = json.load(f)
+
+    decision = route_relevance_and_novelty(packet)
+
+    out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\routing_decision.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(decision, f, indent=2)
+
+    return decision
