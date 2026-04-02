@@ -1,11 +1,11 @@
 from pathlib import Path
 import json
-import traceback
 
 from fastapi import FastAPI
 from sophia.governance.divergence_governor import evaluate_divergence
 from sophia.governance.store import save_governance_decision
 from sophia.governance.relevance_router import route_relevance_and_novelty
+from sophia.governance.prior_router import route_prior_injection
 
 app = FastAPI(title="Sophia Governance API", version="0.1.0")
 
@@ -33,6 +33,8 @@ def govern_divergence():
         return decision
 
     except Exception as e:
+        import traceback
+
         return {
             "error": str(e),
             "traceback": traceback.format_exc(),
@@ -53,5 +55,26 @@ def govern_routing():
     out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\routing_decision.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(decision, f, indent=2)
+
+    return decision
+
+
+@app.post("/govern/prior_injection")
+def govern_prior_injection():
+    routing_path = Path(r"C:\UVLM\CoherenceLattice\bridge\routing_packet.json")
+    prior_path = Path(r"C:\UVLM\CoherenceLattice\bridge\atlas_prior_packet.json")
+
+    if not routing_path.exists():
+        return {"error": "routing_packet.json not found"}
+    if not prior_path.exists():
+        return {"error": "atlas_prior_packet.json not found"}
+
+    routing_packet = json.loads(routing_path.read_text(encoding="utf-8"))
+    atlas_prior_packet = json.loads(prior_path.read_text(encoding="utf-8"))
+
+    decision = route_prior_injection(routing_packet, atlas_prior_packet)
+
+    out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\prior_injection_decision.json")
+    out_path.write_text(json.dumps(decision, indent=2), encoding="utf-8")
 
     return decision
