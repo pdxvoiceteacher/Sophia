@@ -6,6 +6,7 @@ from sophia.governance.divergence_governor import evaluate_divergence
 from sophia.governance.store import save_governance_decision
 from sophia.governance.relevance_router import route_relevance_and_novelty
 from sophia.governance.prior_router import route_prior_injection
+from sophia.governance.prior_auditor import audit_prior_use
 
 app = FastAPI(title="Sophia Governance API", version="0.1.0")
 
@@ -75,6 +76,21 @@ def govern_prior_injection():
     decision = route_prior_injection(routing_packet, atlas_prior_packet)
 
     out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\prior_injection_decision.json")
+    out_path.write_text(json.dumps(decision, indent=2), encoding="utf-8")
+
+    return decision
+
+
+@app.post("/govern/prior_audit")
+def govern_prior_audit():
+    packet_path = Path(r"C:\UVLM\CoherenceLattice\bridge\prior_use_audit_packet.json")
+    if not packet_path.exists():
+        return {"error": "prior_use_audit_packet.json not found"}
+
+    packet = json.loads(packet_path.read_text(encoding="utf-8"))
+    decision = audit_prior_use(packet)
+
+    out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\prior_audit_decision.json")
     out_path.write_text(json.dumps(decision, indent=2), encoding="utf-8")
 
     return decision
