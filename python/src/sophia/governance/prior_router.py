@@ -1,12 +1,4 @@
 def route_prior_injection(routing_packet: dict, atlas_prior_packet: dict) -> dict:
-    """
-    Decide whether Atlas priors should be injected into the active run.
-    Modes:
-      - answer_support
-      - novelty_extension
-      - background_only
-      - ignore
-    """
     relevance = routing_packet.get("answer_relevance_packet", {}).get("ranked_relevance", [])
     novelty = routing_packet.get("novelty_packet", {}).get("ranked_novelty", [])
 
@@ -29,28 +21,27 @@ def route_prior_injection(routing_packet: dict, atlas_prior_packet: dict) -> dic
             "prior_injection_confidence": confidence,
         }
 
+    # More permissive than before, but still governed
     if (
         best_relevance
         and best_relevance["relevance"]["relevance_score"] >= 6
-        and top_similarity >= 0.15
+        and top_similarity >= 0.12
     ):
         mode = "answer_support"
         reason = "Relevant Atlas priors can strengthen the direct answer path."
-        confidence = 0.8
+        confidence = 0.82
     elif (
         best_novelty
         and best_novelty["novelty"]["novelty_score"] >= 8
-        and top_similarity >= 0.15
+        and top_similarity >= 0.12
     ):
         mode = "novelty_extension"
         reason = "Relevant Atlas priors may broaden the novelty corridor."
-        confidence = 0.7
-    elif top_similarity >= 0.1:
+        confidence = 0.72
+    elif top_similarity >= 0.08:
         mode = "background_only"
-        reason = (
-            "Relevant Atlas priors are available but should not dominate the current answer."
-        )
-        confidence = 0.55
+        reason = "Atlas priors are weakly relevant and should remain contextual only."
+        confidence = 0.5
 
     return {
         "prior_injection_mode": mode,

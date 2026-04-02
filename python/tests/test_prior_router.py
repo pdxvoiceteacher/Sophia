@@ -26,7 +26,7 @@ def test_route_prior_injection_answer_support() -> None:
     decision = route_prior_injection(routing_packet, atlas_prior_packet)
 
     assert decision["prior_injection_mode"] == "answer_support"
-    assert decision["prior_injection_confidence"] == 0.8
+    assert decision["prior_injection_confidence"] == 0.82
 
 
 def test_route_prior_injection_novelty_extension() -> None:
@@ -38,6 +38,17 @@ def test_route_prior_injection_novelty_extension() -> None:
     decision = route_prior_injection(routing_packet, atlas_prior_packet)
 
     assert decision["prior_injection_mode"] == "novelty_extension"
+    assert decision["prior_injection_confidence"] == 0.72
+
+
+def test_route_prior_injection_background_only() -> None:
+    routing_packet = {}
+    atlas_prior_packet = {"match_count": 1, "matches": [{"similarity_score": 0.09}]}
+
+    decision = route_prior_injection(routing_packet, atlas_prior_packet)
+
+    assert decision["prior_injection_mode"] == "background_only"
+    assert decision["prior_injection_confidence"] == 0.5
 
 
 def test_govern_prior_injection_reads_inputs_and_writes_output(
