@@ -7,6 +7,7 @@ from sophia.governance.store import save_governance_decision
 from sophia.governance.relevance_router import route_relevance_and_novelty
 from sophia.governance.prior_router import route_prior_injection
 from sophia.governance.prior_auditor import audit_prior_use
+from sophia.governance.question_integrity_auditor import audit_question_integrity
 
 app = FastAPI(title="Sophia Governance API", version="0.1.0")
 
@@ -91,6 +92,41 @@ def govern_prior_audit():
     decision = audit_prior_use(packet)
 
     out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\prior_audit_decision.json")
+    out_path.write_text(json.dumps(decision, indent=2), encoding="utf-8")
+
+    return decision
+
+
+@app.post("/govern/question_integrity")
+def govern_question_integrity():
+    user_q_path = Path(r"C:\UVLM\CoherenceLattice\bridge\user_question_packet.json")
+    nav_path = Path(r"C:\UVLM\CoherenceLattice\bridge\latest_nav_result.json")
+    atlas_query_path = Path(r"C:\UVLM\CoherenceLattice\bridge\atlas_query.json")
+    rel_path = Path(r"C:\UVLM\CoherenceLattice\bridge\answer_relevance_packet.json")
+
+    user_question_packet = (
+        json.loads(user_q_path.read_text(encoding="utf-8")) if user_q_path.exists() else {}
+    )
+    latest_nav_result = (
+        json.loads(nav_path.read_text(encoding="utf-8")) if nav_path.exists() else {}
+    )
+    atlas_query = (
+        json.loads(atlas_query_path.read_text(encoding="utf-8"))
+        if atlas_query_path.exists()
+        else {}
+    )
+    answer_relevance_packet = (
+        json.loads(rel_path.read_text(encoding="utf-8")) if rel_path.exists() else {}
+    )
+
+    decision = audit_question_integrity(
+        user_question_packet=user_question_packet,
+        latest_nav_result=latest_nav_result,
+        atlas_query=atlas_query,
+        answer_relevance_packet=answer_relevance_packet,
+    )
+
+    out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\question_integrity_audit.json")
     out_path.write_text(json.dumps(decision, indent=2), encoding="utf-8")
 
     return decision
