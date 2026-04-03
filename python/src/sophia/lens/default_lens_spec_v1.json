@@ -1,0 +1,63 @@
+{
+  "schema_version": "sophia.lens_spec.v1",
+  "lens_id": "default_lens_v1",
+  "created_at": "2026-03-19T20:10:12Z",
+  "semantic_mode": "non-executive",
+  "advisory_only": true,
+  "purpose": "Provide advisory-only, domain-agnostic signal-quality estimates and bounded lens weighting while preserving canonical raw outputs.",
+  "scope": {
+    "applies_to": [
+      "dataset_summary",
+      "corridor_series",
+      "drift_series",
+      "civilizational_scalar"
+    ],
+    "policy": "derived_output_only"
+  },
+  "canonicalization": {
+    "json_canonicalization": "rfc8785_jcs",
+    "hash_algorithm": "sha256"
+  },
+  "operations": [
+    {
+      "op": "signal_quality_diversity_v1",
+      "params": {
+        "use_fields": ["title", "abstract"],
+        "tokenization": "whitespace_lower",
+        "stopwords": "english_minimal"
+      }
+    },
+    {
+      "op": "noise_ratio_v1",
+      "params": {
+        "use_fields": ["title", "abstract"],
+        "tokenization": "whitespace_lower",
+        "stopwords": "english_minimal"
+      }
+    },
+    {
+      "op": "bucket_reliability_gate_v1",
+      "params": {
+        "reliability_floor": 0.0
+      }
+    },
+    {
+      "op": "quality_weight_series_v1",
+      "params": {
+        "weight_floor": 0.1,
+        "weight_ceiling": 2.0
+      }
+    }
+  ],
+  "constraints": {
+    "preserve_raw_outputs": true,
+    "no_domain_keywords_by_default": true,
+    "min_records_per_bucket": 10,
+    "max_adjustment_gain": 2.0
+  },
+  "disclosure": {
+    "canonical_boundary_note": "This lens is advisory-only and cannot make closure or governance claims. Raw outputs are preserved and any adjusted artifacts are emitted separately.",
+    "exemptions": []
+  },
+  "lens_spec_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+}
