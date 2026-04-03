@@ -1,4 +1,4 @@
-# PURPOSE: Sophia formally audits prior-use mode compliance and routed answer integrity
+# PURPOSE: Sophia formally audits question integrity and routed prior use compliance
 
 import re
 
@@ -53,19 +53,21 @@ def audit_prior_use(packet: dict) -> dict:
     trace = packet.get("prior_injection_trace", {}) or {}
     expected_return_track_id = packet.get("expected_return_track_id")
     answer_source_track = packet.get("answer_source_track")
+    question_integrity_ok = packet.get("question_integrity_ok", False)
 
-    # Detect prompt contamination in the audit packet itself
-    if question_text.lstrip().startswith("[ATLAS PRIOR INJECTION START]"):
+    if not question_integrity_ok:
         return {
             "formal_auditor": "Sophia",
             "audit_status": "warn",
-            "audit_reason": "Audit packet question_text is contaminated by injected Atlas prompt text.",
+            "audit_reason": "Question integrity failed before prior-use scoring.",
             "mode_compliance": False,
             "question_relevance_score": 0.0,
             "prior_influence_score": 0.0,
             "source_grounding_preserved": False,
             "source_term_hits": 0,
-            "recommendation": "fix_question_integrity_before_trusting_prior_use_audit",
+            "expected_return_track_id": expected_return_track_id,
+            "answer_source_track": answer_source_track,
+            "recommendation": "repair_question_integrity_upstream",
         }
 
     answer_tokens = _tokens(final_answer)
@@ -93,7 +95,6 @@ def audit_prior_use(packet: dict) -> dict:
     audit_status = "pass"
     audit_reason = "Prior usage appears consistent with Sophia governance mode."
 
-    # Formal routing compliance check
     if expected_return_track_id and answer_source_track != expected_return_track_id:
         mode_compliance = False
         audit_status = "warn"

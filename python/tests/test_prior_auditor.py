@@ -16,6 +16,7 @@ def test_audit_prior_use_pass_case() -> None:
         },
         "expected_return_track_id": "t1",
         "answer_source_track": "t1",
+        "question_integrity_ok": True,
     }
 
     decision = audit_prior_use(packet)
@@ -37,6 +38,7 @@ def test_audit_prior_use_warn_for_ignore_mode_with_influence() -> None:
                 }
             ]
         },
+        "question_integrity_ok": True,
     }
 
     decision = audit_prior_use(packet)
@@ -52,6 +54,7 @@ def test_audit_prior_use_warn_for_routing_mismatch() -> None:
         "prior_injection_mode": "background_only",
         "expected_return_track_id": "A",
         "answer_source_track": "B",
+        "question_integrity_ok": True,
     }
 
     decision = audit_prior_use(packet)
@@ -60,16 +63,17 @@ def test_audit_prior_use_warn_for_routing_mismatch() -> None:
     assert "does not match" in decision["audit_reason"]
 
 
-def test_audit_prior_use_detects_prompt_contamination() -> None:
+def test_audit_prior_use_warns_when_question_integrity_fails() -> None:
     packet = {
-        "question_text": "[ATLAS PRIOR INJECTION START] contaminated",
+        "question_text": "clean question",
         "final_answer": "anything",
+        "question_integrity_ok": False,
     }
 
     decision = audit_prior_use(packet)
 
     assert decision["audit_status"] == "warn"
-    assert decision["recommendation"] == "fix_question_integrity_before_trusting_prior_use_audit"
+    assert decision["recommendation"] == "repair_question_integrity_upstream"
 
 
 def test_govern_prior_audit_reads_packet_and_writes_decision(
@@ -85,6 +89,7 @@ def test_govern_prior_audit_reads_packet_and_writes_decision(
                 {"excerpt": "Novelty routed to Atlas with safeguards and review."}
             ]
         },
+        "question_integrity_ok": True,
     }
 
     packet_path = Path(r"C:\UVLM\CoherenceLattice\bridge\prior_use_audit_packet.json")
