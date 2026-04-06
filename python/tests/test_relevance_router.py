@@ -1,7 +1,11 @@
 import json
+import os
 from pathlib import Path
 
-from sophia.api.server import govern_routing
+_TEST_BRIDGE_ROOT = Path(__file__).resolve().parents[2] / ".tmp" / "triadic_bridge"
+os.environ.setdefault("TRIADIC_BRIDGE_ROOT", str(_TEST_BRIDGE_ROOT))
+
+from sophia.api.server import BRIDGE_ROOT, govern_routing
 from sophia.governance.relevance_router import route_relevance_and_novelty
 
 
@@ -81,7 +85,8 @@ def test_govern_routing_reads_packet_and_writes_decision(
             ]
         },
     }
-    packet_file = Path(r"C:\UVLM\CoherenceLattice\bridge\routing_packet.json")
+    packet_file = BRIDGE_ROOT / "routing_packet.json"
+    packet_file.parent.mkdir(parents=True, exist_ok=True)
     packet_file.write_text(json.dumps(packet), encoding="utf-8")
 
     result = govern_routing()
@@ -90,6 +95,6 @@ def test_govern_routing_reads_packet_and_writes_decision(
     assert result["novelty_action"] == "send_to_atlas"
     assert "atlas_route_confidence" in result
     assert "atlas_route_reason" in result
-    decision_file = Path(r"C:\UVLM\CoherenceLattice\bridge\routing_decision.json")
+    decision_file = BRIDGE_ROOT / "routing_decision.json"
     saved = json.loads(decision_file.read_text(encoding="utf-8"))
     assert saved == result

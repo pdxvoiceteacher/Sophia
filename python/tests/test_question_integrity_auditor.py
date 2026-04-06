@@ -1,7 +1,11 @@
 import json
+import os
 from pathlib import Path
 
-from sophia.api.server import govern_question_integrity
+_TEST_BRIDGE_ROOT = Path(__file__).resolve().parents[2] / ".tmp" / "triadic_bridge"
+os.environ.setdefault("TRIADIC_BRIDGE_ROOT", str(_TEST_BRIDGE_ROOT))
+
+from sophia.api.server import BRIDGE_ROOT, govern_question_integrity
 from sophia.governance.question_integrity_auditor import audit_question_integrity
 
 
@@ -36,19 +40,22 @@ def test_govern_question_integrity_reads_and_writes_files(
 ) -> None:
     monkeypatch.chdir(tmp_path)
 
-    Path(r"C:\UVLM\CoherenceLattice\bridge\user_question_packet.json").write_text(
+    packet_dir = BRIDGE_ROOT
+    packet_dir.mkdir(parents=True, exist_ok=True)
+
+    (packet_dir / "user_question_packet.json").write_text(
         json.dumps({"user_question_text": "What is governance routing?"}),
         encoding="utf-8",
     )
-    Path(r"C:\UVLM\CoherenceLattice\bridge\latest_nav_result.json").write_text(
+    (packet_dir / "latest_nav_result.json").write_text(
         json.dumps({"user_question_text": "What is governance routing?"}),
         encoding="utf-8",
     )
-    Path(r"C:\UVLM\CoherenceLattice\bridge\atlas_query.json").write_text(
+    (packet_dir / "atlas_query.json").write_text(
         json.dumps({"question_text": "What is governance routing?"}),
         encoding="utf-8",
     )
-    Path(r"C:\UVLM\CoherenceLattice\bridge\answer_relevance_packet.json").write_text(
+    (packet_dir / "answer_relevance_packet.json").write_text(
         json.dumps({"question_text": "What is governance routing?"}),
         encoding="utf-8",
     )
@@ -56,6 +63,6 @@ def test_govern_question_integrity_reads_and_writes_files(
     decision = govern_question_integrity()
 
     assert decision["audit_status"] == "pass"
-    out = Path(r"C:\UVLM\CoherenceLattice\bridge\question_integrity_audit.json")
+    out = packet_dir / "question_integrity_audit.json"
     saved = json.loads(out.read_text(encoding="utf-8"))
     assert saved == decision

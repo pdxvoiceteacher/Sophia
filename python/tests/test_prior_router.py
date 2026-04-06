@@ -1,7 +1,11 @@
 import json
+import os
 from pathlib import Path
 
-from sophia.api.server import govern_prior_injection
+_TEST_BRIDGE_ROOT = Path(__file__).resolve().parents[2] / ".tmp" / "triadic_bridge"
+os.environ.setdefault("TRIADIC_BRIDGE_ROOT", str(_TEST_BRIDGE_ROOT))
+
+from sophia.api.server import BRIDGE_ROOT, govern_prior_injection
 from sophia.governance.prior_router import route_prior_injection
 
 
@@ -63,14 +67,15 @@ def test_govern_prior_injection_reads_inputs_and_writes_output(
     }
     prior_packet = {"match_count": 1, "matches": [{"similarity_score": 0.2}]}
 
-    routing_path = Path(r"C:\UVLM\CoherenceLattice\bridge\routing_packet.json")
-    prior_path = Path(r"C:\UVLM\CoherenceLattice\bridge\atlas_prior_packet.json")
+    routing_path = BRIDGE_ROOT / "routing_packet.json"
+    prior_path = BRIDGE_ROOT / "atlas_prior_packet.json"
+    routing_path.parent.mkdir(parents=True, exist_ok=True)
     routing_path.write_text(json.dumps(routing_packet), encoding="utf-8")
     prior_path.write_text(json.dumps(prior_packet), encoding="utf-8")
 
     decision = govern_prior_injection()
 
     assert decision["prior_injection_mode"] == "answer_support"
-    out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\prior_injection_decision.json")
+    out_path = BRIDGE_ROOT / "prior_injection_decision.json"
     saved = json.loads(out_path.read_text(encoding="utf-8"))
     assert saved == decision

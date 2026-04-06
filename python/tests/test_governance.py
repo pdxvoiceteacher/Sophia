@@ -1,7 +1,11 @@
 import json
+import os
 from pathlib import Path
 
-from sophia.api.server import govern_divergence
+_TEST_BRIDGE_ROOT = Path(__file__).resolve().parents[2] / ".tmp" / "triadic_bridge"
+os.environ.setdefault("TRIADIC_BRIDGE_ROOT", str(_TEST_BRIDGE_ROOT))
+
+from sophia.api.server import BRIDGE_ROOT, govern_divergence
 from sophia.governance.divergence_governor import evaluate_divergence
 from sophia.governance.policy import DEFAULT_DIVERGENCE_POLICY
 from sophia.governance.risk_classifier import classify_risk_from_packet
@@ -126,12 +130,13 @@ def test_govern_divergence_reads_packet_and_writes_decision(
         "risk_signals": {"lexical_flags": {"contains_policy_terms": True}},
         "termination_signals": {"deltaS": 0.0, "lambda": 0.0, "iteration": 0},
     }
-    packet_file = Path(r"C:\UVLM\CoherenceLattice\bridge\governance_packet.json")
+    packet_file = BRIDGE_ROOT / "governance_packet.json"
+    packet_file.parent.mkdir(parents=True, exist_ok=True)
     packet_file.write_text(json.dumps(packet), encoding="utf-8")
 
     result = govern_divergence()
 
     assert result["directive"] == "continue"
-    decision_file = Path(r"C:\UVLM\CoherenceLattice\bridge\governance_decision.json")
+    decision_file = BRIDGE_ROOT / "governance_decision.json"
     saved = json.loads(decision_file.read_text(encoding="utf-8"))
     assert saved == result

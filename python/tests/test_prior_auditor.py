@@ -1,7 +1,11 @@
 import json
+import os
 from pathlib import Path
 
-from sophia.api.server import govern_prior_audit
+_TEST_BRIDGE_ROOT = Path(__file__).resolve().parents[2] / ".tmp" / "triadic_bridge"
+os.environ.setdefault("TRIADIC_BRIDGE_ROOT", str(_TEST_BRIDGE_ROOT))
+
+from sophia.api.server import BRIDGE_ROOT, govern_prior_audit
 from sophia.governance.prior_auditor import audit_prior_use
 
 
@@ -92,12 +96,13 @@ def test_govern_prior_audit_reads_packet_and_writes_decision(
         "question_integrity_ok": True,
     }
 
-    packet_path = Path(r"C:\UVLM\CoherenceLattice\bridge\prior_use_audit_packet.json")
+    packet_path = BRIDGE_ROOT / "prior_use_audit_packet.json"
+    packet_path.parent.mkdir(parents=True, exist_ok=True)
     packet_path.write_text(json.dumps(packet), encoding="utf-8")
 
     decision = govern_prior_audit()
 
     assert "audit_status" in decision
-    out_path = Path(r"C:\UVLM\CoherenceLattice\bridge\prior_audit_decision.json")
+    out_path = BRIDGE_ROOT / "prior_audit_decision.json"
     saved = json.loads(out_path.read_text(encoding="utf-8"))
     assert saved == decision
