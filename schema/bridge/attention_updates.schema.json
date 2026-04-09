@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coherencelattice.local/schema/bridge/attention_updates.schema.json",
+  "title": "Sophia attention updates",
+  "type": "object",
+  "required": [
+    "raw_request_sha256",
+    "nav01_question_sha256",
+    "normalized_sha256s",
+    "grounding_active",
+    "citation_count",
+    "executive_attention_targets",
+    "review_priority",
+    "semanticMode"
+  ],
+  "properties": {
+    "raw_request_sha256": {"type": ["string", "null"], "minLength": 1},
+    "nav01_question_sha256": {"type": ["string", "null"], "minLength": 1},
+    "normalized_sha256s": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "grounding_active": {"type": "boolean"},
+    "citation_count": {"type": "integer", "minimum": 0},
+    "executive_attention_targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["target_id", "priority", "reason"],
+        "properties": {
+          "target_id": {"type": "string", "minLength": 1},
+          "priority": {"type": "string", "enum": ["high", "medium", "low"]},
+          "reason": {"type": "string", "minLength": 1},
+          "drift_score": {"type": "number", "minimum": 0, "maximum": 1}
+        },
+        "additionalProperties": true
+      }
+    },
+    "review_priority": {"type": "string", "enum": ["focus", "watch", "docket"]},
+    "semanticMode": {"const": "non-executive"},
+    "clarification_request": {
+      "type": "object",
+      "required": ["request_hashes", "bundle_hashes"],
+      "properties": {
+        "reason": {"type": ["string", "null"]},
+        "request_hashes": {"type": "array", "items": {"type": "string"}},
+        "bundle_hashes": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

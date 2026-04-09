@@ -625,3 +625,31 @@ python -m coherence.tools.query_bridge_artifact bridge/memory_compression_audit.
 
 This track improves legibility, lineage visibility, queryability, and worked-example reproducibility only. It does not authorize governance transfer, settlement authority, canon closure, centralized authority claims, or epoch finalization.
 
+
+## Sophia attention-updates contract (TB-05)
+
+Sophia now emits the executive interpretation layer expected by Publisher:
+
+- `bridge/attention_updates.json`
+- `bridge/attention_update_summary.json`
+
+The contract is grounded to the same run provenance hashes emitted by CoherenceLattice when available. Sophia consumes these upstream bridge artifacts when present:
+
+- `bridge/triadic_run_manifest.json`
+- `bridge/coherence_drift_map.json`
+- `bridge/grounding_policy.json`
+- `bridge/source_evidence_packet.json`
+- `bridge/clarification_request.json`
+
+Build locally:
+
+```bash
+python -m sophia.build_attention_updates --bridge-root .
+```
+
+Key guardrails:
+
+- `semanticMode` is always `non-executive`.
+- grounded + cited runs avoid generic acronym-only re-clarification.
+- unresolved local-definition clarification requests may pass through with the same request/bundle hashes.
+- missing provenance hashes force bounded handling (`review_priority=docket`) and block executive target recommendations.

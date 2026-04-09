@@ -7,6 +7,8 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from sophia.build_attention_updates import build_attention_updates
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = REPO_ROOT / "schema/sophia/ai_guidance_v1.schema.json"
 
@@ -21,16 +23,24 @@ def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
-def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str, Any]:
+def _load_findings(root: Path) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
+    for audit_name in ["cascade_audit.json", "discovery_corridor_audit.json", "navigation_audit.json"]:
+        candidates = [root / audit_name, root / "bridge" / audit_name]
+        for path in candidates:
+            if not path.exists():
+                continue
+            data = _load_json(path)
+            rows = data.get("findings", []) if isinstance(data, dict) else []
+            if isinstance(rows, list):
+                findings.extend(item for item in rows if isinstance(item, dict))
+            break
+    return findings
+
+
+def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str, Any]:
     root = Path(bridge_root)
-    for audit_name in ["cascade_audit.json", "discovery_corridor_audit.json"]:
-        p1 = root / audit_name
-        p2 = root / "bridge" / audit_name
-        data = _load_json(p1) or _load_json(p2) or {}
-        f = data.get("findings", []) if isinstance(data, dict) else []
-        if isinstance(f, list):
-            findings.extend(x for x in f if isinstance(x, dict))
+    findings = _load_findings(root)
 
     novelty = 0.0
     plurality = 0.0
@@ -40,15 +50,19 @@ def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str
         if finding.get("advisory") == "docket":
             review = True
         mapping = MODIFIER_MAP.get(str(finding.get("id")))
-        if not mapping:
+        if mapping is None:
             continue
-        param, val = mapping
+        param, value = mapping
         if param == "noveltyWeight":
-            novelty += val
+            novelty += value
         elif param == "pluralityWeight":
-            plurality += val
+            plurality += value
         elif param == "humilityWeight":
-            humility += val
+            humility += value
+
+    attention_payload, _ = build_attention_updates(str(root))
+    if attention_payload.get("review_priority") in {"watch", "docket"}:
+        review = True
 
     guidance = {
         "noveltyWeight": min(novelty, 1.0),
@@ -65,16 +79,18 @@ def build_ai_guidance(bridge_root: str, out_file: str | None = None) -> dict[str
     return guidance
 
 
-if __name__ == "__main__":
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bridge-root", default=".")
     parser.add_argument("--output-file", default=None)
     parser.add_argument("--out", dest="output_file", default=None)
     args = parser.parse_args(argv)
 
-    build_ai_guidance(args.bridge_root, args.output_file)
-    return 0
-
     guidance = build_ai_guidance(args.bridge_root, args.output_file)
     if not args.output_file:
         print(json.dumps(guidance, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
