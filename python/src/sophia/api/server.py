@@ -11,6 +11,7 @@ from sophia.governance.prior_router import route_prior_injection
 from sophia.governance.question_integrity_auditor import audit_question_integrity
 from sophia.governance.relevance_router import route_relevance_and_novelty
 from sophia.governance.store import save_governance_decision
+from sophia.build_attention_updates import build_attention_updates
 
 app = FastAPI(title="Sophia Governance API", version="0.1.0")
 
@@ -139,3 +140,9 @@ def govern_question_integrity() -> dict[str, Any]:
     )
     _write_json_file(QUESTION_INTEGRITY_AUDIT_FILE, decision)
     return decision
+
+
+@app.post("/govern/attention_updates")
+def govern_attention_updates() -> dict[str, Any]:
+    payload, summary = build_attention_updates(str(BRIDGE_ROOT))
+    return {"attention_updates": payload, "attention_update_summary": summary}
