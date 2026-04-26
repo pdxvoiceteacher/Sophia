@@ -36,6 +36,115 @@ except Exception:  # pragma: no cover - optional hardening module
 
 
 
+
+_PRIOR_USE_LEVEL = {
+    "none": 0,
+    "cite_only": 1,
+    "summary_only": 1,
+    "paraphrase": 2,
+    "quote": 3,
+    "full": 4,
+}
+
+
+def _prior_use_rank(value: Any) -> int:
+    if not isinstance(value, str):
+        return -1
+    return _PRIOR_USE_LEVEL.get(value.strip().lower(), -1)
+
+
+def read_episode_contract_audit(bridge_dir: Path) -> dict[str, Any]:
+    """Read bridge artifacts in a non-mutating mode and report contract fields + warnings."""
+    bridge = bridge_dir.resolve()
+
+    def _safe(name: str) -> dict[str, Any]:
+        path = bridge / name
+        if not path.exists():
+            return {}
+        payload = load_json(path)
+        return payload if isinstance(payload, dict) else {}
+
+    governance_decision = _safe("governance_decision.json")
+    routing_decision = _safe("routing_decision.json")
+    selection_authority_packet = _safe("selection_authority_packet.json")
+    prior_injection_decision = _safe("prior_injection_decision.json")
+    atlas_prior_packet = _safe("atlas_prior_packet.json")
+    triadic_run_manifest = _safe("triadic_run_manifest.json")
+    source_evidence_packet = _safe("source_evidence_packet.json")
+    final_answer = _safe("final_answer.json")
+
+    allowed_use_rows: list[dict[str, Any]] = []
+    selected_priors = atlas_prior_packet.get("selected_priors")
+    if isinstance(selected_priors, list):
+        for row in selected_priors:
+            if isinstance(row, dict):
+                allowed_use_rows.append(
+                    {
+                        "prior_id": row.get("prior_id"),
+                        "allowed_use": row.get("allowed_use"),
+                    }
+                )
+
+    report: dict[str, Any] = {
+        "schema": "sophia_episode_contract_audit_v1",
+        "bridge_dir": str(bridge),
+        "governance_decision": {"directive": governance_decision.get("directive")},
+        "routing_decision": {"return_track_id": routing_decision.get("return_track_id")},
+        "selection_authority_packet": {
+            "final_answer_source_track_id": selection_authority_packet.get("final_answer_source_track_id")
+        },
+        "prior_injection_decision": {"prior_injection_mode": prior_injection_decision.get("prior_injection_mode")},
+        "atlas_prior_packet": {"selected_priors": allowed_use_rows},
+        "triadic_run_manifest": {
+            "run_id": triadic_run_manifest.get("run_id"),
+            "preset": triadic_run_manifest.get("preset"),
+        },
+        "source_evidence_packet": {"source_id": source_evidence_packet.get("source_id")},
+        "final_answer": {"source": final_answer.get("source")},
+        "warnings": [],
+    }
+
+    warnings: list[dict[str, Any]] = report["warnings"]
+
+    return_track_id = routing_decision.get("return_track_id")
+    final_answer_source = final_answer.get("source")
+    if isinstance(return_track_id, str) and isinstance(final_answer_source, str) and final_answer_source != return_track_id:
+        warnings.append(
+            {
+                "code": "final_answer_source_mismatch",
+                "message": "final_answer.source differs from routing_decision.return_track_id",
+                "data": {"final_answer.source": final_answer_source, "routing_decision.return_track_id": return_track_id},
+            }
+        )
+
+    prior_injection_mode = prior_injection_decision.get("prior_injection_mode")
+    mode_rank = _prior_use_rank(prior_injection_mode)
+    for row in allowed_use_rows:
+        allowed = row.get("allowed_use")
+        allowed_rank = _prior_use_rank(allowed)
+        if mode_rank >= 0 and allowed_rank >= 0 and mode_rank > allowed_rank:
+            warnings.append(
+                {
+                    "code": "prior_injection_mode_exceeds_allowed_use",
+                    "message": "prior_injection_mode exceeds selected_prior.allowed_use",
+                    "data": {
+                        "prior_id": row.get("prior_id"),
+                        "prior_injection_mode": prior_injection_mode,
+                        "allowed_use": allowed,
+                    },
+                }
+            )
+
+    if not isinstance(triadic_run_manifest.get("preset"), str) or not triadic_run_manifest.get("preset"):
+        warnings.append({"code": "missing_preset", "message": "triadic_run_manifest.preset is missing"})
+    if not isinstance(triadic_run_manifest.get("run_id"), str) or not triadic_run_manifest.get("run_id"):
+        warnings.append({"code": "missing_run_id", "message": "triadic_run_manifest.run_id is missing"})
+    if not isinstance(source_evidence_packet.get("source_id"), str) or not source_evidence_packet.get("source_id"):
+        warnings.append({"code": "missing_source_id", "message": "source_evidence_packet.source_id is missing"})
+
+    return report
+
+
 def load_json(p: Path) -> dict:
     return json.loads(p.read_text(encoding="utf-8-sig"))
 
@@ -786,6 +895,12 @@ def load_anchor_report(repo: Path):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-dir", required=True, help="Run directory containing telemetry.json and epistemic_graph.json")
+    ap.add_argument(
+        "--episode-contract-audit",
+        action="store_true",
+        help="Read a completed bridge directory and emit a non-mutating episode-contract audit report.",
+    )
+    ap.add_argument("--bridge-dir", default="", help="Bridge directory for --episode-contract-audit mode.")
     ap.add_argument("--repo-root", default=".")
     ap.add_argument("--diff-report", default="", help="Optional guidance_diff report.json")
     ap.add_argument("--schema", default="schema/sophia_audit.schema.json")
@@ -807,6 +922,12 @@ def main() -> int:
     )
     ap.add_argument("--out", default="", help="Output path (default: <run-dir>/sophia_audit.json)")
     args = ap.parse_args()
+
+    if args.episode_contract_audit:
+        bridge_dir = Path(args.bridge_dir).resolve() if args.bridge_dir else Path(args.run_dir).resolve()
+        report = read_episode_contract_audit(bridge_dir)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0
 
     repo = Path(args.repo_root).resolve()
     run_dir = Path(args.run_dir).resolve()
